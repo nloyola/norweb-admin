@@ -1,6 +1,4 @@
 import React from 'react';
-import { Container } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,25 +11,20 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { dashboardLinkItems } from './dashboardNavItems';
 import { AppBar } from '@app/components/AppBar/AppBar';
 import { DashboardDrawer } from '../DashboardDrawer/DashboardDrawer';
-
-// see https://www.manuelkruisz.com/blog/posts/next-js-links-and-material-ui
-
-type DashboardLayoutProps = {
-    children: React.ReactNode;
-};
+import { Container, ThemeProvider } from '@mui/material';
+import theme from '@app/utils/theme';
+import { Outlet } from 'react-router-dom';
 
 const drawerWidth: number = 240;
 
-const mdTheme = createTheme();
-
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout() {
     const [open, setOpen] = React.useState(true);
     const toggleDrawer = () => {
         setOpen(!open);
     };
 
     return (
-        <ThemeProvider theme={mdTheme}>
+        <ThemeProvider theme={theme}>
             <Box sx={{ display: 'flex' }}>
                 <CssBaseline />
                 <AppBar position="absolute" open={open} drawerWidth={drawerWidth}>
@@ -92,7 +85,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 >
                     <Toolbar />
                     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                        {children}
+                        <Outlet />
                     </Container>
                 </Box>
             </Box>

@@ -1,12 +1,39 @@
-import { CountryCode, countryCodes } from '@app/models';
-import { Project } from '@app/models/projects';
+import { CountryCode, countryCodes, PaginatedResponse } from '@app/models';
+import { IProject, Project } from '@app/models/projects';
 import format from 'date-fns/format';
 
-export default class ProjectsService {
-    private apiBaseUrl = `${process.env.NEXT_PUBLIC_SERVER}/api/projects/`;
+export class ProjectsService {
+    private static apiBaseUrl = '/api/projects/';
 
-    async add(project: Project): Promise<boolean> {
-        const data = this.projectToApiRepr(project);
+    static async get(id: number): Promise<IProject> {
+        const url = this.apiBaseUrl + `${id}/`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (!response.ok) {
+            console.error(result);
+            throw new Error('HTTP error: status: ' + response.status);
+        }
+        return result;
+    }
+
+    static async paginate(page: number, search: string): Promise<PaginatedResponse<IProject>> {
+        let url = this.apiBaseUrl + `?page=${page}`;
+        if (search !== '') {
+            url = `${url}&search=${search}`;
+        }
+
+        const response = await fetch(url);
+        const result = await response.json();
+        if (!response.ok) {
+            console.error(result);
+            throw new Error('HTTP error: status: ' + response.status);
+        }
+        return result;
+    }
+
+    static async add(project: Project): Promise<boolean> {
+        const data = { data: this.projectToApiRepr(project) };
         const response = await fetch(this.apiBaseUrl, {
             headers: {
                 //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
@@ -15,12 +42,18 @@ export default class ProjectsService {
             method: 'POST',
             body: JSON.stringify(data)
         });
+        const result = await response.json();
+        if (!response.ok) {
+            console.error(result);
+            throw new Error('HTTP error: status: ' + response.status);
+        }
+        console.log(result);
 
-        return response.status < 400;
+        return true;
     }
 
-    async update(project: Project): Promise<Project> {
-        const data = this.projectToApiRepr(project);
+    static async update(project: Project): Promise<Project> {
+        const data = { data: this.projectToApiRepr(project) };
         const url = `${this.apiBaseUrl}${project.id}/`;
         const response = await fetch(url, {
             headers: {
@@ -32,21 +65,22 @@ export default class ProjectsService {
         });
 
         const json = await response.json();
-
         if (response.status >= 400) {
+            console.error(json);
             throw new Error(JSON.stringify(json, null, 2));
         }
 
         return new Project().deserialize(json);
     }
 
-    private projectToApiRepr(project: Project): any {
+    private static projectToApiRepr(project: Project): any {
         const countryCode = countryCodes.find((country: CountryCode) => country.name === project.country)?.code;
         return {
             ...project,
             startDate: format(project.startDate, 'yyy-MM-dd'),
             endDate: format(project.endDate, 'yyy-MM-dd'),
-            countryCode
+            countryCode,
+            events: undefined
         };
     }
 }

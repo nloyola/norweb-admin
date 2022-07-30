@@ -1,14 +1,19 @@
-import GridItemProperty, { GridItemPropertyProps } from '../GridItemProperty';
+import { GridItemProperty, GridItemPropertyProps } from '../GridItemProperty';
 import {
     PropertyChangerAutocomplete,
     PropertyChangerDate,
     PropertyChangerRadio,
     PropertyChangerText
 } from '@app/components/PropertyChanger';
-import { PropertyOption } from '../PropertyChanger/PropertyChanger';
-import { createTheme, Grid } from '@mui/material';
+import { PropertyChangerProps, PropertyOption } from '../PropertyChanger/PropertyChanger';
+import { Alert, CircularProgress, createTheme, Grid } from '@mui/material';
 import { ThemeProvider } from '@mui/system';
 import { grey } from '@mui/material/colors';
+import { createElement, useContext, useState } from 'react';
+import { ProjectContext } from '@app/pages/projects/ProjectPage';
+import { projectPropertySchema } from '../projects/ProjectDetails/project-schema';
+import { useNavigate } from 'react-router-dom';
+import { ProjectsService } from '@app/services/projects/ProjectsService';
 
 export const PropertyChangers = {
     autocomplete: PropertyChangerAutocomplete,
@@ -31,11 +36,6 @@ export interface PropertyInfo<T> extends GridItemPropertyProps {
     changerPropsExtra?: ChangerPropsElementExtra<T>;
 }
 export type PropertiesSchema = Record<string, PropertyInfo<unknown>>;
-
-type PropertiesGridProps = {
-    schema: PropertiesSchema;
-    handleChange: (propInfo: PropertyInfo<unknown>) => void;
-};
 
 const theme = createTheme({
     components: {
@@ -63,16 +63,20 @@ const theme = createTheme({
     }
 });
 
-const PropertiesGrid = ({ schema, handleChange }: PropertiesGridProps) => {
+type PropertiesGridProps = {
+    schema: PropertiesSchema;
+    handleChange: (propInfo: PropertyInfo<unknown>) => void;
+};
+
+export function PropertiesGrid({ schema, handleChange }: PropertiesGridProps) {
     return (
         <Grid container spacing={4}>
             <ThemeProvider theme={theme}>
-                {Object.values(schema).map((propInfo) => (
-                    <GridItemProperty key={propInfo.propName} {...propInfo} handleChange={handleChange} />
-                ))}
+                {schema &&
+                    Object.values(schema).map((propInfo) => (
+                        <GridItemProperty key={propInfo.propName} {...propInfo} handleChange={handleChange} />
+                    ))}
             </ThemeProvider>
         </Grid>
     );
-};
-
-export default PropertiesGrid;
+}

@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
-import { Person } from '@app/models/people';
+import { IPerson, Person } from '@app/models/people';
 import { Avatar, Grid, Paper, Stack, Typography } from '@mui/material';
-import Link from 'next/link';
+import { useLocation } from 'react-router-dom';
 
 type PersonBioProps = {
     person: Person;
@@ -27,7 +27,7 @@ function personDetails(person: Person): PersonDetails[] {
             label: 'Email',
             value:
                 person.email && person.email !== '' ? (
-                    <Link href={`mailto:${person.email}`}>{person.email}</Link>
+                    <a href={`mailto:${person.email}`}>{person.email}</a>
                 ) : (
                     'NotAvailable'
                 )
@@ -36,16 +36,21 @@ function personDetails(person: Person): PersonDetails[] {
             label: 'Website',
             value:
                 person.website && person.website !== '' ? (
-                    <Link href={person.website} target="_blank">
+                    <a href={person.website} target="_blank">
                         {person.website}
-                    </Link>
+                    </a>
                 ) : (
                     'Not available'
                 )
         },
         {
             label: 'Telephone',
-            value: person.phone ?? 'Not available'
+            value:
+                person.phone && person.phone !== '' ? (
+                    <a href={`tel://${person.phone}`}>{person.phone}</a>
+                ) : (
+                    'Not available'
+                )
         },
         {
             label: 'Brief CV',
@@ -60,7 +65,7 @@ function personDetails(person: Person): PersonDetails[] {
     return result;
 }
 
-const PersonBio = ({ person }: PersonBioProps) => {
+export function PersonBio({ person }: PersonBioProps) {
     if (!person.id) {
         throw new Error('person is invalid');
     }
@@ -85,8 +90,8 @@ const PersonBio = ({ person }: PersonBioProps) => {
                 </Stack>
 
                 <Grid container spacing={2} direction="row" justifyContent="flex-start" alignItems="flex-start">
-                    {personDetails(person).map((details, index) => (
-                        <React.Fragment key={index}>
+                    {personDetails(person).map((details) => (
+                        <React.Fragment key={details.label}>
                             <Grid item md={3}>
                                 <Typography component="h6" variant="subtitle2">
                                     {details.label}
@@ -113,6 +118,4 @@ const PersonBio = ({ person }: PersonBioProps) => {
             {/*{<pre>{JSON.stringify(person, null, 4)}</pre>}*/}
         </Stack>
     );
-};
-
-export default PersonBio;
+}

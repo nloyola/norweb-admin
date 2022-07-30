@@ -45,29 +45,35 @@ const theme = createTheme({
     }
 });
 
-const GridItemProperty = <T extends GridItemPropertyProps>(propInfo: T) => (
-    <ThemeProvider theme={theme}>
-        <Grid item xs={2}>
-            <Typography component="h6" variant="subtitle2">
-                {propInfo.label}
-            </Typography>
-        </Grid>
-        <Grid item xs={9}>
-            {typeof propInfo.value === 'string' && (
-                <Typography component="p" variant="body1">
-                    {propInfo.value}
-                </Typography>
-            )}
-            {typeof propInfo.value !== 'string' && propInfo.value}
-        </Grid>
-        <Grid item xs={1}>
-            <Tooltip title="Change" arrow placement="left">
-                <IconButton size="small" color="primary" onClick={() => propInfo.handleChange(propInfo)}>
-                    <Edit sx={{ fontSize: 14 }} />
-                </IconButton>
-            </Tooltip>
-        </Grid>
-    </ThemeProvider>
-);
+export function GridItemProperty<T extends GridItemPropertyProps>(propInfo: T) {
+    const handleClick = () => {
+        if (propInfo.handleChange) {
+            propInfo.handleChange(propInfo);
+        }
+    };
 
-export default GridItemProperty;
+    return (
+        <ThemeProvider theme={theme}>
+            <Grid item xs={2}>
+                <Typography component="h6" variant="subtitle2">
+                    {propInfo.label}
+                </Typography>
+            </Grid>
+            <Grid item xs={9}>
+                {typeof propInfo.value === 'string' && (
+                    <Typography component="p" variant="body1">
+                        {propInfo.value}
+                    </Typography>
+                )}
+                {typeof propInfo.value !== 'string' && propInfo.value}
+            </Grid>
+            <Grid item xs={1}>
+                <Tooltip title="Change" arrow placement="left">
+                    <IconButton size="small" color="primary" onClick={handleClick}>
+                        <Edit sx={{ fontSize: 14 }} />
+                    </IconButton>
+                </Tooltip>
+            </Grid>
+        </ThemeProvider>
+    );
+}

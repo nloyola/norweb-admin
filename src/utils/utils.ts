@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 // see https://usehooks-ts.com/react-hook/use-debounce
 export function useDebounce<T>(value: T, delay?: number): T {

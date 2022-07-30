@@ -1,6 +1,6 @@
 import { ConcurrencySafeEntity, IConcurrencySafeEntity } from '../concurrency-safe-entity.model';
 import { CountryCode, countryCodes } from '../country-codes';
-import { Event } from '../events';
+import { Event, IEvent } from '../events';
 import { Status } from '../status';
 
 export interface IProject extends IConcurrencySafeEntity {
@@ -37,7 +37,7 @@ export class Project extends ConcurrencySafeEntity implements IProject {
     readonly country: string;
     readonly cntr: string;
     readonly status: Status;
-    readonly events: Event[] = [];
+    readonly events: Event[];
 
     deserialize(input: IProject): this {
         const {

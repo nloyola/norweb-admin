@@ -2,12 +2,24 @@ import { CountryCode, countryCodes } from '@app/models';
 import { Event } from '@app/models/events';
 import format from 'date-fns/format';
 
-export default class EventsService {
-    private apiBaseUrl = `${process.env.NEXT_PUBLIC_SERVER}/api/events/`;
+export class EventsService {
+    private static apiBaseUrl = '/api/projects/';
 
-    async add(event: Event): Promise<boolean> {
-        const data = this.eventToApiRepr(event);
-        const response = await fetch(this.apiBaseUrl, {
+    static async get(projectId: number, eventId: number): Promise<Event> {
+        const url = this.apiBaseUrl + `${projectId}/events/${eventId}`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (!response.ok) {
+            console.error(result);
+            throw new Error('HTTP error: status: ' + response.status);
+        }
+        return result;
+    }
+
+    static async add(projectId: number, event: Event): Promise<Event> {
+        const data = { data: this.eventToApiRepr(event) };
+        const response = await fetch(this.apiBaseUrl + `${projectId}/events/`, {
             headers: {
                 //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
                 'Content-Type': 'application/json'
@@ -15,17 +27,19 @@ export default class EventsService {
             method: 'POST',
             body: JSON.stringify(data)
         });
+        const result = await response.json();
 
-        if (response.status >= 400) {
-            throw new Error(JSON.stringify(json, null, 2));
+        if (!response.ok) {
+            console.error(result);
+            throw new Error('HTTP error: status: ' + response.status);
         }
 
-        return response.status < 400;
+        return new Event().deserialize(result);
     }
 
-    async update(event: Event): Promise<Event> {
-        const data = this.eventToApiRepr(event);
-        const url = `${this.apiBaseUrl}${event.id}/`;
+    static async update(projectId: number, event: Event): Promise<Event> {
+        const data = { data: this.eventToApiRepr(event) };
+        const url = `${this.apiBaseUrl}${projectId}/events/${event.id}/`;
         const response = await fetch(url, {
             headers: {
                 //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
@@ -37,14 +51,15 @@ export default class EventsService {
 
         const json = await response.json();
 
-        if (response.status >= 400) {
-            throw new Error(JSON.stringify(json, null, 2));
+        if (!response.ok) {
+            console.error(json);
+            throw new Error('HTTP error: status: ' + response.status);
         }
 
         return new Event().deserialize(json);
     }
 
-    private eventToApiRepr(event: Event): any {
+    private static eventToApiRepr(event: Event): any {
         const countryCode = countryCodes.find((country: CountryCode) => country.name === event.country)?.code;
         return {
             ...event,

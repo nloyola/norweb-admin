@@ -1,6 +1,7 @@
-import { IPerson, Person } from '@app/models/people';
+import { PaginatedResponse } from '@app/models';
+import { IProject, Project } from '@app/models/projects';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
-import { useDebounce, useQuery } from '@app/utils/utils';
+import { stringAvatar, useDebounce } from '@app/utils/utils';
 import {
     Paper,
     Table,
@@ -21,10 +22,8 @@ import {
     Pagination
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import HighlightOffSharpIcon from '@mui/icons-material/HighlightOffSharp';
-import { PaginatedResponse } from '@app/models';
-import { PeopleService } from '@app/services/people/PeopleService';
 
 type LocationState = {
     page?: number;
@@ -32,19 +31,19 @@ type LocationState = {
 };
 
 type PaginationData = {
-    pagedResults?: PaginatedResponse<IPerson>;
+    pagedResults?: PaginatedResponse<IProject>;
     count: number;
 };
 
-export function PeopleTable() {
+export function ProjectsTable() {
     const location = useLocation();
     const paginationState = location.state as LocationState;
 
     const [page, setPage] = useState(paginationState?.page || 1);
     const [search, setSearch] = useState(paginationState?.search || '');
     const [data, setData] = useState<PaginationData>({ count: 0 });
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     const debouncedSearchTerm = useDebounce(search, 400);
 
@@ -69,7 +68,7 @@ export function PeopleTable() {
             setLoading(true);
             try {
                 // if response.next is NULL, then user is on LAST PAGE
-                const pagedResults = await PeopleService.paginate(page, search);
+                const pagedResults = await ProjectsService.paginate(page, search);
                 setData({
                     ...data,
                     pagedResults,
@@ -112,17 +111,18 @@ export function PeopleTable() {
                 {!loading && error === '' && (
                     <>
                         <TableContainer component={Paper}>
-                            <Table size="small" aria-label="people" sx={{ minWidth: 300 }}>
+                            <Table size="small" aria-label="projects" sx={{ minWidth: 300 }}>
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>Name</TableCell>
-                                        <TableCell>Email</TableCell>
+                                        <TableCell>Start</TableCell>
+                                        <TableCell>End</TableCell>
                                         <TableCell align="right"></TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {(data.pagedResults?.results || []).map((p, index) => {
-                                        const person = new Person().deserialize(p);
+                                        const project = new Project().deserialize(p);
                                         return (
                                             <TableRow
                                                 key={index}
@@ -137,17 +137,14 @@ export function PeopleTable() {
                                                             gap: 1
                                                         }}
                                                     >
-                                                        <Avatar
-                                                            variant="rounded"
-                                                            src={person.photo}
-                                                            sx={{ width: 24, height: 24 }}
-                                                        />
-                                                        {person.name()}
+                                                        <Avatar {...stringAvatar(project.name, 10, 24, 24)}></Avatar>
+                                                        {project.name}
                                                     </Box>
                                                 </TableCell>
-                                                <TableCell>{person.email}</TableCell>
+                                                <TableCell>{project.startDate.toLocaleDateString()}</TableCell>
+                                                <TableCell>{project.endDate.toLocaleDateString()}</TableCell>
                                                 <TableCell align="right">
-                                                    <Link to={`/people/${person.id}`} state={{ page, search }}>
+                                                    <Link to={`/projects/${project.id}`} state={{ page, search }}>
                                                         <Button size="small" variant="outlined">
                                                             View
                                                         </Button>

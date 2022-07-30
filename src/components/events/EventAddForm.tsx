@@ -45,7 +45,7 @@ type EventAddFormProps = {
     onCancel: () => void;
 };
 
-const EventAddForm = ({ onSubmit, onCancel }: EventAddFormProps) => {
+export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
     const {
         control,
         handleSubmit,
@@ -192,6 +192,4 @@ const EventAddForm = ({ onSubmit, onCancel }: EventAddFormProps) => {
             </form>
         </LocalizationProvider>
     );
-};
-
-export default EventAddForm;
+}

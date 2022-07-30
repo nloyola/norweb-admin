@@ -114,7 +114,7 @@ export function projectPropertySchema(project: Project): PropertiesSchema {
         status: {
             propName: 'status',
             label: 'Status',
-            value: statusToLabel(project.status) ?? 'Not available',
+            value: project.status ? statusToLabel(project.status) : 'Not available',
             propertyChanger: 'radio',
             changerPropsExtra: {
                 value: project.status,

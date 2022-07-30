@@ -12,13 +12,13 @@ import {
     Avatar,
     Box
 } from '@mui/material';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 type EventsTableProps = {
-    events: IEvent[];
+    events?: IEvent[];
 };
 
-const EventsTable = ({ events }: EventsTableProps) => {
+export function EventsTable({ events }: EventsTableProps) {
     return (
         <TableContainer component={Paper}>
             <Table size="small" aria-label="events" sx={{ minWidth: 300 }}>
@@ -33,7 +33,7 @@ const EventsTable = ({ events }: EventsTableProps) => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {events.map((p, index) => {
+                    {(events || []).map((p, index) => {
                         const event = new Event().deserialize(p);
                         return (
                             <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
@@ -55,7 +55,7 @@ const EventsTable = ({ events }: EventsTableProps) => {
                                 <TableCell>{event.startDate.toLocaleDateString()}</TableCell>
                                 <TableCell>{event.endDate.toLocaleDateString()}</TableCell>
                                 <TableCell align="right">
-                                    <Link href={`/events/${event.id}`}>
+                                    <Link to={`${event.id}`}>
                                         <Button size="small" variant="outlined">
                                             View
                                         </Button>
@@ -68,6 +68,4 @@ const EventsTable = ({ events }: EventsTableProps) => {
             </Table>
         </TableContainer>
     );
-};
-
-export default EventsTable;
+}
