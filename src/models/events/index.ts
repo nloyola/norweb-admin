@@ -1,2 +1,2 @@
-export * from './event.model';
-export * from './event-type.enum';
+export * from './Event';
+export * from './EventType';

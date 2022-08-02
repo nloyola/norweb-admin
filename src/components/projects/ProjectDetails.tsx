@@ -1,4 +1,4 @@
-import { createElement, useContext, useState } from 'react';
+import { createElement, FC, useContext, useState } from 'react';
 import { ProjectContext } from '@app/pages/projects/ProjectPage';
 import { PropertiesGrid, PropertyChangers, PropertyInfo } from '@app/components/PropertiesGrid/PropertiesGrid';
 import { PropertyChangerProps } from '@app/components/PropertyChanger/PropertyChanger';
@@ -16,7 +16,7 @@ export function ProjectDetails() {
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
 
-    if (project === undefined || project.name === undefined) {
+    if (!project || !project.name) {
         navigate('../');
     }
 
@@ -29,11 +29,15 @@ export function ProjectDetails() {
 
     const handleClose = <T extends unknown>(newValue?: T) => {
         const saveData = async () => {
-            if (newValue === null) {
+            if (!newValue) {
                 return;
             }
 
             try {
+                if (!project || !setProject) {
+                    throw new Error('setProject is invalid');
+                }
+
                 const newValues: any = { ...project };
                 newValues[propInfo.propName] = newValue;
 
@@ -56,6 +60,10 @@ export function ProjectDetails() {
     };
 
     const propertyToElement = (propInfo: PropertyInfo<unknown>) => {
+        if (!propInfo.propertyChanger) {
+            throw Error('property changer is undefined');
+        }
+
         if (PropertyChangers[propInfo.propertyChanger] === undefined) {
             throw Error(`property changer is invalid: ${propInfo.propertyChanger}`);
         }
@@ -69,14 +77,14 @@ export function ProjectDetails() {
             ...propInfo.changerPropsExtra
         };
 
-        return createElement<PropertyChangerProps<unknown>>(PropertyChangers[propInfo.propertyChanger], props);
+        return createElement<PropertyChangerProps<unknown>>(PropertyChangers[propInfo.propertyChanger] as FC, props);
     };
 
     return (
         <>
             {saving && <CircularProgress />}
             {!saving && error !== '' && <Alert severity="error">Error in backend adding a project: {error}</Alert>}
-            {!saving && error === '' && (
+            {!saving && error === '' && project && (
                 <>
                     <PropertiesGrid schema={schema} handleChange={onPropChange} />
                     <Stack spacing={2} direction="row" mt={5}>

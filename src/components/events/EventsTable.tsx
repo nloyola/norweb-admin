@@ -1,4 +1,4 @@
-import { IEvent, Event } from '@app/models/events';
+import { Event } from '@app/models/events';
 import { stringAvatar } from '@app/utils/utils';
 import {
     Paper,
@@ -15,7 +15,7 @@ import {
 import { Link } from 'react-router-dom';
 
 type EventsTableProps = {
-    events?: IEvent[];
+    events?: Event[];
 };
 
 export function EventsTable({ events }: EventsTableProps) {
@@ -33,8 +33,7 @@ export function EventsTable({ events }: EventsTableProps) {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {(events || []).map((p, index) => {
-                        const event = new Event().deserialize(p);
+                    {(events || []).map((event, index) => {
                         return (
                             <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                 <TableCell>
@@ -52,8 +51,8 @@ export function EventsTable({ events }: EventsTableProps) {
                                 </TableCell>
                                 <TableCell>{event.venue}</TableCell>
                                 <TableCell>{event.organizer}</TableCell>
-                                <TableCell>{event.startDate.toLocaleDateString()}</TableCell>
-                                <TableCell>{event.endDate.toLocaleDateString()}</TableCell>
+                                <TableCell>{new Date(event.startDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{new Date(event.endDate).toLocaleDateString()}</TableCell>
                                 <TableCell align="right">
                                     <Link to={`${event.id}`}>
                                         <Button size="small" variant="outlined">

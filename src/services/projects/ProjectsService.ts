@@ -1,11 +1,11 @@
 import { CountryCode, countryCodes, PaginatedResponse } from '@app/models';
-import { IProject, Project } from '@app/models/projects';
+import { Project } from '@app/models/projects';
 import format from 'date-fns/format';
 
 export class ProjectsService {
     private static apiBaseUrl = '/api/projects/';
 
-    static async get(id: number): Promise<IProject> {
+    static async get(id: number): Promise<Project> {
         const url = this.apiBaseUrl + `${id}/`;
         const response = await fetch(url);
         const result = await response.json();
@@ -17,7 +17,7 @@ export class ProjectsService {
         return result;
     }
 
-    static async paginate(page: number, search: string): Promise<PaginatedResponse<IProject>> {
+    static async paginate(page: number, search: string): Promise<PaginatedResponse<Project>> {
         let url = this.apiBaseUrl + `?page=${page}`;
         if (search !== '') {
             url = `${url}&search=${search}`;
@@ -47,8 +47,6 @@ export class ProjectsService {
             console.error(result);
             throw new Error('HTTP error: status: ' + response.status);
         }
-        console.log(result);
-
         return true;
     }
 
@@ -70,15 +68,13 @@ export class ProjectsService {
             throw new Error(JSON.stringify(json, null, 2));
         }
 
-        return new Project().deserialize(json);
+        return json;
     }
 
     private static projectToApiRepr(project: Project): any {
-        const countryCode = countryCodes.find((country: CountryCode) => country.name === project.country)?.code;
+        const countryCode = countryCodes.find((country: CountryCode) => country.name === project.countryCode)?.code;
         return {
             ...project,
-            startDate: format(project.startDate, 'yyy-MM-dd'),
-            endDate: format(project.endDate, 'yyy-MM-dd'),
             countryCode,
             events: undefined
         };

@@ -4,19 +4,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Alert, Button, CircularProgress, Grid, IconButton, Slide, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { IProject, Project } from '@app/models/projects';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import CloseIcon from '@mui/icons-material/Close';
 import DateSelectForm from '@app/components/DateSelectForm';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Project } from '@app/models/projects';
 
 type FormInputs = {
     name: string;
     shorthand: string;
-    startDate: Date;
-    endDate: Date;
+    startDate: Date | null;
+    endDate: Date | null;
     description: string;
     goals: string;
     vision: string;
@@ -80,11 +80,10 @@ const ProjectAddForm = () => {
         const saveData = async () => {
             try {
                 setSaving(true);
-                const project = new Project().deserialize({
+                await ProjectsService.add({
                     ...data,
                     keywords: data.keywords.join(' ')
-                } as IProject);
-                await ProjectsService.add(project);
+                } as Project);
 
                 const action = (key: SnackbarKey) => (
                     <Button onClick={() => closeSnackbar(key)}>

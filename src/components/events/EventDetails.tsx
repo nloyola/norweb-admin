@@ -1,4 +1,4 @@
-import { createElement, useContext, useEffect, useState } from 'react';
+import { createElement, FC, useContext, useEffect, useState } from 'react';
 import { Event } from '@app/models/events';
 import { Alert, CircularProgress, Fab, Stack } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
@@ -21,7 +21,7 @@ export function EventDetails() {
     const [saving, setSaving] = useState(false);
     const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
 
-    if (project === undefined || project.name === undefined) {
+    if (!project || !project.name) {
         navigate('../');
     }
 
@@ -33,9 +33,12 @@ export function EventDetails() {
                 return;
             }
 
+            if (!project || !project.id) {
+                return;
+            }
+
             try {
-                const raw = await EventsService.get(project.id, params.eventId);
-                const e = new Event().deserialize(raw);
+                const e = await EventsService.get(project.id, Number(params.eventId));
                 setEvent(e);
             } catch (err) {
                 setError(err instanceof Error ? err.message : JSON.stringify(err));
@@ -57,6 +60,10 @@ export function EventDetails() {
                 return;
             }
 
+            if (!project || !project.id) {
+                throw new Error('invalid project');
+            }
+
             try {
                 const newValues: any = { ...event };
                 newValues[propInfo.propName] = newValue;
@@ -76,6 +83,9 @@ export function EventDetails() {
     };
 
     const propertyToElement = (propInfo: PropertyInfo<unknown>) => {
+        if (propInfo.propertyChanger === undefined) {
+            throw new Error('property changer is undefined');
+        }
         if (PropertyChangers[propInfo.propertyChanger] === undefined) {
             throw Error(`property changer is invalid: ${propInfo.propertyChanger}`);
         }
@@ -89,7 +99,7 @@ export function EventDetails() {
             ...propInfo.changerPropsExtra
         };
 
-        return createElement<PropertyChangerProps<unknown>>(PropertyChangers[propInfo.propertyChanger], props);
+        return createElement<PropertyChangerProps<unknown>>(PropertyChangers[propInfo.propertyChanger] as FC, props);
     };
 
     const backClicked = () => {
@@ -97,6 +107,10 @@ export function EventDetails() {
     };
 
     const schema = eventPropertySchema(event);
+
+    if (!project || !project.name) {
+        navigate('../');
+    }
 
     return (
         <>

@@ -1,10 +1,10 @@
-import { Person } from '@app/models/people';
 import { useEffect, useState } from 'react';
 import { Alert, CircularProgress, Fab, Stack } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { PersonBio } from '@app/components/people/PersonBio/PersonBio';
+import { PersonBio } from '@app/components/people/PersonBio';
 import { PeopleService } from '@app/services/people/PeopleService';
+import { Person } from '@app/models/people';
 
 export function PersonPage() {
     const location = useLocation();
@@ -23,8 +23,7 @@ export function PersonPage() {
             }
 
             try {
-                const raw = await PeopleService.get(params.personId);
-                const p = new Person().deserialize(raw);
+                const p = await PeopleService.get(params.personId);
                 setPerson(p);
             } catch (err) {
                 setError(err instanceof Error ? err.message : JSON.stringify(err));

@@ -1,4 +1,3 @@
-import { CountryCode, countryCodes } from '@app/models';
 import { Event } from '@app/models/events';
 import format from 'date-fns/format';
 
@@ -34,7 +33,7 @@ export class EventsService {
             throw new Error('HTTP error: status: ' + response.status);
         }
 
-        return new Event().deserialize(result);
+        return result;
     }
 
     static async update(projectId: number, event: Event): Promise<Event> {
@@ -56,16 +55,14 @@ export class EventsService {
             throw new Error('HTTP error: status: ' + response.status);
         }
 
-        return new Event().deserialize(json);
+        return json;
     }
 
     private static eventToApiRepr(event: Event): any {
-        const countryCode = countryCodes.find((country: CountryCode) => country.name === event.country)?.code;
         return {
             ...event,
             startDate: format(event.startDate, 'yyy-MM-dd'),
-            endDate: format(event.endDate, 'yyy-MM-dd'),
-            countryCode
+            endDate: format(event.endDate, 'yyy-MM-dd')
         };
     }
 }

@@ -1,14 +1,13 @@
-import { EventFormInputs } from '@app/components/events/EventAddForm/EventAddForm';
 import { Alert, Button, CircularProgress, IconButton, Slide, Stack, Typography } from '@mui/material';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import { useContext, useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import CloseIcon from '@mui/icons-material/Close';
-import { Event, IEvent } from '@app/models/events';
 import { useNavigate } from 'react-router-dom';
 import { ProjectContext } from '@app/pages/projects/ProjectPage';
-import { EventAddForm } from './EventAddForm';
+import { EventAddForm, EventFormInputs } from './EventAddForm';
 import { EventsService } from '@app/services/events/EventsService';
+import { EventType } from '@app/models/events';
 
 export function EventAdd() {
     const navigate = useNavigate();
@@ -21,13 +20,31 @@ export function EventAdd() {
     const handleSubmit: SubmitHandler<EventFormInputs> = (data) => {
         const saveData = async () => {
             try {
-                if (!project.id) {
+                if (!project || !project.id) {
                     return;
                 }
 
+                if (data.startDate === null) {
+                    throw Error('start date is null');
+                }
+
+                if (data.endDate === null) {
+                    throw Error('end date is null');
+                }
+
                 setSaving(true);
-                const event = new Event().deserialize(data as IEvent);
-                await EventsService.add(project.id, event);
+                await EventsService.add(project.id, {
+                    id: 0,
+                    title: data.title,
+                    description: data.description,
+                    startDate: data.startDate,
+                    endDate: data.endDate,
+                    venue: data.venue,
+                    organizer: data.organizer,
+                    url: data.url,
+                    type: data.type as EventType,
+                    projectId: 0
+                });
 
                 const action = (key: SnackbarKey) => (
                     <Button onClick={() => closeSnackbar(key)}>

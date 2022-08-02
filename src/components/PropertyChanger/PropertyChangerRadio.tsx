@@ -10,21 +10,23 @@ export const PropertyChangerRadio = <T extends unknown>({
     onClose,
     options
 }: PropertyChangerProps<T>) => {
-    const [valueState, setValueState] = React.useState<PropertyOption<T> | null>(
-        options.find((option) => option.id === value)
-    );
+    const option = options?.find((option) => option.id === value);
+    const [valueState, setValueState] = React.useState<PropertyOption<T> | undefined>(option);
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = (event.target as HTMLInputElement).value;
-        setValueState(options.find((option) => option.id === newValue));
+        const opt = options?.find((option) => option.id === newValue);
+        if (opt) {
+            setValueState(opt);
+        }
     };
 
     const handleOk = () => {
-        onClose(valueState.id);
+        onClose(valueState?.id);
     };
 
     const handleCancel = () => {
-        onClose(null);
+        onClose(undefined);
     };
 
     return (
@@ -37,7 +39,7 @@ export const PropertyChangerRadio = <T extends unknown>({
                     name="radio-buttons-group"
                     onChange={handleChange}
                 >
-                    {options.map((option) => (
+                    {(options || []).map((option) => (
                         <FormControlLabel
                             key={option.label}
                             value={option.id}

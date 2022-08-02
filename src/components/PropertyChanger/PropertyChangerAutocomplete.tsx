@@ -10,26 +10,25 @@ export const PropertyChangerAutocomplete = <T extends unknown>({
     onClose,
     options
 }: PropertyChangerProps<T>) => {
-    const [valueState, setValueState] = React.useState<PropertyOption<T> | null>(
-        options.find((option) => option.id === value)
-    );
+    const option = options?.find((option) => option.id === value);
+    const [valueState, setValueState] = React.useState<PropertyOption<T> | undefined>(option);
 
     const handleChange = (_event: any, newValue: any) => {
         setValueState(newValue);
     };
 
     const handleOk = () => {
-        onClose(valueState.id);
+        onClose(valueState?.id);
     };
 
     const handleCancel = () => {
-        onClose(null);
+        onClose(undefined);
     };
 
     return (
         <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel}>
             <Autocomplete
-                options={options}
+                options={options || []}
                 value={valueState}
                 isOptionEqualToValue={(option, value) => option.id === value.id}
                 onChange={handleChange}

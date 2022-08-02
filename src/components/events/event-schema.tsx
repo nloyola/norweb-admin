@@ -27,20 +27,20 @@ export function eventPropertySchema(event: Event | null): PropertiesSchema {
         startDate: {
             propName: 'startDate',
             label: 'Start Date',
-            value: event?.startDate ? event?.startDate.toLocaleDateString() : 'Not available',
+            value: event?.startDate ? new Date(event.startDate).toLocaleDateString() : 'Not available',
             propertyChanger: 'date',
             changerPropsExtra: {
-                value: event?.startDate ? event?.startDate.toLocaleDateString() : null,
+                value: event?.startDate ? new Date(event.startDate).toLocaleDateString() : null,
                 maxDate: event?.endDate
             }
         },
         endDate: {
             propName: 'endDate',
             label: 'End Date',
-            value: event?.endDate ? event?.endDate.toLocaleDateString() : 'Not available',
+            value: event?.endDate ? new Date(event.endDate).toLocaleDateString() : 'Not available',
             propertyChanger: 'date',
             changerPropsExtra: {
-                value: event?.endDate ? event?.endDate.toLocaleDateString() : null,
+                value: event?.endDate ? new Date(event.endDate).toLocaleDateString() : null,
                 minDate: event?.startDate
             }
         },

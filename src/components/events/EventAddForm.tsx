@@ -14,8 +14,8 @@ export type EventFormInputs = {
     venue: string;
     organizer: string;
     url: string;
-    startDate: Date;
-    endDate: Date;
+    startDate: Date | null;
+    endDate: Date | null;
     type: EventType | string;
     status: Status;
 };

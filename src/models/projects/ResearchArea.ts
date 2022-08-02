@@ -1,20 +1,5 @@
-import { DomainEntity, IDomainEntity } from '../domain-entity.model';
+import { DomainEntity } from '../DomainEntity';
 
-export interface IResearchArea extends IDomainEntity {
+export interface IResearchArea extends DomainEntity {
     readonly name: string;
-}
-
-export class ResearchArea extends DomainEntity {
-    readonly name: string;
-
-    deserialize(input: IResearchArea): this {
-        const { name } = input;
-
-        super.deserialize(input);
-
-        Object.assign(this, {
-            name
-        });
-        return this;
-    }
 }

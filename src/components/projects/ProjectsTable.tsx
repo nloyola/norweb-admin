@@ -1,5 +1,5 @@
 import { PaginatedResponse } from '@app/models';
-import { IProject, Project } from '@app/models/projects';
+import { Project } from '@app/models/projects';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { stringAvatar, useDebounce } from '@app/utils/utils';
 import {
@@ -31,7 +31,7 @@ type LocationState = {
 };
 
 type PaginationData = {
-    pagedResults?: PaginatedResponse<IProject>;
+    pagedResults?: PaginatedResponse<Project>;
     count: number;
 };
 
@@ -121,8 +121,7 @@ export function ProjectsTable() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {(data.pagedResults?.results || []).map((p, index) => {
-                                        const project = new Project().deserialize(p);
+                                    {(data.pagedResults?.results || []).map((project, index) => {
                                         return (
                                             <TableRow
                                                 key={index}
@@ -141,8 +140,10 @@ export function ProjectsTable() {
                                                         {project.name}
                                                     </Box>
                                                 </TableCell>
-                                                <TableCell>{project.startDate.toLocaleDateString()}</TableCell>
-                                                <TableCell>{project.endDate.toLocaleDateString()}</TableCell>
+                                                <TableCell>
+                                                    {new Date(project.startDate).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell>{new Date(project.endDate).toLocaleDateString()}</TableCell>
                                                 <TableCell align="right">
                                                     <Link to={`/projects/${project.id}`} state={{ page, search }}>
                                                         <Button size="small" variant="outlined">

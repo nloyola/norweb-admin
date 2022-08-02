@@ -13,7 +13,6 @@ import {
     Typography
 } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
-import { Project } from '@app/models/projects';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import AddIcon from '@mui/icons-material/Add';
 import HighlightOffSharpIcon from '@mui/icons-material/HighlightOffSharp';
@@ -44,14 +43,13 @@ export function Events() {
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!project.id) {
+            if (!project || !setProject) {
                 return;
             }
 
             setLoading(true);
             try {
-                const raw = await ProjectsService.get(project.id);
-                const p = new Project().deserialize(raw);
+                const p = await ProjectsService.get(project.id);
                 setProject(p);
             } catch (err) {
                 setError(err instanceof Error ? err.message : JSON.stringify(err));
@@ -62,11 +60,15 @@ export function Events() {
         fetchData();
     }, []);
 
+    if (!project || !project.name) {
+        navigate('../');
+    }
+
     return (
         <>
             {loading && <CircularProgress />}
             {!loading && error !== '' && <Alert severity="error">{error}</Alert>}
-            {!loading && error === '' && (
+            {!loading && error === '' && project && (
                 <>
                     <Stack spacing={2} mb={2}>
                         <Box

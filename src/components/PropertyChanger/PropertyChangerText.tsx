@@ -27,7 +27,7 @@ export const PropertyChangerText = ({
     };
 
     const handleCancel = () => {
-        onClose(null);
+        onClose(undefined);
     };
 
     return (
@@ -40,7 +40,7 @@ export const PropertyChangerText = ({
                 variant="standard"
                 onChange={handleChange}
                 multiline={multiline}
-                rows={multiline ? 10 : null}
+                rows={multiline ? 10 : undefined}
             />
         </PropertyChanger>
     );

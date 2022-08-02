@@ -2,7 +2,13 @@ import { Grid, TextField } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller } from 'react-hook-form';
 
-const DateSelectForm = ({ names, control, errors }) => {
+type DateSelectFormProps = {
+    names: string[];
+    control: any; // FIXME declare with correct type
+    errors: any; // FIXME declare with correct type
+};
+
+export function DateSelectForm({ names, control, errors }: DateSelectFormProps) {
     return (
         <Grid container spacing={3}>
             <Grid item xs={6} md={6}>
@@ -55,5 +61,5 @@ const DateSelectForm = ({ names, control, errors }) => {
             </Grid>
         </Grid>
     );
-};
+}
 export default DateSelectForm;

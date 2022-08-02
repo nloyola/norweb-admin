@@ -1,6 +1,4 @@
-import { IPerson, Person } from '@app/models/people';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
-import { useDebounce, useQuery } from '@app/utils/utils';
+import { useDebounce } from '@app/utils/utils';
 import {
     Paper,
     Table,
@@ -21,8 +19,9 @@ import {
     Pagination
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import HighlightOffSharpIcon from '@mui/icons-material/HighlightOffSharp';
+import { Person, personName } from '@app/models/people';
 import { PaginatedResponse } from '@app/models';
 import { PeopleService } from '@app/services/people/PeopleService';
 
@@ -32,7 +31,7 @@ type LocationState = {
 };
 
 type PaginationData = {
-    pagedResults?: PaginatedResponse<IPerson>;
+    pagedResults?: PaginatedResponse<Person>;
     count: number;
 };
 
@@ -121,8 +120,7 @@ export function PeopleTable() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {(data.pagedResults?.results || []).map((p, index) => {
-                                        const person = new Person().deserialize(p);
+                                    {(data.pagedResults?.results || []).map((person, index) => {
                                         return (
                                             <TableRow
                                                 key={index}
@@ -142,7 +140,7 @@ export function PeopleTable() {
                                                             src={person.photo}
                                                             sx={{ width: 24, height: 24 }}
                                                         />
-                                                        {person.name()}
+                                                        {personName(person)}
                                                     </Box>
                                                 </TableCell>
                                                 <TableCell>{person.email}</TableCell>

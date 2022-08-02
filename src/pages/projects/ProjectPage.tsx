@@ -1,7 +1,7 @@
 import { Project } from '@app/models/projects';
 import { Alert, Avatar, CircularProgress, Divider, Fab, Paper, Stack, Tab, Typography } from '@mui/material';
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { FC, createContext, useEffect, useMemo, useState, useContext } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { stringAvatar } from '@app/utils/utils';
 import { TabContext, TabList } from '@mui/lab';
@@ -12,15 +12,13 @@ export type ProjectContextType = {
     setProject: (p: Project) => void;
 };
 
-export const ProjectContext = createContext<ProjectContextType>({
-    project: new Project(),
-    setProject: (_p: Project) => {}
-});
+export const ProjectContext = createContext<Partial<ProjectContextType>>({});
 
 export function ProjectPage() {
+    const navigate = useNavigate();
     const location = useLocation();
     const params = useParams();
-    const [project, setProject] = useState<Project>(new Project());
+    const [project, setProject] = useState<Project | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -34,13 +32,8 @@ export function ProjectPage() {
         const fetchData = async () => {
             setLoading(true);
 
-            if (params.projectId === undefined) {
-                return;
-            }
-
             try {
-                const raw = await ProjectsService.get(params.projectId);
-                const p = new Project().deserialize(raw);
+                const p = await ProjectsService.get(Number(params.projectId));
                 setProject(p);
             } catch (err) {
                 setError(err instanceof Error ? err.message : JSON.stringify(err));
@@ -51,13 +44,19 @@ export function ProjectPage() {
         fetchData();
     }, []);
 
+    if (!project || !project.name) {
+        navigate('../');
+    }
+
     return (
-        <Stack spacing={2}>
+        <ProjectContext.Provider value={{ project, setProject }}>
             {loading && <CircularProgress />}
             {!loading && error !== '' && <Alert severity="error">{error}</Alert>}
-            {!loading && error === '' && project === null && <Alert severity="error">Project does not exist</Alert>}
-            {!loading && error === '' && project !== null && (
-                <ProjectContext.Provider value={{ project, setProject }}>
+            {!loading && error === '' && project === undefined && (
+                <Alert severity="error">Project does not exist</Alert>
+            )}
+            {!loading && error === '' && project !== undefined && (
+                <Stack spacing={2}>
                     <Stack spacing={1} direction="row">
                         {project.name && <Avatar {...stringAvatar(project.name)}></Avatar>}
                         <Stack spacing={0}>
@@ -87,8 +86,8 @@ export function ProjectPage() {
                             </TabContext>
                         </Paper>
                     </Stack>
-                </ProjectContext.Provider>
+                </Stack>
             )}
-        </Stack>
+        </ProjectContext.Provider>
     );
 }

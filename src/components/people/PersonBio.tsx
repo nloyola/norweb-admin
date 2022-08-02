@@ -1,7 +1,6 @@
 import React, { ReactElement } from 'react';
-import { IPerson, Person } from '@app/models/people';
+import { Person, personName, personTitles } from '@app/models/people';
 import { Avatar, Grid, Paper, Stack, Typography } from '@mui/material';
-import { useLocation } from 'react-router-dom';
 
 type PersonBioProps = {
     person: Person;
@@ -17,7 +16,7 @@ function personDetails(person: Person): PersonDetails[] {
     const result: PersonDetails[] = [
         {
             label: 'Name',
-            value: person.name()
+            value: personName(person)
         },
         {
             label: 'Gender',
@@ -81,10 +80,10 @@ export function PersonBio({ person }: PersonBioProps) {
                     <Avatar variant="rounded" src={person.photo} sx={{ width: 200, height: 200 }} />
                     <Stack spacing={2}>
                         <Typography component="h1" variant="h3">
-                            {person.name()}
+                            {personName(person)}
                         </Typography>
                         <Typography component="h2" variant="h6">
-                            {person.titles()}
+                            {personTitles(person)}
                         </Typography>
                     </Stack>
                 </Stack>

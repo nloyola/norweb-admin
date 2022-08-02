@@ -21,11 +21,11 @@ export const PropertyChangerDate = ({
     const [valueState, setValueState] = React.useState(value);
 
     const handleOk = () => {
-        onClose(new Date(valueState));
+        onClose(valueState ? new Date(valueState) : undefined);
     };
 
     const handleCancel = () => {
-        onClose(null);
+        onClose(undefined);
     };
 
     return (
@@ -39,7 +39,9 @@ export const PropertyChangerDate = ({
                     inputFormat="yyyy-MM-dd"
                     mask={'____-__-__'}
                     onChange={(newValue) => {
-                        setValueState(newValue);
+                        if (newValue) {
+                            setValueState(newValue);
+                        }
                     }}
                     renderInput={(params) => (
                         <TextField

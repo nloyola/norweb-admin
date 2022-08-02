@@ -1,6 +1,6 @@
 import { Box, Fab, Stack, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { PeopleTable } from '@app/components/people/PeopleTable/PeopleTable';
+import { PeopleTable } from '@app/components/people/PeopleTable';
 
 export function PeoplePage() {
     return (

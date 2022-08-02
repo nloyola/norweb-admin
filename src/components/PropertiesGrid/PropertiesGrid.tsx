@@ -5,15 +5,10 @@ import {
     PropertyChangerRadio,
     PropertyChangerText
 } from '@app/components/PropertyChanger';
-import { PropertyChangerProps, PropertyOption } from '../PropertyChanger/PropertyChanger';
-import { Alert, CircularProgress, createTheme, Grid } from '@mui/material';
+import { PropertyOption } from '../PropertyChanger/PropertyChanger';
+import { createTheme, Grid } from '@mui/material';
 import { ThemeProvider } from '@mui/system';
 import { grey } from '@mui/material/colors';
-import { createElement, useContext, useState } from 'react';
-import { ProjectContext } from '@app/pages/projects/ProjectPage';
-import { projectPropertySchema } from '../projects/ProjectDetails/project-schema';
-import { useNavigate } from 'react-router-dom';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
 
 export const PropertyChangers = {
     autocomplete: PropertyChangerAutocomplete,
