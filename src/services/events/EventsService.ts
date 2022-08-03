@@ -1,5 +1,4 @@
 import { Event } from '@app/models/events';
-import format from 'date-fns/format';
 
 export class EventsService {
     private static apiBaseUrl = '/api/projects/';
@@ -61,8 +60,8 @@ export class EventsService {
     private static eventToApiRepr(event: Event): any {
         return {
             ...event,
-            startDate: format(event.startDate, 'yyy-MM-dd'),
-            endDate: format(event.endDate, 'yyy-MM-dd')
+            startDate: event.startDate,
+            endDate: event.endDate
         };
     }
 }

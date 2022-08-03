@@ -108,15 +108,17 @@ export function EventDetails() {
 
     const schema = eventPropertySchema(event);
 
-    if (!project || !project.name) {
-        navigate('../');
+    if (saving || loading) {
+        return <CircularProgress />;
+    }
+
+    if (error !== '') {
+        return <Alert severity="error">{error}</Alert>;
     }
 
     return (
         <>
-            {(saving || loading) && <CircularProgress />}
-            {!saving && error !== '' && <Alert severity="error">Error in backend adding a event: {error}</Alert>}
-            {!saving && error === '' && (
+            {project && (
                 <>
                     <PropertiesGrid schema={schema} handleChange={onPropChange} />
                     <Stack spacing={2} direction="row" mt={2}>

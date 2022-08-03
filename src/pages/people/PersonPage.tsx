@@ -38,22 +38,24 @@ export function PersonPage() {
         navigate('../', { state: location.state });
     };
 
+    if (loading) {
+        return <CircularProgress />;
+    }
+
+    if (error !== '') {
+        return <Alert severity="error">{error}</Alert>;
+    }
+
     return (
-        <>
-            {loading && <CircularProgress />}
-            {!loading && error === '' && (
-                <Stack spacing={2}>
-                    {person === null && <Alert severity="error">Person does not exist</Alert>}
-                    {person !== null && <PersonBio person={person} />}
-                    <Stack spacing={2} direction="row" mt={2}>
-                        <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
-                            <ArrowBack sx={{ mr: 1 }} />
-                            Back
-                        </Fab>
-                    </Stack>
-                </Stack>
-            )}
-            {!loading && error !== '' && <Alert severity="error">{error}</Alert>}
-        </>
+        <Stack spacing={2}>
+            {person === null && <Alert severity="error">Person does not exist</Alert>}
+            {person !== null && <PersonBio person={person} />}
+            <Stack spacing={2} direction="row" mt={2}>
+                <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
+                    <ArrowBack sx={{ mr: 1 }} />
+                    Back
+                </Fab>
+            </Stack>
+        </Stack>
     );
 }

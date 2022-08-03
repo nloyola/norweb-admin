@@ -19,10 +19,9 @@ export function ProjectPage() {
     const location = useLocation();
     const params = useParams();
     const [project, setProject] = useState<Project | undefined>(undefined);
+    const [tab, setTab] = useState(location.pathname.includes('events') ? '2' : '1');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
-    const [tab, setTab] = useState(location.pathname.includes('events') ? '2' : '1');
 
     const handleTabChange = (_event: React.SyntheticEvent, newTab: string) => {
         setTab(newTab);
@@ -48,15 +47,18 @@ export function ProjectPage() {
         navigate('../');
     }
 
+    if (loading) {
+        return <CircularProgress />;
+    }
+
+    if (error !== '') {
+        return <Alert severity="error">{error}</Alert>;
+    }
+
     return (
         <ProjectContext.Provider value={{ project, setProject }}>
-            {loading && <CircularProgress />}
-            {!loading && error !== '' && <Alert severity="error">{error}</Alert>}
-            {!loading && error === '' && project === undefined && (
-                <Alert severity="error">Project does not exist</Alert>
-            )}
-            {!loading && error === '' && project !== undefined && (
-                <Stack spacing={2}>
+            {project && (
+                <Stack spacing={1}>
                     <Stack spacing={1} direction="row">
                         {project.name && <Avatar {...stringAvatar(project.name)}></Avatar>}
                         <Stack spacing={0}>
@@ -69,12 +71,12 @@ export function ProjectPage() {
                         </Stack>
                     </Stack>
                     <Divider />
-                    <Stack spacing={2}>
-                        <Paper
-                            sx={{
-                                p: 3
-                            }}
-                        >
+                    <Paper
+                        sx={{
+                            p: 3
+                        }}
+                    >
+                        <Stack spacing={2}>
                             <TabContext value={tab}>
                                 <Box mb={3} sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                     <TabList onChange={handleTabChange} aria-label="project-tabs">
@@ -82,10 +84,12 @@ export function ProjectPage() {
                                         <Tab label="Events" value="2" component={Link} to="events" />
                                     </TabList>
                                 </Box>
+                                {/*
+                                 */}
                                 <Outlet />
                             </TabContext>
-                        </Paper>
-                    </Stack>
+                        </Stack>
+                    </Paper>
                 </Stack>
             )}
         </ProjectContext.Provider>

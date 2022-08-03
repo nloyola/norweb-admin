@@ -1,7 +1,7 @@
 import { Box, Fab, Stack, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { ProjectsTable } from '@app/components/projects/ProjectsTable';
 import { Link } from 'react-router-dom';
+import { ProjectsSearchableTable } from '@app/components/projects/ProjectsSearchableTable';
 
 export function ProjectsPage() {
     return (
@@ -22,7 +22,7 @@ export function ProjectsPage() {
                     </Fab>
                 </Box>
             </Stack>
-            <ProjectsTable />
+            <ProjectsSearchableTable />
         </>
     );
 }

@@ -1,26 +1,33 @@
-import { createElement, FC, useContext, useState } from 'react';
+import { createElement, FC, useContext, useEffect, useState } from 'react';
 import { ProjectContext } from '@app/pages/projects/ProjectPage';
 import { PropertiesGrid, PropertyChangers, PropertyInfo } from '@app/components/PropertiesGrid/PropertiesGrid';
 import { PropertyChangerProps } from '@app/components/PropertyChanger/PropertyChanger';
 import { projectPropertySchema } from './project-schema';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, CircularProgress, Fab, Stack } from '@mui/material';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { ArrowBack } from '@mui/icons-material';
+import { useProject } from '@app/hooks/useProject';
 
+// ProjectContext is used here because, on this page, the use can modify the project's name or shorthand
+// If they are modified, the parent page has to know about it, therefore they share this context
 export function ProjectDetails() {
+    const params = useParams();
     const navigate = useNavigate();
     const { project, setProject } = useContext(ProjectContext);
     const [open, setOpen] = useState(false);
     const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
-    const [error, setError] = useState('');
+    const [saveError, setSaveError] = useState('');
     const [saving, setSaving] = useState(false);
+    const { error, loading, project: reloadedProject, loadProject } = useProject(Number(params.projectId));
 
-    if (!project || !project.name) {
-        navigate('../');
-    }
-
-    const schema = projectPropertySchema(project);
+    // it is possible that the page was reloaded by the user, in this case the project must be retrieved from the backend
+    useEffect(() => {
+        loadProject();
+        if (setProject && reloadedProject) {
+            setProject(reloadedProject);
+        }
+    }, []);
 
     const onPropChange = (propInfo: PropertyInfo<unknown>) => {
         setPropInfo(propInfo);
@@ -45,7 +52,7 @@ export function ProjectDetails() {
                 setProject(modifiedProject);
             } catch (err) {
                 console.error(err);
-                setError(err instanceof Error ? err.message : JSON.stringify(err));
+                setSaveError(err instanceof Error ? err.message : JSON.stringify(err));
             } finally {
                 setSaving(false);
             }
@@ -80,22 +87,26 @@ export function ProjectDetails() {
         return createElement<PropertyChangerProps<unknown>>(PropertyChangers[propInfo.propertyChanger] as FC, props);
     };
 
+    if (loading || saving || !project) {
+        return <CircularProgress />;
+    }
+
+    if (error !== '' || saveError !== '') {
+        return <Alert severity="error">{error}</Alert>;
+    }
+
+    const schema = projectPropertySchema(project);
+
     return (
         <>
-            {saving && <CircularProgress />}
-            {!saving && error !== '' && <Alert severity="error">Error in backend adding a project: {error}</Alert>}
-            {!saving && error === '' && project && (
-                <>
-                    <PropertiesGrid schema={schema} handleChange={onPropChange} />
-                    <Stack spacing={2} direction="row" mt={5}>
-                        <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
-                            <ArrowBack sx={{ mr: 1 }} />
-                            Back
-                        </Fab>
-                    </Stack>
-                    {open && propertyToElement(propInfo)}
-                </>
-            )}
+            <PropertiesGrid schema={schema} handleChange={onPropChange} />
+            <Stack spacing={2} direction="row" mt={5}>
+                <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
+                    <ArrowBack sx={{ mr: 1 }} />
+                    Back
+                </Fab>
+            </Stack>
+            {open && propertyToElement(propInfo)}
         </>
     );
 }

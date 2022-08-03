@@ -1,6 +1,6 @@
 import { Box, Fab, Stack, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { PeopleTable } from '@app/components/people/PeopleTable';
+import { PeopleSearchableTable } from '@app/components/people/PeopleSearchableTable';
 
 export function PeoplePage() {
     return (
@@ -21,7 +21,7 @@ export function PeoplePage() {
                     </Fab>
                 </Box>
             </Stack>
-            <PeopleTable />
+            <PeopleSearchableTable />
         </>
     );
 }

@@ -1,6 +1,5 @@
 import { CountryCode, countryCodes, PaginatedResponse } from '@app/models';
 import { Project } from '@app/models/projects';
-import format from 'date-fns/format';
 
 export class ProjectsService {
     private static apiBaseUrl = '/api/projects/';
