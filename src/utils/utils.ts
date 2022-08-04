@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import format from 'date-fns/format';
 
 // see https://usehooks-ts.com/react-hook/use-debounce
 export function useDebounce<T>(value: T, delay?: number): T {
@@ -27,7 +27,7 @@ export function getAsString(value: string | string[]): string {
     return value;
 }
 
-export function stringToColor(string: string) {
+export function stringToColor(string: string): string {
     let hash = 0;
     let i: number;
 
@@ -58,4 +58,11 @@ export function stringAvatar(name: string, fontSize: number = 12, width: number 
         },
         children: `${upper.split(' ')[0][0]}${upper.split(' ')[1][0]}`
     };
+}
+
+export function dateToString(date: Date | string): string {
+    if (date instanceof Date) {
+        return format(date, 'yyy-MM-dd');
+    }
+    return date;
 }

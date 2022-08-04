@@ -1,7 +1,7 @@
 import { Project } from '@app/models/projects';
 import { Alert, Avatar, CircularProgress, Divider, Paper, Stack, Tab, Typography } from '@mui/material';
 import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
-import { createContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { stringAvatar } from '@app/utils/utils';
 import { TabContext, TabList } from '@mui/lab';
@@ -9,10 +9,8 @@ import { Box } from '@mui/system';
 
 export type ProjectContextType = {
     project: Project;
-    setProject: (p: Project) => void;
+    updateProject: (p: Project) => void;
 };
-
-export const ProjectContext = createContext<Partial<ProjectContextType>>({});
 
 export function ProjectPage() {
     const location = useLocation();

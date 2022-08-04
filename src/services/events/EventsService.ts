@@ -1,4 +1,5 @@
 import { Event } from '@app/models/events';
+import { dateToString } from '@app/utils/utils';
 
 export class EventsService {
     private static apiBaseUrl = '/api/projects/';
@@ -60,8 +61,8 @@ export class EventsService {
     private static eventToApiRepr(event: Event): any {
         return {
             ...event,
-            startDate: event.startDate,
-            endDate: event.endDate
+            startDate: dateToString(event.startDate),
+            endDate: dateToString(event.endDate)
         };
     }
 }

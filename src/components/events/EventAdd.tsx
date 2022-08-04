@@ -1,17 +1,17 @@
 import { Alert, Button, CircularProgress, IconButton, Slide, Stack, Typography } from '@mui/material';
 import { SnackbarKey, useSnackbar } from 'notistack';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
 import CloseIcon from '@mui/icons-material/Close';
-import { useNavigate } from 'react-router-dom';
-import { ProjectContext } from '@app/pages/projects/ProjectPage';
+import { useNavigate, useParams } from 'react-router-dom';
 import { EventAddForm, EventFormInputs } from './EventAddForm';
 import { EventsService } from '@app/services/events/EventsService';
 import { EventType } from '@app/models/events';
 
 export function EventAdd() {
     const navigate = useNavigate();
-    const { project } = useContext(ProjectContext);
+    const params = useParams();
+    const projectId = Number(params.projectId);
 
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
     const [error, setError] = useState('');
@@ -20,10 +20,6 @@ export function EventAdd() {
     const handleSubmit: SubmitHandler<EventFormInputs> = (data) => {
         const saveData = async () => {
             try {
-                if (!project || !project.id) {
-                    return;
-                }
-
                 if (data.startDate === null) {
                     throw Error('start date is null');
                 }
@@ -33,7 +29,7 @@ export function EventAdd() {
                 }
 
                 setSaving(true);
-                await EventsService.add(project.id, {
+                await EventsService.add(projectId, {
                     id: 0,
                     title: data.title,
                     description: data.description,
@@ -80,18 +76,20 @@ export function EventAdd() {
         navigate('../');
     };
 
+    if (saving) {
+        return <CircularProgress />;
+    }
+
+    if (error !== '') {
+        return <Alert severity="error">Error in backend adding a project: {error}</Alert>;
+    }
+
     return (
-        <>
-            {saving && <CircularProgress />}
-            {!saving && error !== '' && <Alert severity="error">Error in backend adding a project: {error}</Alert>}
-            {!saving && error === '' && (
-                <Stack spacing={0}>
-                    <Typography component="h1" variant="h4" my={5}>
-                        Add an Event
-                    </Typography>
-                    <EventAddForm onSubmit={handleSubmit} onCancel={handleCancel} />
-                </Stack>
-            )}
-        </>
+        <Stack spacing={0}>
+            <Typography component="h1" variant="h4" my={5}>
+                Add an Event
+            </Typography>
+            <EventAddForm onSubmit={handleSubmit} onCancel={handleCancel} />
+        </Stack>
     );
 }

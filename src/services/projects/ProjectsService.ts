@@ -1,5 +1,6 @@
 import { CountryCode, countryCodes, PaginatedResponse } from '@app/models';
 import { Project } from '@app/models/projects';
+import { dateToString } from '@app/utils/utils';
 
 export class ProjectsService {
     private static apiBaseUrl = '/api/projects/';
@@ -75,6 +76,8 @@ export class ProjectsService {
         return {
             ...project,
             countryCode,
+            startDate: dateToString(project.startDate),
+            endDate: dateToString(project.endDate),
             events: undefined
         };
     }

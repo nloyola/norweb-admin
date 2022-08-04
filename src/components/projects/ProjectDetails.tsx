@@ -14,7 +14,7 @@ import { ProjectContextType } from '@app/pages/projects/ProjectPage';
 export function ProjectDetails() {
     const params = useParams();
     const navigate = useNavigate();
-    const { project, setProject: updateProject }: ProjectContextType = useOutletContext();
+    const { project, updateProject }: ProjectContextType = useOutletContext();
     const [open, setOpen] = useState(false);
     const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
     const [saveError, setSaveError] = useState('');
