@@ -1,53 +1,26 @@
 import { createElement, FC, useContext, useEffect, useState } from 'react';
-import { Event } from '@app/models/events';
 import { Alert, CircularProgress, Fab, Stack } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { PropertyChangerProps } from '@app/components/PropertyChanger/PropertyChanger';
 import { PropertiesGrid, PropertyChangers, PropertyInfo } from '@app/components/PropertiesGrid/PropertiesGrid';
-import { ProjectContext } from '@app/pages/projects/ProjectPage';
 import { useNavigate, useParams } from 'react-router-dom';
 import { EventsService } from '@app/services/events/EventsService';
 import { eventPropertySchema } from './event-schema';
+import { useEvent } from '@app/hooks/useEvent';
 
 export function EventDetails() {
     const navigate = useNavigate();
     const params = useParams();
+    const projectId = Number(params.projectId);
+    const eventId = Number(params.eventId);
 
-    const { project } = useContext(ProjectContext);
-    const [open, setOpen] = useState(false);
-    const [event, setEvent] = useState<Event | null>(null);
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+    const { error, loading, event, loadEvent, updateEvent } = useEvent(projectId, eventId);
     const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
+    const [open, setOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState('');
 
-    if (!project || !project.name) {
-        navigate('../');
-    }
-
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-
-            if (params.projectId === undefined) {
-                return;
-            }
-
-            if (!project || !project.id) {
-                return;
-            }
-
-            try {
-                const e = await EventsService.get(project.id, Number(params.eventId));
-                setEvent(e);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : JSON.stringify(err));
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
+    useEffect(() => loadEvent, []);
 
     const onPropChange = (propInfo: PropertyInfo<unknown>) => {
         setPropInfo(propInfo);
@@ -60,19 +33,15 @@ export function EventDetails() {
                 return;
             }
 
-            if (!project || !project.id) {
-                throw new Error('invalid project');
-            }
-
             try {
                 const newValues: any = { ...event };
                 newValues[propInfo.propName] = newValue;
 
-                const modifiedEvent = await EventsService.update(project.id, newValues);
-                setEvent(modifiedEvent);
+                const modifiedEvent = await EventsService.update(projectId, newValues);
+                updateEvent(modifiedEvent);
             } catch (err) {
                 console.error(err);
-                setError(err instanceof Error ? err.message : JSON.stringify(err));
+                setSaveError(err instanceof Error ? err.message : JSON.stringify(err));
             } finally {
                 setSaving(false);
             }
@@ -106,9 +75,7 @@ export function EventDetails() {
         navigate('../');
     };
 
-    const schema = eventPropertySchema(event);
-
-    if (saving || loading) {
+    if (loading || saving || !event) {
         return <CircularProgress />;
     }
 
@@ -116,20 +83,22 @@ export function EventDetails() {
         return <Alert severity="error">{error}</Alert>;
     }
 
+    if (saveError !== '') {
+        return <Alert severity="error">{saveError}</Alert>;
+    }
+
+    const schema = eventPropertySchema(event);
+
     return (
         <>
-            {project && (
-                <>
-                    <PropertiesGrid schema={schema} handleChange={onPropChange} />
-                    <Stack spacing={2} direction="row" mt={2}>
-                        <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
-                            <ArrowBack sx={{ mr: 1 }} />
-                            Back
-                        </Fab>
-                    </Stack>
-                    {open && propertyToElement(propInfo)}
-                </>
-            )}
+            <PropertiesGrid schema={schema} handleChange={onPropChange} />
+            <Stack spacing={2} direction="row" mt={2}>
+                <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
+                    <ArrowBack sx={{ mr: 1 }} />
+                    Back
+                </Fab>
+            </Stack>
+            {open && propertyToElement(propInfo)}
         </>
     );
 }

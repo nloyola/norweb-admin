@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 
 // see https://betterprogramming.pub/fetching-data-with-react-72df95683c70
 
-export function useEvent(projectId: number | undefined, eventId: number) {
+export function useEvent(projectId: number, eventId: number) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
     const [serverData, setServerData] = useState<Event | undefined>(undefined);
@@ -22,8 +22,6 @@ export function useEvent(projectId: number | undefined, eventId: number) {
                 // await new Promise((r) => setTimeout(r, 2000));
                 const event = await EventsService.get(projectId, eventId);
                 setServerData(event);
-                setLoading(false);
-                return event;
             } catch (err) {
                 setError(err instanceof Error ? err.message : JSON.stringify(err));
             } finally {
@@ -34,5 +32,12 @@ export function useEvent(projectId: number | undefined, eventId: number) {
         fetchData();
     }, [projectId, eventId]);
 
-    return { error, loading, event: serverData, loadEvent };
+    const updateEvent = useCallback(
+        (updatedEvent: Event) => {
+            setServerData(updatedEvent);
+        },
+        [projectId, eventId]
+    );
+
+    return { error, loading, event: serverData, loadEvent, updateEvent };
 }

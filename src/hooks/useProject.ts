@@ -19,8 +19,6 @@ export function useProject(id: number) {
                 // await new Promise((r) => setTimeout(r, 2000));
                 const project = await ProjectsService.get(id);
                 setServerData(project);
-                setLoading(false);
-                return project;
             } catch (err) {
                 setError(err instanceof Error ? err.message : JSON.stringify(err));
             } finally {
