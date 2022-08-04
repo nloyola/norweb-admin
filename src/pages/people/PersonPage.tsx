@@ -35,7 +35,7 @@ export function PersonPage() {
     }, []);
 
     const backClicked = () => {
-        navigate('../', { state: location.state });
+        navigate(-1);
     };
 
     if (loading) {

@@ -1,30 +1,12 @@
 import { useDebounce } from '@app/utils/utils';
-import {
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Button,
-    Avatar,
-    Box,
-    Stack,
-    TextField,
-    InputAdornment,
-    IconButton,
-    Alert,
-    CircularProgress,
-    Pagination
-} from '@mui/material';
+import { Box, Stack, TextField, InputAdornment, IconButton, Alert, CircularProgress, Pagination } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { URLSearchParamsInit, useLocation, useSearchParams } from 'react-router-dom';
 import HighlightOffSharpIcon from '@mui/icons-material/HighlightOffSharp';
-import { Person, personName } from '@app/models/people';
 import { PaginatedResponse } from '@app/models';
 import { PeopleService } from '@app/services/people/PeopleService';
 import { PeopleTable } from './PeopleTable';
+import { Person } from '@app/models/people';
 
 type LocationState = {
     page?: number;
@@ -38,10 +20,11 @@ type PaginationData = {
 
 export function PeopleSearchableTable() {
     const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
     const paginationState = location.state as LocationState;
 
-    const [page, setPage] = useState(paginationState?.page || 1);
-    const [search, setSearch] = useState(paginationState?.search || '');
+    const [page, setPage] = useState(paginationState?.page || Number(searchParams.get('page')));
+    const [search, setSearch] = useState(paginationState?.search || searchParams.get('search'));
     const [data, setData] = useState<PaginationData>({ count: 0 });
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
@@ -66,10 +49,15 @@ export function PeopleSearchableTable() {
 
     useEffect(() => {
         const fetchData = async () => {
+            const params: any = { page: `${page}` };
+            if (search && search !== '') {
+                params['search'] = search;
+            }
+            setSearchParams(params);
             setLoading(true);
             try {
                 // if response.next is NULL, then user is on LAST PAGE
-                const pagedResults = await PeopleService.paginate(page, search);
+                const pagedResults = await PeopleService.paginate(page, search || '');
                 setData({
                     ...data,
                     pagedResults,
@@ -111,7 +99,7 @@ export function PeopleSearchableTable() {
                 {loading && <CircularProgress />}
                 {!loading && error === '' && (
                     <>
-                        <PeopleTable page={page} search={search} people={data.pagedResults?.results || []} />
+                        <PeopleTable page={page} search={search || ''} people={data.pagedResults?.results || []} />
                         <Box
                             sx={{
                                 display: 'flex',

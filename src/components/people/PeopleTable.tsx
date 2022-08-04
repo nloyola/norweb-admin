@@ -14,12 +14,10 @@ import { Link } from 'react-router-dom';
 import { Person, personName } from '@app/models/people';
 
 type PeopleTableProps = {
-    page: number;
-    search: string;
     people: Person[];
 };
 
-export function PeopleTable({ page, search, people }: PeopleTableProps) {
+export function PeopleTable({ people }: PeopleTableProps) {
     return (
         <TableContainer component={Paper}>
             <Table size="small" aria-label="people" sx={{ minWidth: 300 }}>
@@ -49,7 +47,7 @@ export function PeopleTable({ page, search, people }: PeopleTableProps) {
                                 </TableCell>
                                 <TableCell>{person.email}</TableCell>
                                 <TableCell align="right">
-                                    <Link to={`/people/${person.id}`} state={{ page, search }}>
+                                    <Link to={`/people/${person.id}`}>
                                         <Button size="small" variant="outlined">
                                             View
                                         </Button>
