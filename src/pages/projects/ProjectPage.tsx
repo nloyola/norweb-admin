@@ -1,6 +1,6 @@
 import { Project } from '@app/models/projects';
-import { Alert, Avatar, CircularProgress, Divider, Fab, Paper, Stack, Tab, Typography } from '@mui/material';
-import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Alert, Avatar, CircularProgress, Divider, Paper, Stack, Tab, Typography } from '@mui/material';
+import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 import { createContext, useEffect, useState } from 'react';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { stringAvatar } from '@app/utils/utils';
@@ -15,7 +15,6 @@ export type ProjectContextType = {
 export const ProjectContext = createContext<Partial<ProjectContextType>>({});
 
 export function ProjectPage() {
-    const navigate = useNavigate();
     const location = useLocation();
     const params = useParams();
     const [project, setProject] = useState<Project | undefined>(undefined);
@@ -43,11 +42,7 @@ export function ProjectPage() {
         fetchData();
     }, []);
 
-    if (!project || !project.name) {
-        navigate('../');
-    }
-
-    if (loading) {
+    if (loading || !project) {
         return <CircularProgress />;
     }
 
@@ -56,42 +51,36 @@ export function ProjectPage() {
     }
 
     return (
-        <ProjectContext.Provider value={{ project, setProject }}>
-            {project && (
-                <Stack spacing={1}>
-                    <Stack spacing={1} direction="row">
-                        {project.name && <Avatar {...stringAvatar(project.name)}></Avatar>}
-                        <Stack spacing={0}>
-                            <Typography component="h1" variant="h3">
-                                {project.name}
-                            </Typography>
-                            <Typography component="h2" variant="subtitle1">
-                                {project.shorthand}
-                            </Typography>
-                        </Stack>
-                    </Stack>
-                    <Divider />
-                    <Paper
-                        sx={{
-                            p: 3
-                        }}
-                    >
-                        <Stack spacing={2}>
-                            <TabContext value={tab}>
-                                <Box mb={3} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList onChange={handleTabChange} aria-label="project-tabs">
-                                        <Tab label="Settings" value="1" component={Link} to="" />
-                                        <Tab label="Events" value="2" component={Link} to="events" />
-                                    </TabList>
-                                </Box>
-                                {/*
-                                 */}
-                                <Outlet />
-                            </TabContext>
-                        </Stack>
-                    </Paper>
+        <Stack spacing={1}>
+            <Stack spacing={1} direction="row">
+                {project.name && <Avatar {...stringAvatar(project.name)}></Avatar>}
+                <Stack spacing={0}>
+                    <Typography component="h1" variant="h3">
+                        {project.name}
+                    </Typography>
+                    <Typography component="h2" variant="subtitle1">
+                        {project.shorthand}
+                    </Typography>
                 </Stack>
-            )}
-        </ProjectContext.Provider>
+            </Stack>
+            <Divider />
+            <Paper
+                sx={{
+                    p: 3
+                }}
+            >
+                <Stack spacing={2}>
+                    <TabContext value={tab}>
+                        <Box mb={3} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <TabList onChange={handleTabChange} aria-label="project-tabs">
+                                <Tab label="Settings" value="1" component={Link} to="" />
+                                <Tab label="Events" value="2" component={Link} to="events" />
+                            </TabList>
+                        </Box>
+                        <Outlet context={{ project, updateProject: setProject }} />
+                    </TabContext>
+                </Stack>
+            </Paper>
+        </Stack>
     );
 }

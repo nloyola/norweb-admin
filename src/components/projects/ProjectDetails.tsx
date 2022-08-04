@@ -1,20 +1,20 @@
-import { createElement, FC, useContext, useEffect, useState } from 'react';
-import { ProjectContext } from '@app/pages/projects/ProjectPage';
+import { createElement, FC, useEffect, useState } from 'react';
 import { PropertiesGrid, PropertyChangers, PropertyInfo } from '@app/components/PropertiesGrid/PropertiesGrid';
 import { PropertyChangerProps } from '@app/components/PropertyChanger/PropertyChanger';
 import { projectPropertySchema } from './project-schema';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { Alert, CircularProgress, Fab, Stack } from '@mui/material';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { ArrowBack } from '@mui/icons-material';
 import { useProject } from '@app/hooks/useProject';
+import { ProjectContextType } from '@app/pages/projects/ProjectPage';
 
-// ProjectContext is used here because, on this page, the use can modify the project's name or shorthand
+// useOutletContext is used on this page, because the use can modify the project's name or shorthand
 // If they are modified, the parent page has to know about it, therefore they share this context
 export function ProjectDetails() {
     const params = useParams();
     const navigate = useNavigate();
-    const { project, setProject } = useContext(ProjectContext);
+    const { project, setProject: updateProject }: ProjectContextType = useOutletContext();
     const [open, setOpen] = useState(false);
     const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
     const [saveError, setSaveError] = useState('');
@@ -24,8 +24,9 @@ export function ProjectDetails() {
     // it is possible that the page was reloaded by the user, in this case the project must be retrieved from the backend
     useEffect(() => {
         loadProject();
-        if (setProject && reloadedProject) {
-            setProject(reloadedProject);
+        if (updateProject && reloadedProject) {
+            console.log('using updated project');
+            updateProject(reloadedProject);
         }
     }, []);
 
@@ -41,7 +42,7 @@ export function ProjectDetails() {
             }
 
             try {
-                if (!project || !setProject) {
+                if (!project || !updateProject) {
                     throw new Error('setProject is invalid');
                 }
 
@@ -49,7 +50,7 @@ export function ProjectDetails() {
                 newValues[propInfo.propName] = newValue;
 
                 const modifiedProject = await ProjectsService.update(newValues);
-                setProject(modifiedProject);
+                updateProject(modifiedProject);
             } catch (err) {
                 console.error(err);
                 setSaveError(err instanceof Error ? err.message : JSON.stringify(err));
@@ -87,7 +88,7 @@ export function ProjectDetails() {
         return createElement<PropertyChangerProps<unknown>>(PropertyChangers[propInfo.propertyChanger] as FC, props);
     };
 
-    if (loading || saving || !project) {
+    if (loading || saving) {
         return <CircularProgress />;
     }
 

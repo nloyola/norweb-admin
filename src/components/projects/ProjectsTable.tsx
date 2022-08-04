@@ -1,6 +1,5 @@
-import { PaginatedResponse } from '@app/models';
 import { Project } from '@app/models/projects';
-import { stringAvatar, useDebounce } from '@app/utils/utils';
+import { stringAvatar } from '@app/utils/utils';
 import {
     Paper,
     Table,
@@ -13,12 +12,7 @@ import {
     Avatar,
     Box
 } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
-
-type PaginationData = {
-    pagedResults?: PaginatedResponse<Project>;
-    count: number;
-};
+import { Link } from 'react-router-dom';
 
 type ProjectsTableProps = {
     page: number;
@@ -58,7 +52,10 @@ export function ProjectsTable({ page, search, projects }: ProjectsTableProps) {
                                 <TableCell>{new Date(project.startDate).toLocaleDateString()}</TableCell>
                                 <TableCell>{new Date(project.endDate).toLocaleDateString()}</TableCell>
                                 <TableCell align="right">
-                                    <Link to={`/projects/${project.id}`} state={{ page, search }}>
+                                    <Link
+                                        to={`/projects/${project.id}`}
+                                        state={{ page, search, breadCrumb: { name: project.name } }}
+                                    >
                                         <Button size="small" variant="outlined">
                                             View
                                         </Button>
