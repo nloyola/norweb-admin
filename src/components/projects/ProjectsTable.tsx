@@ -15,12 +15,10 @@ import {
 import { Link } from 'react-router-dom';
 
 type ProjectsTableProps = {
-    page: number;
-    search: string;
     projects: Project[];
 };
 
-export function ProjectsTable({ page, search, projects }: ProjectsTableProps) {
+export function ProjectsTable({ projects }: ProjectsTableProps) {
     return (
         <TableContainer component={Paper}>
             <Table size="small" aria-label="projects" sx={{ minWidth: 300 }}>
@@ -52,10 +50,7 @@ export function ProjectsTable({ page, search, projects }: ProjectsTableProps) {
                                 <TableCell>{new Date(project.startDate).toLocaleDateString()}</TableCell>
                                 <TableCell>{new Date(project.endDate).toLocaleDateString()}</TableCell>
                                 <TableCell align="right">
-                                    <Link
-                                        to={`/projects/${project.id}`}
-                                        state={{ page, search, breadCrumb: { name: project.name } }}
-                                    >
+                                    <Link to={`/projects/${project.id}`}>
                                         <Button size="small" variant="outlined">
                                             View
                                         </Button>

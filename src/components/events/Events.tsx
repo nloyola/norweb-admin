@@ -38,10 +38,10 @@ export function Events() {
     };
 
     const backClicked = () => {
-        navigate('../../..');
+        navigate(-2);
     };
 
-    if (loading) {
+    if (loading || !project) {
         return <CircularProgress />;
     }
 

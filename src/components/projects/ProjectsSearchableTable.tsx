@@ -4,14 +4,9 @@ import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { useDebounce } from '@app/utils/utils';
 import { Box, Stack, TextField, InputAdornment, IconButton, Alert, CircularProgress, Pagination } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import HighlightOffSharpIcon from '@mui/icons-material/HighlightOffSharp';
 import { ProjectsTable } from './ProjectsTable';
-
-type LocationState = {
-    page?: number;
-    search?: string;
-};
 
 type PaginationData = {
     pagedResults?: PaginatedResponse<Project>;
@@ -19,11 +14,14 @@ type PaginationData = {
 };
 
 export function ProjectsSearchableTable() {
-    const location = useLocation();
-    const paginationState = location.state as LocationState;
+    const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
 
-    const [page, setPage] = useState(paginationState?.page || 1);
-    const [search, setSearch] = useState(paginationState?.search || '');
+    const paramsPage = searchParams.get('page');
+    const paramsSearch = searchParams.get('search');
+
+    const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
+    const [search, setSearch] = useState(paramsSearch || '');
+
     const [data, setData] = useState<PaginationData>({ count: 0 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -48,6 +46,17 @@ export function ProjectsSearchableTable() {
 
     useEffect(() => {
         const fetchData = async () => {
+            const params: any = {};
+
+            if (page > 1) {
+                params['page'] = `${page}`;
+            }
+
+            if (search && search !== '') {
+                params['search'] = search;
+            }
+            setSearchParams(params);
+
             setLoading(true);
             try {
                 // if response.next is NULL, then user is on LAST PAGE
@@ -93,7 +102,7 @@ export function ProjectsSearchableTable() {
                 {loading && <CircularProgress />}
                 {!loading && error === '' && (
                     <>
-                        <ProjectsTable page={page} search={search} projects={data.pagedResults?.results || []} />
+                        <ProjectsTable projects={data.pagedResults?.results || []} />
                         <Box
                             sx={{
                                 display: 'flex',

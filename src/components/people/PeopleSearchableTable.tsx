@@ -1,7 +1,7 @@
 import { useDebounce } from '@app/utils/utils';
 import { Box, Stack, TextField, InputAdornment, IconButton, Alert, CircularProgress, Pagination } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { URLSearchParamsInit, useLocation, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import HighlightOffSharpIcon from '@mui/icons-material/HighlightOffSharp';
 import { PaginatedResponse } from '@app/models';
 import { PeopleService } from '@app/services/people/PeopleService';
@@ -19,12 +19,14 @@ type PaginationData = {
 };
 
 export function PeopleSearchableTable() {
-    const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
-    const paginationState = location.state as LocationState;
 
-    const [page, setPage] = useState(paginationState?.page || Number(searchParams.get('page')));
-    const [search, setSearch] = useState(paginationState?.search || searchParams.get('search'));
+    const paramsPage = searchParams.get('page');
+    const paramsSearch = searchParams.get('search');
+
+    const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
+    const [search, setSearch] = useState(paramsSearch || '');
+
     const [data, setData] = useState<PaginationData>({ count: 0 });
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
@@ -49,11 +51,17 @@ export function PeopleSearchableTable() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const params: any = { page: `${page}` };
+            const params: any = {};
+
+            if (page > 1) {
+                params['page'] = `${page}`;
+            }
+
             if (search && search !== '') {
                 params['search'] = search;
             }
             setSearchParams(params);
+
             setLoading(true);
             try {
                 // if response.next is NULL, then user is on LAST PAGE
@@ -99,7 +107,7 @@ export function PeopleSearchableTable() {
                 {loading && <CircularProgress />}
                 {!loading && error === '' && (
                     <>
-                        <PeopleTable page={page} search={search || ''} people={data.pagedResults?.results || []} />
+                        <PeopleTable people={data.pagedResults?.results || []} />
                         <Box
                             sx={{
                                 display: 'flex',

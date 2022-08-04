@@ -1,5 +1,5 @@
 import { Link, RouteObject } from 'react-router-dom';
-import App from './App';
+import { App } from './App';
 import { EventAdd } from './components/events/EventAdd';
 import { EventDetails } from './components/events/EventDetails';
 import { Events } from './components/events/Events';

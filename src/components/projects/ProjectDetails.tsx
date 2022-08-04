@@ -64,7 +64,7 @@ export function ProjectDetails() {
     };
 
     const backClicked = () => {
-        navigate('../..');
+        navigate(-1);
     };
 
     const propertyToElement = (propInfo: PropertyInfo<unknown>) => {
