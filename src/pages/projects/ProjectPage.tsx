@@ -42,14 +42,7 @@ export function ProjectPage() {
 
   return (
     <Stack spacing={1}>
-      <Paper
-        mb={5}
-        sx={{
-          p: 2
-        }}
-      >
-        <ProjectBreadcrumbs project={project} />
-      </Paper>
+      <ProjectBreadcrumbs project={project} />
       <Stack spacing={1} pt={5} direction="row">
         {project.name && <Avatar {...stringAvatar(project.name)}></Avatar>}
         <Stack spacing={0}>

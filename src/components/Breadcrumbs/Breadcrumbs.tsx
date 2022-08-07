@@ -1,4 +1,4 @@
-import { Breadcrumbs as MUIBreadcrumbs, Link, Typography } from '@mui/material';
+import { Breadcrumbs as MUIBreadcrumbs, Link, Paper, Typography } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,23 +12,34 @@ type BreadcrumbsProps = {
   crumbs: Breadcrumb[];
 };
 
+// https://stackoverflow.com/questions/71592649/change-breadcrumb-component-that-was-done-with-react-router-v5-to-react-router-v
+
+// https://pavsaund.com/post/2022-02-23-dynamic-breadcrumbs-and-routes-with-react-router/
+
 export function Breadcrumbs({ crumbs }: BreadcrumbsProps) {
   const navigate = useNavigate();
 
   return (
-    <MUIBreadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
-      {/* {pathnames.length ? <Link onClick={() => navigate('/')}>Home</Link> : <Typography> Home </Typography>} */}
-      {crumbs.map(({ label, route, isLast }) => {
-        if (isLast) {
-          return <Typography key={label}>{label}</Typography>;
-        }
+    <Paper
+      mb={5}
+      sx={{
+        p: 2
+      }}
+    >
+      <MUIBreadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
+        {/* {pathnames.length ? <Link onClick={() => navigate('/')}>Home</Link> : <Typography> Home </Typography>} */}
+        {crumbs.map(({ label, route, isLast }) => {
+          if (isLast) {
+            return <Typography key={label}>{label}</Typography>;
+          }
 
-        return (
-          <Link key={label} underline="hover" color="inherit" onClick={() => navigate(route)}>
-            {label}
-          </Link>
-        );
-      })}
-    </MUIBreadcrumbs>
+          return (
+            <Link key={label} underline="hover" color="inherit" onClick={() => navigate(route)}>
+              {label}
+            </Link>
+          );
+        })}
+      </MUIBreadcrumbs>
+    </Paper>
   );
 }

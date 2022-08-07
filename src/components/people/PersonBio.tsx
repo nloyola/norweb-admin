@@ -3,7 +3,6 @@ import { Person, personName, personTitles } from '@app/models/people';
 import { Alert, Avatar, CircularProgress, Fab, Grid, Paper, Stack, Typography } from '@mui/material';
 import { PropertiesGrid, PropertiesSchema, PropertyChangers, PropertyInfo } from '../PropertiesGrid/PropertiesGrid';
 import { PropertyChangerProps } from '../PropertyChanger/PropertyChanger';
-import { usePerson } from '@app/hooks/usePerson';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowBack } from '@mui/icons-material';
 import { Box } from '@mui/system';
@@ -96,29 +95,17 @@ function personDetails(person: Person): PropertiesSchema {
   return result;
 }
 
-export type PersonContextType = {
+type PersonBioProps = {
   person: Person;
-  updatePerson: (p: Person) => void;
 };
 
-export function PersonBio() {
+export function PersonBio({ person }: PersonBioProps) {
   const navigate = useNavigate();
-  const params = useParams();
-  //const { person, updatePerson }: PersonContextType = useOutletContext();
-  const [person, setPerson] = useState<Person | null>(null);
+  const [updatedPerson, setUpdatedPerson] = useState<Person | null>(null);
   const [open, setOpen] = useState(false);
   const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
   const [saveError, setSaveError] = useState('');
   const [saving, setSaving] = useState(false);
-  const { error, loading, person: reloadedPerson, loadPerson } = usePerson(Number(params.personId));
-
-  // it is possible that the page was reloaded by the user, in this case the person must be retrieved from the backend
-  useEffect(loadPerson, []);
-
-  useEffect(() => {
-    console.log(reloadedPerson);
-    setPerson(reloadedPerson);
-  }, [reloadedPerson]);
 
   const onPropChange = (propInfo: PropertyInfo<unknown>) => {
     setPropInfo(propInfo);
@@ -139,6 +126,7 @@ export function PersonBio() {
         const newValues: any = { ...person };
         newValues[propInfo.propName] = newValue;
 
+        // FIXME: uncomment this when the backend can update a person
         // const modifiedPerson = await PersonsService.update(newValues);
         // updatePerson(modifiedPerson);
       } catch (err) {
@@ -178,12 +166,12 @@ export function PersonBio() {
     navigate(-1);
   };
 
-  if (loading || saving || !person) {
+  if (saving) {
     return <CircularProgress />;
   }
 
-  if (error !== '' || saveError !== '') {
-    return <Alert severity="error">{error}</Alert>;
+  if (saveError !== '') {
+    return <Alert severity="error">{saveError}</Alert>;
   }
 
   const schema = personDetails(person);
