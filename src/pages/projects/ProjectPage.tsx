@@ -1,10 +1,9 @@
 import { Project } from '@app/models/projects';
 import { Alert, Avatar, CircularProgress, Divider, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { Link, matchPath, Outlet, useLocation, useParams } from 'react-router-dom';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { stringAvatar } from '@app/utils/utils';
-import { TabContext, TabList } from '@mui/lab';
 import { Box } from '@mui/system';
 import { ProjectBreadcrumbs } from '@app/components/Breadcrumbs/ProjectBreadcrumbs';
 
@@ -13,23 +12,9 @@ export type ProjectContextType = {
   updateProject: (p: Project) => void;
 };
 
-export function useRouteMatch(patterns: readonly string[]) {
-  const { pathname } = useLocation();
-
-  for (let i = 0; i < patterns.length; i += 1) {
-    const pattern = patterns[i];
-    const possibleMatch = matchPath(pattern, pathname);
-    if (possibleMatch !== null) {
-      return possibleMatch;
-    }
-  }
-
-  return null;
-}
-
 export function ProjectPage() {
   const params = useParams();
-  const [project, setProject] = useState<Project | undefined>(undefined);
+  const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -46,7 +31,15 @@ export function ProjectPage() {
         const p = await ProjectsService.get(Number(params.projectId));
         setProject(p);
       } catch (err) {
-        setError(err instanceof Error ? err.message : JSON.stringify(err));
+        if (err instanceof Error) {
+          if (err.message.includes('Not found')) {
+            setProject(null);
+          } else {
+            setError(JSON.stringify(err));
+          }
+        } else {
+          setError(JSON.stringify(err));
+        }
       } finally {
         setLoading(false);
       }
@@ -55,12 +48,16 @@ export function ProjectPage() {
     fetchData();
   }, []);
 
-  if (loading || !project) {
+  if (loading) {
     return <CircularProgress />;
   }
 
   if (error !== '') {
     return <Alert severity="error">{error}</Alert>;
+  }
+
+  if (project === null) {
+    return <Alert severity="error">Project does not exist</Alert>;
   }
 
   return (

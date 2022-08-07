@@ -12,7 +12,11 @@ export class ProjectsService {
 
     if (!response.ok) {
       console.error(result);
-      throw new Error('HTTP error: status: ' + response.status);
+      if (response.status === 404) {
+        throw new Error('Not found');
+      } else {
+        throw new Error('HTTP error: status: ' + response.status);
+      }
     }
     return result;
   }
