@@ -1,24 +1,31 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+
+  const proxyTarget = `http://${env.BACKEND_SERVER}`;
+  console.log(mode, env.BACKEND_SERVER, proxyTarget);
+
+  return {
     plugins: [react(), tsconfigPaths()],
     server: {
-        proxy: {
-            '/api': {
-                target: 'http://localhost:8000',
-                changeOrigin: true,
-                secure: false,
-                ws: true
-            },
-            '/site': {
-                target: 'http://localhost:8000',
-                changeOrigin: true,
-                secure: false,
-                ws: true
-            }
+      proxy: {
+        '/api': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+          ws: true
+        },
+        '/site': {
+          target: proxyTarget,
+          changeOrigin: true,
+          secure: false,
+          ws: true
         }
+      }
     }
+  };
 });
