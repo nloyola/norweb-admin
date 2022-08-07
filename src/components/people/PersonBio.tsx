@@ -1,33 +1,52 @@
-import React, { Fragment, ReactElement } from 'react';
+import { createElement, useEffect, useState } from 'react';
 import { Person, personName, personTitles } from '@app/models/people';
-import { Avatar, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Alert, Avatar, CircularProgress, Fab, Grid, Paper, Stack, Typography } from '@mui/material';
+import { PropertiesGrid, PropertiesSchema, PropertyChangers, PropertyInfo } from '../PropertiesGrid/PropertiesGrid';
+import { PropertyChangerProps } from '../PropertyChanger/PropertyChanger';
+import { usePerson } from '@app/hooks/usePerson';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowBack } from '@mui/icons-material';
+import { Box } from '@mui/system';
 
-type PersonBioProps = {
-  person: Person;
-};
-
-type PersonDetails = {
-  label: string;
-  value?: string | ReactElement;
-  html?: string;
-};
-
-function personDetails(person: Person): PersonDetails[] {
-  const result: PersonDetails[] = [
-    {
+function personDetails(person: Person): PropertiesSchema {
+  const result: PropertiesSchema = {
+    name: {
+      propName: 'name',
       label: 'Name',
-      value: personName(person)
+      value: personName(person),
+      propertyChanger: 'text',
+      changerPropsExtra: {
+        // FIXME
+        //value: { givenNames: person.givenNames, legalNames: person.legalNames }
+        value: person.givenNames
+      }
     },
-    {
+    gender: {
+      propName: 'gender',
       label: 'Gender',
-      value: person.gender ?? 'Not available'
+      value: person.gender ?? 'Not available',
+      propertyChanger: 'radio',
+      changerPropsExtra: {
+        value: person?.gender,
+        options: [
+          { id: 'F', label: 'Female' },
+          { id: 'M', label: 'Male' },
+          { id: 'O', label: 'Other' }
+        ]
+      }
     },
-    {
+    email: {
+      propName: 'email',
       label: 'Email',
       value:
-        person.email && person.email !== '' ? <a href={`mailto:${person.email}`}>{person.email}</a> : 'NotAvailable'
+        person.email && person.email !== '' ? <a href={`mailto:${person.email}`}>{person.email}</a> : 'NotAvailable',
+      propertyChanger: 'text',
+      changerPropsExtra: {
+        value: person?.email
+      }
     },
-    {
+    website: {
+      propName: 'website',
       label: 'Website',
       value:
         person.website && person.website !== '' ? (
@@ -36,30 +55,138 @@ function personDetails(person: Person): PersonDetails[] {
           </a>
         ) : (
           'Not available'
-        )
+        ),
+      propertyChanger: 'text',
+      changerPropsExtra: {
+        value: person?.website
+      }
     },
-    {
+    telephone: {
+      propName: 'telephone',
       label: 'Telephone',
       value:
-        person.phone && person.phone !== '' ? <a href={`tel://${person.phone}`}>{person.phone}</a> : 'Not available'
+        person.phone && person.phone !== '' ? <a href={`tel://${person.phone}`}>{person.phone}</a> : 'Not available',
+      propertyChanger: 'text',
+      changerPropsExtra: {
+        value: person?.phone
+      }
     },
-    {
+    cvBrief: {
+      propName: 'cvBrief',
       label: 'Brief CV',
-      html: person.cvBrief && person.cvBrief !== '' ? person.cvBrief : 'Not available'
+      value: person?.cvBrief ? <div dangerouslySetInnerHTML={{ __html: person.cvBrief }} /> : 'Not available',
+      propertyChanger: 'text',
+      changerPropsExtra: {
+        value: person?.cvBrief,
+        multiline: true
+      }
     },
-    {
+    cvText: {
+      propName: 'cvText',
       label: 'CV',
-      html: person.cvText && person.cvText !== '' ? person.cvText : 'Not available'
+      value: person?.cvText ? <div dangerouslySetInnerHTML={{ __html: person.cvText }} /> : 'Not available',
+      propertyChanger: 'text',
+      changerPropsExtra: {
+        value: person?.cvText,
+        multiline: true
+      }
     }
-  ];
+  };
 
   return result;
 }
 
-export function PersonBio({ person }: PersonBioProps) {
-  if (!person.id) {
-    throw new Error('person is invalid');
+export type PersonContextType = {
+  person: Person;
+  updatePerson: (p: Person) => void;
+};
+
+export function PersonBio() {
+  const navigate = useNavigate();
+  const params = useParams();
+  //const { person, updatePerson }: PersonContextType = useOutletContext();
+  const [person, setPerson] = useState<Person | null>(null);
+  const [open, setOpen] = useState(false);
+  const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const { error, loading, person: reloadedPerson, loadPerson } = usePerson(Number(params.personId));
+
+  // it is possible that the page was reloaded by the user, in this case the person must be retrieved from the backend
+  useEffect(loadPerson, []);
+
+  useEffect(() => {
+    console.log(reloadedPerson);
+    setPerson(reloadedPerson);
+  }, [reloadedPerson]);
+
+  const onPropChange = (propInfo: PropertyInfo<unknown>) => {
+    setPropInfo(propInfo);
+    setOpen(true);
+  };
+
+  const handleClose = <T extends unknown>(newValue?: T) => {
+    const saveData = async () => {
+      if (!newValue) {
+        return;
+      }
+
+      try {
+        if (!person) {
+          throw new Error('setPerson is invalid');
+        }
+
+        const newValues: any = { ...person };
+        newValues[propInfo.propName] = newValue;
+
+        // const modifiedPerson = await PersonsService.update(newValues);
+        // updatePerson(modifiedPerson);
+      } catch (err) {
+        console.error(err);
+        setSaveError(err instanceof Error ? err.message : JSON.stringify(err));
+      } finally {
+        setSaving(false);
+      }
+    };
+
+    setOpen(false);
+    saveData();
+  };
+
+  const propertyToElement = (propInfo: PropertyInfo<unknown>) => {
+    if (!propInfo.propertyChanger) {
+      throw Error('property changer is undefined');
+    }
+
+    if (PropertyChangers[propInfo.propertyChanger] === undefined) {
+      throw Error(`property changer is invalid: ${propInfo.propertyChanger}`);
+    }
+
+    const props: PropertyChangerProps<unknown> = {
+      title: 'Change Person Settings',
+      id: propInfo.propName,
+      label: propInfo.label,
+      open: open,
+      onClose: handleClose,
+      ...propInfo.changerPropsExtra
+    };
+
+    return createElement<PropertyChangerProps<unknown>>(PropertyChangers[propInfo.propertyChanger] as FC, props);
+  };
+
+  const backClicked = () => {
+    navigate(-1);
+  };
+
+  if (loading || saving || !person) {
+    return <CircularProgress />;
   }
+
+  if (error !== '' || saveError !== '') {
+    return <Alert severity="error">{error}</Alert>;
+  }
+
+  const schema = personDetails(person);
 
   return (
     <Stack spacing={2}>
@@ -68,7 +195,7 @@ export function PersonBio({ person }: PersonBioProps) {
           p: 3
         }}
       >
-        <Stack spacing={2} direction="row">
+        <Stack spacing={2} mb={10} direction="row">
           <Avatar variant="rounded" src={person.photo} sx={{ width: 200, height: 200 }} />
           <Stack spacing={2}>
             <Typography component="h1" variant="h3">
@@ -80,33 +207,21 @@ export function PersonBio({ person }: PersonBioProps) {
           </Stack>
         </Stack>
 
-        <Grid container spacing={2} direction="row" justifyContent="flex-start" alignItems="flex-start">
-          {personDetails(person).map((details) => (
-            <Fragment key={details.label}>
-              <Grid item md={3}>
-                <Typography component="h6" variant="subtitle2">
-                  {details.label}
-                </Typography>
-              </Grid>
-              {details.value && (
-                <Grid item md={9}>
-                  {details.value}
-                </Grid>
-              )}
-              {details.html && (
-                <Grid
-                  item
-                  md={9}
-                  dangerouslySetInnerHTML={{
-                    __html: details.html
-                  }}
-                />
-              )}
-            </Fragment>
-          ))}
-        </Grid>
+        <Box
+          sx={{
+            pl: 2
+          }}
+        >
+          <PropertiesGrid schema={schema} handleChange={onPropChange} />
+        </Box>
+        <Stack spacing={2} direction="row" mt={5}>
+          <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
+            <ArrowBack sx={{ mr: 1 }} />
+            Back
+          </Fab>
+        </Stack>
       </Paper>
-      {/*{<pre>{JSON.stringify(person, null, 4)}</pre>}*/}
+      {open && propertyToElement(propInfo)}
     </Stack>
   );
 }

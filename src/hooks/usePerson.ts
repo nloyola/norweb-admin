@@ -1,15 +1,15 @@
-import { Project } from '@app/models/projects';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
+import { Person } from '@app/models/people';
+import { PeopleService } from '@app/services/people/PeopleService';
 import { useCallback, useState } from 'react';
 
 // see https://betterprogramming.pub/fetching-data-with-react-72df95683c70
 
-export function useProject(id: number) {
-  const [project, setProject] = useState<Project | null>(null);
+export function usePerson(id: number) {
+  const [person, setPerson] = useState<Person | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadProject = useCallback(() => {
+  const loadPerson = useCallback(() => {
     const fetchData = async () => {
       setLoading(true);
       setError('');
@@ -17,12 +17,12 @@ export function useProject(id: number) {
       try {
         // use this when testing
         // await new Promise((r) => setTimeout(r, 2000));
-        const project = await ProjectsService.get(id);
-        setProject(project);
+        const person = await PeopleService.get(id);
+        setPerson(person);
       } catch (err) {
         if (err instanceof Error) {
           if (err.message.includes('Not found')) {
-            setProject(null);
+            setPerson(null);
           } else {
             setError(JSON.stringify(err));
           }
@@ -37,5 +37,5 @@ export function useProject(id: number) {
     fetchData();
   }, [id]);
 
-  return { error, loading, project, loadProject };
+  return { error, loading, person, loadPerson };
 }

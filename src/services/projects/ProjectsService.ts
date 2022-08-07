@@ -1,10 +1,13 @@
-import { CountryCode, countryCodes, PaginatedResponse } from '@app/models';
+import { PaginatedResponse } from '@app/models';
 import { Project } from '@app/models/projects';
 import { dateToString } from '@app/utils/utils';
 
 export class ProjectsService {
   private static apiBaseUrl = '/api/projects/';
 
+  /**
+   * Retrieves a Project using an ID.
+   */
   static async get(id: number): Promise<Project> {
     const url = this.apiBaseUrl + `${id}/`;
     const response = await fetch(url);

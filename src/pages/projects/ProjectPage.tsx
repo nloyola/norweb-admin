@@ -1,11 +1,11 @@
 import { Project } from '@app/models/projects';
 import { Alert, Avatar, CircularProgress, Divider, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
-import { Link, matchPath, Outlet, useLocation, useParams } from 'react-router-dom';
+import { Link, Outlet, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { stringAvatar } from '@app/utils/utils';
 import { Box } from '@mui/system';
 import { ProjectBreadcrumbs } from '@app/components/Breadcrumbs/ProjectBreadcrumbs';
+import { useProject } from '@app/hooks/useProject';
 
 export type ProjectContextType = {
   project: Project;
@@ -14,39 +14,19 @@ export type ProjectContextType = {
 
 export function ProjectPage() {
   const params = useParams();
+  const { error, loading, project: loadedProject, loadProject } = useProject(Number(params.projectId));
   const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   let currentTab = 'settings';
   if (location.pathname.includes('events')) {
     currentTab = 'events';
   }
 
+  useEffect(() => loadProject, []);
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-
-      try {
-        const p = await ProjectsService.get(Number(params.projectId));
-        setProject(p);
-      } catch (err) {
-        if (err instanceof Error) {
-          if (err.message.includes('Not found')) {
-            setProject(null);
-          } else {
-            setError(JSON.stringify(err));
-          }
-        } else {
-          setError(JSON.stringify(err));
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    setProject(loadedProject);
+  }, [loadedProject]);
 
   if (loading) {
     return <CircularProgress />;
