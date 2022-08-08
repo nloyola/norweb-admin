@@ -18,10 +18,13 @@ export function SearchTermInput({ initialInput, onChange }: SearchTermInputProps
 
   const clearSearch = () => {
     setInput('');
+    onChange('');
   };
 
   useEffect(() => {
-    onChange(debouncedInput);
+    if (debouncedInput !== '') {
+      onChange(debouncedInput);
+    }
   }, [debouncedInput]);
 
   return (
