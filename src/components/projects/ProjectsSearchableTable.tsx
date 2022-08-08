@@ -1,12 +1,11 @@
 import { PaginatedResponse } from '@app/models';
 import { Project } from '@app/models/projects';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
-import { useDebounce } from '@app/utils/utils';
-import { Box, Stack, TextField, InputAdornment, IconButton, Alert, CircularProgress, Pagination } from '@mui/material';
+import { Box, Stack, Alert, CircularProgress, Pagination } from '@mui/material';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import HighlightOffSharpIcon from '@mui/icons-material/HighlightOffSharp';
 import { ProjectsTable } from './ProjectsTable';
+import { SearchTermInput } from '../SearchTermInput';
 
 type PaginationData = {
   pagedResults?: PaginatedResponse<Project>;
@@ -15,18 +14,14 @@ type PaginationData = {
 
 export function ProjectsSearchableTable() {
   const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
-
   const paramsPage = searchParams.get('page');
-  const paramsSearch = searchParams.get('search');
 
   const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
-  const [search, setSearch] = useState(paramsSearch || '');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search'));
 
   const [data, setData] = useState<PaginationData>({ count: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  const debouncedSearchTerm = useDebounce(search, 400);
 
   const handlePageChange = (_event: ChangeEvent<unknown>, newPage: number) => {
     if (page !== newPage) {
@@ -34,13 +29,8 @@ export function ProjectsSearchableTable() {
     }
   };
 
-  const handleSearchTermChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
-    setPage(1);
-  };
-
-  const clearSearch = () => {
-    setSearch('');
+  const handleSearchTermChange = (input: string) => {
+    setSearchTerm(input);
     setPage(1);
   };
 
@@ -52,15 +42,15 @@ export function ProjectsSearchableTable() {
         params['page'] = `${page}`;
       }
 
-      if (search && search !== '') {
-        params['search'] = search;
+      if (searchTerm && searchTerm !== '') {
+        params['search'] = searchTerm;
       }
       setSearchParams(params);
 
       setLoading(true);
       try {
         // if response.next is NULL, then user is on LAST PAGE
-        const pagedResults = await ProjectsService.paginate(page, search);
+        const pagedResults = await ProjectsService.paginate(page, searchTerm || '');
         setData({
           ...data,
           pagedResults,
@@ -73,26 +63,11 @@ export function ProjectsSearchableTable() {
       }
     };
     fetchData();
-  }, [page, debouncedSearchTerm]);
+  }, [page, searchTerm]);
 
   return (
     <Stack spacing={2} mb={2}>
-      <TextField
-        label="Search"
-        value={search}
-        onChange={handleSearchTermChange}
-        fullWidth
-        size="small"
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton aria-label="toggle password visibility" onMouseDown={clearSearch} edge="end">
-                <HighlightOffSharpIcon />
-              </IconButton>
-            </InputAdornment>
-          )
-        }}
-      />
+      <SearchTermInput initialInput={searchTerm} onChange={handleSearchTermChange} />
       {!loading && error !== '' && <Alert severity="error">{error}</Alert>}
       {loading && <CircularProgress />}
       {!loading && error === '' && (

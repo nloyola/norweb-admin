@@ -1,4 +1,4 @@
-import { createElement, useEffect, useState } from 'react';
+import { FC, createElement, useState } from 'react';
 import { Person, personName, personTitles } from '@app/models/people';
 import { Alert, Avatar, CircularProgress, Fab, Grid, Paper, Stack, Typography } from '@mui/material';
 import { PropertiesGrid, PropertiesSchema, PropertyChangers, PropertyInfo } from '../PropertiesGrid/PropertiesGrid';

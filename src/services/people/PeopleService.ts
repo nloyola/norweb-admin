@@ -4,7 +4,7 @@ import { Person } from '@app/models/people';
 export class PeopleService {
   private static apiBaseUrl = '/api/people/';
 
-  static async get(id: string): Promise<Person> {
+  static async get(id: number): Promise<Person> {
     const url = this.apiBaseUrl + `${id}/`;
     const response = await fetch(url);
     const result = await response.json();

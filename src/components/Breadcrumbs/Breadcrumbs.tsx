@@ -20,12 +20,7 @@ export function Breadcrumbs({ crumbs }: BreadcrumbsProps) {
   const navigate = useNavigate();
 
   return (
-    <Paper
-      mb={5}
-      sx={{
-        p: 2
-      }}
-    >
+    <Paper sx={{ p: 2, mb: 5 }}>
       <MUIBreadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
         {/* {pathnames.length ? <Link onClick={() => navigate('/')}>Home</Link> : <Typography> Home </Typography>} */}
         {crumbs.map(({ label, route, isLast }) => {

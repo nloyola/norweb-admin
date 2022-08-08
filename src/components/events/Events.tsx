@@ -1,45 +1,43 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  Alert,
-  Box,
-  CircularProgress,
-  Fab,
-  IconButton,
-  InputAdornment,
-  Stack,
-  TextField,
-  Typography
-} from '@mui/material';
+import { Alert, Box, CircularProgress, Fab, Stack, Typography } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
-import HighlightOffSharpIcon from '@mui/icons-material/HighlightOffSharp';
 import { EventsTable } from './EventsTable';
 import { useProject } from '@app/hooks/useProject';
+import { SearchTermInput } from '../SearchTermInput';
+import { Event } from '@app/models/events/Event';
 
 export function Events() {
   const params = useParams();
   const navigate = useNavigate();
-  const [search, setSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [events, setEvents] = useState<Event[]>([]);
   const { error, loading, project, loadProject } = useProject(Number(params.projectId));
 
-  useEffect(loadProject, []);
-
-  const handleSearchTermChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.target.value);
+  const handleSearchTermChange = (input: string) => {
+    setSearchTerm(input);
   };
 
   const handleAddClicked = () => {
     navigate('add');
   };
 
-  const clearSearch = () => {
-    setSearch('');
-  };
-
   const backClicked = () => {
     navigate(-2);
   };
+
+  useEffect(() => {
+    loadProject();
+    if (project) {
+      setEvents(project.events);
+    }
+  }, []);
+
+  useEffect(() => {
+    const filteredEvents = project?.events.filter((e) => e.title.includes(searchTerm)) || [];
+    setEvents(filteredEvents);
+  }, [searchTerm]);
 
   if (loading || !project) {
     return <CircularProgress />;
@@ -72,25 +70,10 @@ export function Events() {
             justifyContent: 'space-between'
           }}
         >
-          <TextField
-            label="Search"
-            value={search}
-            onChange={handleSearchTermChange}
-            fullWidth
-            size="small"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton aria-label="toggle password visibility" onMouseDown={clearSearch} edge="end">
-                    <HighlightOffSharpIcon />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-          />
+          <SearchTermInput initialInput={searchTerm} onChange={handleSearchTermChange} />
         </Box>
       </Stack>
-      <EventsTable events={project.events} />
+      <EventsTable events={events} />
       <Stack spacing={2} direction="row" mt={5}>
         <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
           <ArrowBack sx={{ mr: 1 }} />
