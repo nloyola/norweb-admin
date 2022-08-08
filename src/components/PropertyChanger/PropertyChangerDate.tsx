@@ -2,7 +2,7 @@ import { TextField } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useState } from 'react';
-import PropertyChanger, { PropertyChangerProps } from './PropertyChanger';
+import { PropertyChanger, PropertyChangerProps } from './PropertyChanger';
 
 export interface PropertyChangerDateProps extends PropertyChangerProps<Date> {
   minDate?: Date;
@@ -29,7 +29,7 @@ export const PropertyChangerDate = ({
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel}>
+    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!valueState}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DatePicker
           label={label}
@@ -39,9 +39,7 @@ export const PropertyChangerDate = ({
           inputFormat="yyyy-MM-dd"
           mask={'____-__-__'}
           onChange={(newValue) => {
-            if (newValue) {
-              setValueState(newValue);
-            }
+            setValueState(newValue || undefined);
           }}
           renderInput={(params) => (
             <TextField {...params} inputProps={{ ...params.inputProps, type: 'text' }} variant="standard" fullWidth />

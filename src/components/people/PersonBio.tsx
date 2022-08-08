@@ -14,11 +14,9 @@ function personDetails(person: Person): PropertiesSchema {
       propName: 'name',
       label: 'Name',
       value: personName(person),
-      propertyChanger: 'text',
+      propertyChanger: 'personNames',
       changerPropsExtra: {
-        // FIXME
-        //value: { givenNames: person.givenNames, legalNames: person.legalNames }
-        value: person.givenNames
+        value: { givenNames: person.givenNames, legalNames: person.legalNames }
       }
     },
     gender: {

@@ -20,11 +20,12 @@ interface PropertyChangerInternalProps {
   children: ReactNode;
   title: string;
   open: boolean;
+  valid: boolean;
   onOk: () => void;
   onCancel: () => void;
 }
 
-const PropertyChanger = ({ title, open, onOk, onCancel, children }: PropertyChangerInternalProps) => {
+export function PropertyChanger({ title, open, valid, onOk, onCancel, children }: PropertyChangerInternalProps) {
   const handleOk = () => {
     onOk();
   };
@@ -39,10 +40,10 @@ const PropertyChanger = ({ title, open, onOk, onCancel, children }: PropertyChan
       <DialogContent>{children}</DialogContent>
       <DialogActions>
         <Button onClick={handleCancel}>Cancel</Button>
-        <Button onClick={handleOk}>Ok</Button>
+        <Button onClick={handleOk} disabled={!valid}>
+          Ok
+        </Button>
       </DialogActions>
     </Dialog>
   );
-};
-
-export default PropertyChanger;
+}

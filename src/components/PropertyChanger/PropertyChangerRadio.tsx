@@ -1,6 +1,6 @@
 import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
-import PropertyChanger, { PropertyChangerProps, PropertyOption } from './PropertyChanger';
+import { PropertyChanger, PropertyChangerProps, PropertyOption } from './PropertyChanger';
 
 export const PropertyChangerRadio = <T extends unknown>({
   title,
@@ -30,7 +30,7 @@ export const PropertyChangerRadio = <T extends unknown>({
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel}>
+    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid>
       <FormControl>
         <FormLabel id="demo-radio-buttons-group-label">{label}</FormLabel>
         <RadioGroup

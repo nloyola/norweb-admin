@@ -1,6 +1,6 @@
 import { TextField } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
-import PropertyChanger, { PropertyChangerProps } from './PropertyChanger';
+import { PropertyChanger, PropertyChangerProps } from './PropertyChanger';
 
 export interface PropertyChangerTextProps extends PropertyChangerProps<string> {
   multiline: boolean;
@@ -31,7 +31,7 @@ export const PropertyChangerText = ({
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel}>
+    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!valueState}>
       <TextField
         id={id}
         label={label}

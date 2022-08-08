@@ -1,6 +1,6 @@
 import { Autocomplete, TextField } from '@mui/material';
 import { useState } from 'react';
-import PropertyChanger, { PropertyChangerProps, PropertyOption } from './PropertyChanger';
+import { PropertyChanger, PropertyChangerProps, PropertyOption } from './PropertyChanger';
 
 export const PropertyChangerAutocomplete = <T extends unknown>({
   title,
@@ -30,7 +30,7 @@ export const PropertyChangerAutocomplete = <T extends unknown>({
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel}>
+    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!valueState}>
       <Autocomplete
         options={options}
         value={valueState}
