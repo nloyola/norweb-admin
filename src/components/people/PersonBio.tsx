@@ -16,7 +16,7 @@ function personDetails(person: Person): PropertiesSchema {
       value: personName(person),
       propertyChanger: 'personNames',
       changerPropsExtra: {
-        value: { givenNames: person.givenNames, legalNames: person.legalNames }
+        value: { givenNames: person.givenNames, familyNames: person.familyNames }
       }
     },
     gender: {
@@ -146,7 +146,7 @@ export function PersonBio() {
     }
 
     const props: PropertyChangerProps<unknown> = {
-      title: 'Change Person Settings',
+      title: 'Person: change settings',
       id: propInfo.propName,
       label: propInfo.label,
       open: open,

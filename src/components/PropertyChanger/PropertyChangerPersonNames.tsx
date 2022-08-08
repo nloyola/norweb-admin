@@ -7,12 +7,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 
 export interface PersonNames {
   givenNames: string;
-  legalNames: string;
+  familyNames: string;
 }
 
 const schema = yup.object().shape({
   givenNames: yup.string(),
-  legalNames: yup.string().required('at least one family name is required')
+  familyNames: yup.string().required('at least one family name is required')
 });
 
 export interface PropertyChangerPersonNamesProps extends PropertyChangerProps<PersonNames> {}
@@ -66,15 +66,15 @@ export function PropertyChangerPersonNames({ title, id, value, open, onClose }: 
           </Grid>
           <Grid item xs={12} md={12}>
             <Controller
-              name="legalNames"
+              name="familyNames"
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Legal names"
+                  label="Family names"
                   variant="standard"
-                  error={!!errors.legalNames}
-                  helperText={errors.legalNames ? errors.legalNames?.message : ''}
+                  error={!!errors.familyNames}
+                  helperText={errors.familyNames ? errors.familyNames?.message : ''}
                   fullWidth
                   margin="dense"
                 />

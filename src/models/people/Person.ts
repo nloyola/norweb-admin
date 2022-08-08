@@ -5,7 +5,7 @@ import { Employment } from './Employment';
 export interface Person extends ConcurrencySafeEntity {
   readonly slug: string;
   readonly givenNames: string;
-  readonly legalNames: string;
+  readonly familyNames: string;
   readonly honorific: string;
   readonly personNummer: string;
   readonly gender: string;
@@ -31,9 +31,9 @@ export interface Person extends ConcurrencySafeEntity {
 
 export function personName(person: Person): string {
   if (person.givenNames && person.givenNames !== '') {
-    return person.givenNames + ' ' + person.legalNames;
+    return person.givenNames + ' ' + person.familyNames;
   }
-  return person.legalNames;
+  return person.familyNames;
 }
 
 export function personTitles(person: Person): string {
