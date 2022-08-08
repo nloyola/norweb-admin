@@ -89,16 +89,17 @@ export function Events() {
       {!loading && pagination && (
         <>
           <EventsTable events={pagination?.pagedResults?.results || []} />
-
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              mt: 2
-            }}
-          >
-            <Pagination count={pagination?.count || 1} page={page} boundaryCount={2} onChange={handlePageChange} />
-          </Box>
+          {pagination?.count > 1 && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                mt: 2
+              }}
+            >
+              <Pagination count={pagination?.count || 1} page={page} boundaryCount={2} onChange={handlePageChange} />
+            </Box>
+          )}
         </>
       )}
       <Stack spacing={2} direction="row" mt={5}>

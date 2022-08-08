@@ -73,15 +73,17 @@ export function ProjectsSearchableTable() {
       {!loading && error === '' && (
         <>
           <ProjectsTable projects={data.pagedResults?.results || []} />
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              mt: 2
-            }}
-          >
-            <Pagination count={data.count} page={page} boundaryCount={2} onChange={handlePageChange} />
-          </Box>
+          {data?.count > 1 && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                mt: 2
+              }}
+            >
+              <Pagination count={data.count} page={page} boundaryCount={2} onChange={handlePageChange} />
+            </Box>
+          )}
         </>
       )}
     </Stack>
