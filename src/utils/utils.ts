@@ -66,3 +66,62 @@ export function dateToString(date: Date | string): string {
   }
   return date;
 }
+
+export function datesRangeToString(startDate: Date, endDate: Date | null): string {
+  const dayStart = startDate.getDate();
+  const monthStart = startDate.getMonth();
+  const yearStart = startDate.getFullYear();
+
+  if (!endDate) {
+    return `${dayStart} ${monthStart}, ${yearStart} - Present`;
+  }
+
+  const dayEnd = endDate.getDate();
+  const monthEnd = endDate.getMonth();
+  const yearEnd = endDate.getFullYear();
+
+  let datesFormat = '';
+
+  if (yearStart === yearEnd) {
+    if (monthStart === monthEnd) {
+      datesFormat = 'within-same-month';
+      if (dayStart === dayEnd) {
+        datesFormat = 'same-day';
+      }
+    } else {
+      datesFormat = 'within-same-year';
+    }
+  } else {
+    datesFormat = 'spans-years';
+  }
+
+  let dates = '';
+
+  switch (datesFormat) {
+    case 'same-day': {
+      const monthName = endDate.toLocaleString('default', { month: 'long' });
+      dates = `${dayEnd} ${monthName} ${yearEnd}`;
+      break;
+    }
+    case 'within-same-month': {
+      const monthName = endDate.toLocaleString('default', { month: 'long' });
+      dates = `${dayStart} - ${dayEnd} ${monthName}, ${yearEnd}`;
+      break;
+    }
+
+    case 'within-same-year': {
+      const startMonthName = startDate.toLocaleString('default', { month: 'long' });
+      const endMonthName = endDate.toLocaleString('default', { month: 'long' });
+      dates = `${dayStart} ${startMonthName}  - ${dayEnd} ${endMonthName}, ${yearEnd}`;
+      break;
+    }
+
+    case 'spans-years': {
+      const startMonthName = startDate.toLocaleString('default', { month: 'long' });
+      const endMonthName = endDate.toLocaleString('default', { month: 'long' });
+      dates = `${dayStart} ${startMonthName}, ${yearStart} - ${dayEnd} ${endMonthName}, ${yearEnd}`;
+      break;
+    }
+  }
+  return dates;
+}

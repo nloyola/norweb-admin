@@ -18,10 +18,10 @@ export const PropertyChangerDate = ({
   open,
   onClose
 }: PropertyChangerDateProps) => {
-  const [valueState, setValueState] = useState(value);
+  const [input, setInput] = useState(value);
 
   const handleOk = () => {
-    onClose(valueState ? new Date(valueState) : undefined);
+    onClose(input ? new Date(input) : undefined);
   };
 
   const handleCancel = () => {
@@ -29,17 +29,17 @@ export const PropertyChangerDate = ({
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!valueState}>
+    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!input}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DatePicker
           label={label}
-          value={valueState}
+          value={input}
           minDate={minDate}
           maxDate={maxDate}
           inputFormat="yyyy-MM-dd"
           mask={'____-__-__'}
           onChange={(newValue) => {
-            setValueState(newValue || undefined);
+            setInput(newValue || undefined);
           }}
           renderInput={(params) => (
             <TextField {...params} inputProps={{ ...params.inputProps, type: 'text' }} variant="standard" fullWidth />

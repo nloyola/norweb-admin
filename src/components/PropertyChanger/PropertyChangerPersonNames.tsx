@@ -1,5 +1,5 @@
 import { Grid, TextField } from '@mui/material';
-import { ChangeEvent, useState } from 'react';
+import { useState } from 'react';
 import { PropertyChanger, PropertyChangerProps } from './PropertyChanger';
 import * as yup from 'yup';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -18,7 +18,7 @@ const schema = yup.object().shape({
 export interface PropertyChangerPersonNamesProps extends PropertyChangerProps<PersonNames> {}
 
 export function PropertyChangerPersonNames({ title, id, value, open, onClose }: PropertyChangerPersonNamesProps) {
-  const [valueState, setValueState] = useState<PersonNames | undefined>(value);
+  const [input, setInput] = useState<PersonNames | undefined>(value);
 
   const {
     control,
@@ -32,11 +32,11 @@ export function PropertyChangerPersonNames({ title, id, value, open, onClose }: 
   });
 
   const onSubmit: SubmitHandler<PersonNames> = (data) => {
-    setValueState(data);
+    setInput(data);
   };
 
   const handleOk = () => {
-    onClose(valueState);
+    onClose(input);
   };
 
   const handleCancel = () => {

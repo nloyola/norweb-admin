@@ -2,6 +2,7 @@ import { GridItemProperty, GridItemPropertyProps } from '../GridItemProperty';
 import {
   PropertyChangerAutocomplete,
   PropertyChangerDate,
+  PropertyChangerDateRange,
   PropertyChangerPersonNames,
   PropertyChangerRadio,
   PropertyChangerText
@@ -12,6 +13,7 @@ import { Grid } from '@mui/material';
 export const PropertyChangers = {
   autocomplete: PropertyChangerAutocomplete,
   date: PropertyChangerDate,
+  dateRange: PropertyChangerDateRange,
   personNames: PropertyChangerPersonNames,
   radio: PropertyChangerRadio,
   text: PropertyChangerText

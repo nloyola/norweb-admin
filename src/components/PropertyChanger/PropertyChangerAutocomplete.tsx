@@ -15,14 +15,14 @@ export const PropertyChangerAutocomplete = <T extends unknown>({
   }
 
   const option = options?.find((option) => option.id === value) || null;
-  const [valueState, setValueState] = useState<PropertyOption<T> | null>(option);
+  const [input, setInput] = useState<PropertyOption<T> | null>(option);
 
   const handleChange = (_event: any, newValue: any) => {
-    setValueState(newValue);
+    setInput(newValue);
   };
 
   const handleOk = () => {
-    onClose(valueState?.id);
+    onClose(input?.id);
   };
 
   const handleCancel = () => {
@@ -30,10 +30,10 @@ export const PropertyChangerAutocomplete = <T extends unknown>({
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!valueState}>
+    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!input}>
       <Autocomplete
         options={options}
-        value={valueState}
+        value={input}
         isOptionEqualToValue={(option, value) => option.id === value.id}
         onChange={handleChange}
         renderInput={(params) => <TextField {...params} label={label} variant="standard" />}

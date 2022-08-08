@@ -1,9 +1,9 @@
-import { Fragment } from 'react';
 import { Project } from '@app/models/projects';
 import { nlToFragments } from '@app/utils/nltoFragments';
 import { Box, Chip } from '@mui/material';
 import { countryCodes, countryCodeToCountry, Status, statusToLabel } from '@app/models';
 import { PropertiesSchema } from '@app/components/PropertiesGrid/PropertiesGrid';
+import { datesRangeToString } from '@app/utils/utils';
 
 function keywordToArray(keywords: string): string[] {
   if (!keywords || keywords === '') {
@@ -13,6 +13,9 @@ function keywordToArray(keywords: string): string[] {
 }
 
 export function projectPropertySchema(project: Project): PropertiesSchema {
+  const startDate = new Date(project.startDate);
+  const endDate = new Date(project.endDate);
+
   const result: PropertiesSchema = {
     name: {
       propName: 'name',
@@ -42,24 +45,13 @@ export function projectPropertySchema(project: Project): PropertiesSchema {
         multiline: true
       }
     },
-    startDate: {
-      propName: 'startDate',
-      label: 'Start Date',
-      value: project?.startDate ? new Date(project.startDate).toLocaleDateString() : 'Not available',
-      propertyChanger: 'date',
+    duratrion: {
+      propName: 'duration',
+      label: 'Duration',
+      value: datesRangeToString(startDate, endDate),
+      propertyChanger: 'dateRange',
       changerPropsExtra: {
-        value: project?.startDate ? new Date(project.startDate).toLocaleDateString() : null,
-        maxDate: project?.endDate
-      }
-    },
-    endDate: {
-      propName: 'endDate',
-      label: 'End Date',
-      value: project?.endDate ? new Date(project.endDate).toLocaleDateString() : 'Not available',
-      propertyChanger: 'date',
-      changerPropsExtra: {
-        value: project?.endDate ? new Date(project.endDate).toLocaleDateString() : null,
-        minDate: project?.startDate
+        value: { startDate, endDate }
       }
     },
     goals: {
@@ -86,13 +78,13 @@ export function projectPropertySchema(project: Project): PropertiesSchema {
       propName: 'keywords',
       label: 'Keywords',
       value: (
-        <Fragment>
+        <>
           <Box>
             {keywordToArray(project?.keywords).map((kw) => (
               <Chip key={kw} label={kw} color="primary" />
             ))}
           </Box>
-        </Fragment>
+        </>
       ),
       propertyChanger: 'text',
       changerPropsExtra: {

@@ -15,15 +15,15 @@ export const PropertyChangerText = ({
   onClose,
   multiline
 }: PropertyChangerTextProps) => {
-  const [valueState, setValueState] = useState(value);
+  const [input, setInput] = useState(value);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newValue = (event.target as HTMLInputElement).value;
-    setValueState(newValue);
+    setInput(newValue);
   };
 
   const handleOk = () => {
-    onClose(valueState);
+    onClose(input);
   };
 
   const handleCancel = () => {
@@ -31,11 +31,11 @@ export const PropertyChangerText = ({
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!valueState}>
+    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!input}>
       <TextField
         id={id}
         label={label}
-        value={valueState}
+        value={input}
         fullWidth
         variant="standard"
         onChange={handleChange}

@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { EventsService } from '@app/services/events/EventsService';
 import { eventPropertySchema } from './event-schema';
 import { useEvent } from '@app/hooks/useEvent';
+import { DateRange } from '../PropertyChanger';
 
 export function EventDetails() {
   const navigate = useNavigate();
@@ -35,7 +36,13 @@ export function EventDetails() {
 
       try {
         const newValues: any = { ...event };
-        newValues[propInfo.propName] = newValue;
+        if (propInfo.propName === 'duration') {
+          const newDates = newValue as DateRange;
+          newValues.startDate = newDates.startDate;
+          newValues.endDate = newDates.endDate;
+        } else {
+          newValues[propInfo.propName] = newValue;
+        }
 
         const modifiedEvent = await EventsService.update(projectId, newValues);
         updateEvent(modifiedEvent);

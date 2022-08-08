@@ -8,6 +8,7 @@ import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { ArrowBack } from '@mui/icons-material';
 import { useProject } from '@app/hooks/useProject';
 import { ProjectContextType } from '@app/pages/projects/ProjectPage';
+import { DateRange } from '../PropertyChanger';
 
 // useOutletContext is used on this page, because the use can modify the project's name or shorthand
 // If they are modified, the parent page has to know about it, therefore they share this context
@@ -25,7 +26,6 @@ export function ProjectDetails() {
   useEffect(() => {
     loadProject();
     if (updateProject && reloadedProject) {
-      console.log('using updated project');
       updateProject(reloadedProject);
     }
   }, []);
@@ -37,6 +37,7 @@ export function ProjectDetails() {
 
   const handleClose = <T extends unknown>(newValue?: T) => {
     const saveData = async () => {
+      console.log(propInfo.propName, newValue);
       if (!newValue) {
         return;
       }
@@ -47,7 +48,13 @@ export function ProjectDetails() {
         }
 
         const newValues: any = { ...project };
-        newValues[propInfo.propName] = newValue;
+        if (propInfo.propName === 'duration') {
+          const newDates = newValue as DateRange;
+          newValues.startDate = newDates.startDate;
+          newValues.endDate = newDates.endDate;
+        } else {
+          newValues[propInfo.propName] = newValue;
+        }
 
         const modifiedProject = await ProjectsService.update(newValues);
         updateProject(modifiedProject);
@@ -77,7 +84,7 @@ export function ProjectDetails() {
     }
 
     const props: PropertyChangerProps<unknown> = {
-      title: 'Change Project Settings',
+      title: 'Project: change settings',
       id: propInfo.propName,
       label: propInfo.label,
       open: open,

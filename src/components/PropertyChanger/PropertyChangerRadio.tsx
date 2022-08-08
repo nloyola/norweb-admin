@@ -11,18 +11,18 @@ export const PropertyChangerRadio = <T extends unknown>({
   options
 }: PropertyChangerProps<T>) => {
   const option = options?.find((option) => option.id === value);
-  const [valueState, setValueState] = useState<PropertyOption<T> | undefined>(option);
+  const [input, setInput] = useState<PropertyOption<T> | undefined>(option);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newValue = (event.target as HTMLInputElement).value;
     const opt = options?.find((option) => option.id === newValue);
     if (opt) {
-      setValueState(opt);
+      setInput(opt);
     }
   };
 
   const handleOk = () => {
-    onClose(valueState?.id);
+    onClose(input?.id);
   };
 
   const handleCancel = () => {
