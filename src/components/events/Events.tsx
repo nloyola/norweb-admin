@@ -4,16 +4,24 @@ import { Alert, Box, CircularProgress, Fab, Stack, Typography } from '@mui/mater
 import { ArrowBack } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { EventsTable } from './EventsTable';
-import { useProject } from '@app/hooks/useProject';
 import { SearchTermInput } from '../SearchTermInput';
-import { Event } from '@app/models/events/Event';
+import { useProjectEvents } from '@app/hooks/useProjectEvents';
 
 export function Events() {
   const params = useParams();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [events, setEvents] = useState<Event[]>([]);
-  const { error, loading, project, loadProject } = useProject(Number(params.projectId));
+  // const [events, setEvents] = useState<Event[]>([]);
+
+  const projectId = Number(params.projectId);
+  const { error, loading, pagination, loadEvents } = useProjectEvents(projectId, 1, '');
+
+  useEffect(loadEvents, []);
+
+  // useEffect(() => {
+  //   const filteredEvents = project?.events.filter((e) => e.title.toLowerCase().includes(searchTerm)) || [];
+  //   setEvents(filteredEvents);
+  // }, [searchTerm]);
 
   const handleSearchTermChange = (input: string) => {
     setSearchTerm(input);
@@ -27,19 +35,7 @@ export function Events() {
     navigate(-2);
   };
 
-  useEffect(() => {
-    loadProject();
-    if (project) {
-      setEvents(project.events);
-    }
-  }, []);
-
-  useEffect(() => {
-    const filteredEvents = project?.events.filter((e) => e.title.includes(searchTerm)) || [];
-    setEvents(filteredEvents);
-  }, [searchTerm]);
-
-  if (loading || !project) {
+  if (loading || !pagination) {
     return <CircularProgress />;
   }
 
@@ -73,7 +69,7 @@ export function Events() {
           <SearchTermInput initialInput={searchTerm} onChange={handleSearchTermChange} />
         </Box>
       </Stack>
-      <EventsTable events={events} />
+      <EventsTable events={pagination?.results || []} />
       <Stack spacing={2} direction="row" mt={5}>
         <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
           <ArrowBack sx={{ mr: 1 }} />
