@@ -20,9 +20,6 @@ export function useProjectEvents(projectId: number) {
       const fetchData = async () => {
         setLoading(true);
         setError('');
-        if (!projectId) {
-          return null;
-        }
 
         try {
           // use this for testing delay

@@ -88,8 +88,8 @@ export function Events() {
       {(loading || !pagination) && <CircularProgress />}
       {!loading && pagination && (
         <>
-          <EventsTable events={pagination?.pagedResults?.results || []} />
-          {pagination?.count > 1 && (
+          <EventsTable events={pagination.pagedResults?.results || []} />
+          {pagination.count > 1 && (
             <Box
               sx={{
                 display: 'flex',
@@ -97,7 +97,7 @@ export function Events() {
                 mt: 2
               }}
             >
-              <Pagination count={pagination?.count || 1} page={page} boundaryCount={2} onChange={handlePageChange} />
+              <Pagination count={pagination.count || 1} page={page} boundaryCount={2} onChange={handlePageChange} />
             </Box>
           )}
         </>

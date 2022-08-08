@@ -1,16 +1,9 @@
 import { Box, Stack, Alert, CircularProgress, Pagination } from '@mui/material';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { PaginatedResponse } from '@app/models';
-import { PeopleService } from '@app/services/people/PeopleService';
 import { PeopleTable } from './PeopleTable';
-import { Person } from '@app/models/people';
 import { SearchTermInput } from '../SearchTermInput';
-
-type PaginationData = {
-  pagedResults?: PaginatedResponse<Person>;
-  count: number;
-};
+import { usePeople } from '@app/hooks/usePeople';
 
 export function PeopleSearchableTable() {
   const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
@@ -19,9 +12,7 @@ export function PeopleSearchableTable() {
   const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search'));
 
-  const [data, setData] = useState<PaginationData>({ count: 0 });
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
+  const { error, loading, pagination, loadPeople } = usePeople();
 
   const handlePageChange = (_event: ChangeEvent<unknown>, newPage: number) => {
     if (page !== newPage) {
@@ -35,46 +26,33 @@ export function PeopleSearchableTable() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const params: any = {};
+    const params: any = {};
 
-      if (page > 1) {
-        params['page'] = `${page}`;
-      }
+    if (page > 1) {
+      params['page'] = `${page}`;
+    }
 
-      if (searchTerm && searchTerm !== '') {
-        params['search'] = searchTerm;
-      }
-      setSearchParams(params);
+    if (searchTerm && searchTerm !== '') {
+      params['search'] = searchTerm;
+    }
+    setSearchParams(params);
 
-      setLoading(true);
-      try {
-        // if response.next is NULL, then user is on LAST PAGE
-        const pagedResults = await PeopleService.paginate(page, searchTerm || '');
-        setData({
-          ...data,
-          pagedResults,
-          count: pagedResults.next ? Math.ceil(pagedResults.total / pagedResults.results.length) : page
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    loadPeople(page, searchTerm || '');
   }, [page, searchTerm]);
+
+  if (error !== '') {
+    return <Alert severity="error">{error}</Alert>;
+  }
 
   return (
     <>
       <Stack spacing={2} mb={2}>
         <SearchTermInput initialInput={searchTerm} onChange={handleSearchTermChange} />
-        {!loading && error !== '' && <Alert severity="error">{error}</Alert>}
-        {loading && <CircularProgress />}
-        {!loading && error === '' && (
+        {(loading || !pagination) && <CircularProgress />}
+        {!loading && pagination && (
           <>
-            <PeopleTable people={data.pagedResults?.results || []} />
-            {data?.count > 1 && (
+            <PeopleTable people={pagination?.pagedResults?.results || []} />
+            {pagination.count > 1 && (
               <Box
                 sx={{
                   display: 'flex',
@@ -82,7 +60,7 @@ export function PeopleSearchableTable() {
                   mt: 2
                 }}
               >
-                <Pagination count={data.count} page={page} boundaryCount={2} onChange={handlePageChange} />
+                <Pagination count={pagination.count} page={page} boundaryCount={2} onChange={handlePageChange} />
               </Box>
             )}
           </>
