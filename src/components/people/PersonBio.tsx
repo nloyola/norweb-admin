@@ -1,11 +1,12 @@
 import { FC, createElement, useState } from 'react';
-import { Person, personName, personTitles } from '@app/models/people';
-import { Alert, Avatar, CircularProgress, Fab, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Person, personName } from '@app/models/people';
+import { Alert, CircularProgress, Fab, Stack } from '@mui/material';
 import { PropertiesGrid, PropertiesSchema, PropertyChangers, PropertyInfo } from '../PropertiesGrid/PropertiesGrid';
 import { PropertyChangerProps } from '../PropertyChanger/PropertyChanger';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { ArrowBack } from '@mui/icons-material';
 import { Box } from '@mui/system';
+import { PersonContextType } from '@app/pages/people/PersonPage';
 
 function personDetails(person: Person): PropertiesSchema {
   const result: PropertiesSchema = {
@@ -95,13 +96,9 @@ function personDetails(person: Person): PropertiesSchema {
   return result;
 }
 
-type PersonBioProps = {
-  person: Person;
-};
-
-export function PersonBio({ person }: PersonBioProps) {
+export function PersonBio() {
   const navigate = useNavigate();
-  const [updatedPerson, setUpdatedPerson] = useState<Person | null>(null);
+  const { person, updatePerson }: PersonContextType = useOutletContext();
   const [open, setOpen] = useState(false);
   const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
   const [saveError, setSaveError] = useState('');
@@ -177,39 +174,21 @@ export function PersonBio({ person }: PersonBioProps) {
   const schema = personDetails(person);
 
   return (
-    <Stack spacing={2}>
-      <Paper
+    <>
+      <Box
         sx={{
-          p: 3
+          pl: 2
         }}
       >
-        <Stack spacing={2} mb={10} direction="row">
-          <Avatar variant="rounded" src={person.photo} sx={{ width: 200, height: 200 }} />
-          <Stack spacing={2}>
-            <Typography component="h1" variant="h3">
-              {personName(person)}
-            </Typography>
-            <Typography component="h2" variant="h6">
-              {personTitles(person)}
-            </Typography>
-          </Stack>
-        </Stack>
-
-        <Box
-          sx={{
-            pl: 2
-          }}
-        >
-          <PropertiesGrid schema={schema} handleChange={onPropChange} />
-        </Box>
-        <Stack spacing={2} direction="row" mt={5}>
-          <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
-            <ArrowBack sx={{ mr: 1 }} />
-            Back
-          </Fab>
-        </Stack>
-      </Paper>
+        <PropertiesGrid schema={schema} handleChange={onPropChange} />
+      </Box>
+      <Stack spacing={2} direction="row" mt={5}>
+        <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
+          <ArrowBack sx={{ mr: 1 }} />
+          Back
+        </Fab>
+      </Stack>
       {open && propertyToElement(propInfo)}
-    </Stack>
+    </>
   );
 }

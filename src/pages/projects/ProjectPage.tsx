@@ -22,7 +22,7 @@ export function ProjectPage() {
     currentTab = 'events';
   }
 
-  useEffect(() => loadProject, []);
+  useEffect(loadProject, []);
 
   useEffect(() => {
     setProject(loadedProject);
