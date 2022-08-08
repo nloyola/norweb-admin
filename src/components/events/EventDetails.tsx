@@ -30,8 +30,9 @@ export function EventDetails() {
 
   const handleClose = <T extends unknown>(newValue?: T) => {
     const saveData = async () => {
-      if (newValue === null) {
+      if (!newValue) {
         return;
+        p;
       }
 
       try {
