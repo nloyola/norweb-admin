@@ -7,7 +7,6 @@ export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   const proxyTarget = `http://${env.BACKEND_SERVER}`;
-  console.log(mode, env.BACKEND_SERVER, proxyTarget);
 
   return {
     plugins: [react(), tsconfigPaths()],

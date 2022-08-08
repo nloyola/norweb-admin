@@ -37,7 +37,6 @@ export function ProjectDetails() {
 
   const handleClose = <T extends unknown>(newValue?: T) => {
     const saveData = async () => {
-      console.log(propInfo.propName, newValue);
       if (!newValue) {
         return;
       }
