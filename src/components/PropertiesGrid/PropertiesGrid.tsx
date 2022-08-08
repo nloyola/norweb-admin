@@ -36,15 +36,26 @@ export type PropertiesSchema = Record<string, PropertyInfo<unknown>>;
 
 type PropertiesGridProps = {
   schema: PropertiesSchema;
+  displayOrder: string[];
   handleChange: (propInfo: PropertyInfo<unknown>) => void;
 };
 
-export function PropertiesGrid({ schema, handleChange }: PropertiesGridProps) {
+export function PropertiesGrid({ schema, displayOrder, handleChange }: PropertiesGridProps) {
   return (
     <Grid container spacing={4}>
-      {Object.values(schema).map((propInfo) => (
-        <GridItemProperty key={propInfo.propName} {...propInfo} handleChange={handleChange} />
-      ))}
+      {displayOrder.map((schemaPropName) => {
+        const propInfo = schema[schemaPropName];
+
+        if (!propInfo) {
+          throw new Error('property not found in schema: ' + schemaPropName);
+        }
+
+        if (propInfo.propertyChanger) {
+          return <GridItemProperty key={propInfo.propName} {...propInfo} handleChange={handleChange} />;
+        }
+
+        return <GridItemProperty key={propInfo.propName} {...propInfo} />;
+      })}
     </Grid>
   );
 }

@@ -1,5 +1,6 @@
 import { PaginatedResponse } from '@app/models';
 import { Project, ProjectAdd } from '@app/models/projects';
+import { ProjectKeyword, ProjectKeywordAdd as ProjectKeywordAddOrUpdate } from '@app/models/projects/ProjectKeyword';
 import { dateToString } from '@app/utils/utils';
 
 export class ProjectsService {
@@ -73,6 +74,54 @@ export class ProjectsService {
     if (response.status >= 400) {
       console.error(json);
       throw new Error(JSON.stringify(json, null, 2));
+    }
+
+    return json;
+  }
+
+  static async addKeyword(projectId: number, keyword: ProjectKeywordAddOrUpdate): Promise<Event> {
+    const data = { data: keyword };
+    const response = await fetch(this.apiBaseUrl + `${projectId}/keywords/`, {
+      headers: {
+        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Not found');
+      } else {
+        throw new Error('HTTP error: status: ' + response.status);
+      }
+    }
+
+    return result;
+  }
+
+  static async updateKeyword(projectId: number, keywordId: number, keyword: ProjectKeywordAddOrUpdate): Promise<Event> {
+    const data = { data: keyword };
+    const url = `${this.apiBaseUrl}${projectId}/events/${keywordId}/`;
+    const response = await fetch(url, {
+      headers: {
+        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
+        'Content-Type': 'application/json'
+      },
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Not found');
+      } else {
+        throw new Error('HTTP error: status: ' + response.status);
+      }
     }
 
     return json;

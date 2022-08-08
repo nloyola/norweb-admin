@@ -170,6 +170,7 @@ export function PersonBio() {
   }
 
   const schema = personDetails(person);
+  const displayOrder = Object.keys(schema);
 
   return (
     <>
@@ -178,7 +179,7 @@ export function PersonBio() {
           pl: 2
         }}
       >
-        <PropertiesGrid schema={schema} handleChange={onPropChange} />
+        <PropertiesGrid displayOrder={displayOrder} schema={schema} handleChange={onPropChange} />
       </Box>
       <Stack spacing={2} direction="row" mt={5}>
         <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>

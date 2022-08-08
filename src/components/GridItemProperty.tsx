@@ -16,6 +16,7 @@ export function GridItemProperty<T extends GridItemPropertyProps>(propInfo: T) {
     }
   };
 
+  // the "change" icon is only displayed if the handleChange is defined */
   return (
     <>
       <Grid item xs={12} alignItems="flex-start" container style={{ padding: '0 1rem' }}>
@@ -32,13 +33,15 @@ export function GridItemProperty<T extends GridItemPropertyProps>(propInfo: T) {
           )}
           {typeof propInfo.value !== 'string' && propInfo.value}
         </Grid>
-        <Grid item xs="auto">
-          <Tooltip title="Change" arrow placement="left">
-            <IconButton size="small" color="primary" onClick={handleClick}>
-              <Edit sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Tooltip>
-        </Grid>
+        {propInfo.handleChange && (
+          <Grid item xs="auto">
+            <Tooltip title="Change" arrow placement="left">
+              <IconButton size="small" color="primary" onClick={handleClick}>
+                <Edit sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+          </Grid>
+        )}
       </Grid>
       <Grid item xs={12} container style={{ padding: '1.1rem 0' }}>
         <Grid item xs={2} />

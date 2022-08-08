@@ -95,10 +95,11 @@ export function EventDetails() {
   }
 
   const schema = eventPropertySchema(event);
+  const displayOrder = Object.keys(schema);
 
   return (
     <>
-      <PropertiesGrid schema={schema} handleChange={onPropChange} />
+      <PropertiesGrid schema={schema} displayOrder={displayOrder} handleChange={onPropChange} />
       <Stack spacing={2} direction="row" mt={2}>
         <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
           <ArrowBack sx={{ mr: 1 }} />

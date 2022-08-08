@@ -1,6 +1,7 @@
 import { ConcurrencySafeEntity } from '../ConcurrencySafeEntity';
 import { Event } from '../events';
 import { Status } from '../Status';
+import { ProjectKeyword } from './ProjectKeyword';
 
 export interface Project extends ConcurrencySafeEntity {
   readonly name: string;
@@ -10,7 +11,6 @@ export interface Project extends ConcurrencySafeEntity {
   readonly description: string;
   readonly goals: string;
   readonly vision: string;
-  readonly keywords: string;
   readonly groupId: number;
   readonly parentProjectId: number;
   readonly subproject: string;
@@ -18,6 +18,7 @@ export interface Project extends ConcurrencySafeEntity {
   readonly cntr: string;
   readonly status: Status;
   readonly events: Event[];
+  readonly keywords: ProjectKeyword[];
 }
 
 export type ProjectAdd = Pick<

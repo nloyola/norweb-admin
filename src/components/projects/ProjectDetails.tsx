@@ -9,6 +9,9 @@ import { ArrowBack } from '@mui/icons-material';
 import { useProject } from '@app/hooks/useProject';
 import { ProjectContextType } from '@app/pages/projects/ProjectPage';
 import { DateRange } from '../PropertyChanger';
+import { ProjectKeyword, ProjectKeywordAdd } from '@app/models/projects/ProjectKeyword';
+import { Keywords } from './Keywords';
+import { PropertyChangerProjectKeyword } from '../PropertyChanger/PropertyChangerProjectKeyword';
 
 // useOutletContext is used on this page, because the use can modify the project's name or shorthand
 // If they are modified, the parent page has to know about it, therefore they share this context
@@ -21,6 +24,8 @@ export function ProjectDetails() {
   const [saveError, setSaveError] = useState('');
   const [saving, setSaving] = useState(false);
   const { error, loading, project: reloadedProject, loadProject } = useProject(Number(params.projectId));
+  const [openUpdateKeyword, setOpenUpdateKeyword] = useState(false);
+  const [selectedKeyword, setSelectedKeyword] = useState<ProjectKeywordAdd | undefined>(undefined);
 
   // it is possible that the page was reloaded by the user, in this case the project must be retrieved from the backend
   useEffect(() => {
@@ -86,7 +91,7 @@ export function ProjectDetails() {
       title: 'Project: change settings',
       id: propInfo.propName,
       label: propInfo.label,
-      open: open,
+      open,
       onClose: handleClose,
       ...propInfo.changerPropsExtra
     };
@@ -102,11 +107,44 @@ export function ProjectDetails() {
     return <Alert severity="error">{error}</Alert>;
   }
 
+  const handleKeywordClicked = (kw: ProjectKeyword) => {
+    setSelectedKeyword(kw);
+    setOpenUpdateKeyword(true);
+  };
+
+  const handleKeywordDeleted = (kw: ProjectKeyword) => {
+    console.log('delete pressed', kw);
+    setSelectedKeyword(kw);
+  };
+
+  const handleKeywordUpdateClosed = () => {
+    setOpenUpdateKeyword(false);
+  };
+
   const schema = projectPropertySchema(project);
+
+  // special handling for keywords
+  schema['keywords'] = {
+    propName: 'keywords',
+    label: 'Keywords',
+    value: <Keywords keywords={project.keywords} onClick={handleKeywordClicked} onDelete={handleKeywordDeleted} />
+  };
+
+  const displayOrder = [
+    'name',
+    'shorthand',
+    'description',
+    'duratrion',
+    'goals',
+    'vision',
+    'keywords',
+    'country',
+    'status'
+  ];
 
   return (
     <>
-      <PropertiesGrid schema={schema} handleChange={onPropChange} />
+      <PropertiesGrid schema={schema} displayOrder={displayOrder} handleChange={onPropChange} />
       <Stack spacing={2} direction="row" mt={5}>
         <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
           <ArrowBack sx={{ mr: 1 }} />
@@ -114,6 +152,16 @@ export function ProjectDetails() {
         </Fab>
       </Stack>
       {open && propertyToElement(propInfo)}
+      {openUpdateKeyword && (
+        <PropertyChangerProjectKeyword
+          title={'Project: change settings'}
+          id={'keyword'}
+          label={'Keyword'}
+          value={selectedKeyword}
+          open={openUpdateKeyword}
+          onClose={handleKeywordUpdateClosed}
+        />
+      )}
     </>
   );
 }
