@@ -1,5 +1,45 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { ReactNode } from 'react';
+import { ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
+import { PropertyChangerAutocomplete } from './PropertyChangerAutocomplete';
+import { PropertyChangerDate } from './PropertyChangerDate';
+import { PropertyChangerDateRange } from './PropertyChangerDateRange';
+import { PropertyChangerPersonNames } from './PropertyChangerPersonNames';
+import { PropertyChangerRadio } from './PropertyChangerRadio';
+import { PropertyChangerText } from './PropertyChangerText';
+
+export enum PropertyTypes {
+  AUTO_COMPLETE = 'autocomplete,',
+  DATE_RANGE = 'date-range,',
+  DATE = 'date,',
+  PERSON_NAMES = 'person-names,',
+  PROJECT_KEYWORD = 'project-keyword,',
+  RADIO = 'radio,',
+  TEXT = 'text'
+}
+
+export interface PropertySchema<T> {
+  propertyName: string;
+  propertyType?: PropertyTypes;
+  label: string;
+  value?: T;
+  handleChange?: (propertyName: string) => void;
+
+  propertyOptions?: PropertyOption<T>[];
+  multiline?: boolean;
+  minDate?: Date;
+  maxDate?: Date;
+}
+
+export type PropertiesSchema = Record<string, PropertySchema<unknown>>;
+
+export interface DateRange {
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface PersonNames {
+  givenNames: string;
+  familyNames: string;
+}
 
 export interface PropertyOption<T> {
   id: T;
@@ -7,43 +47,55 @@ export interface PropertyOption<T> {
 }
 
 export interface PropertyChangerProps<T> {
+  propertyName: string;
+  propertyType?: PropertyTypes;
   title: string;
-  id: string;
   label: string;
+  open: boolean;
+  onClose: (propertyName: string, value?: T) => void;
   value?: T;
-  options?: PropertyOption<T>[];
-  open: boolean;
-  onClose: (value?: T) => void;
+  propertyOptions?: PropertyOption<T>[];
 }
 
-interface PropertyChangerInternalProps {
-  children: ReactNode;
-  title: string;
-  open: boolean;
-  valid: boolean;
-  onOk: () => void;
-  onCancel: () => void;
+export interface PropertyChangerDateRangeProps extends PropertyChangerProps<DateRange> {}
+
+export interface PropertyChangerDateProps extends PropertyChangerProps<Date> {
+  minDate?: Date;
+  maxDate?: Date;
 }
 
-export function PropertyChanger({ title, open, valid, onOk, onCancel, children }: PropertyChangerInternalProps) {
-  const handleOk = () => {
-    onOk();
-  };
+export interface PropertyChangerPersonNamesProps extends PropertyChangerProps<PersonNames> {}
 
-  const handleCancel = () => {
-    onCancel();
-  };
+export interface PropertyChangerProjectKeywordProps extends PropertyChangerProps<ProjectKeywordUpdate> {}
 
-  return (
-    <Dialog onClose={handleCancel} open={open} fullWidth={true} maxWidth="md">
-      <DialogTitle>{title}</DialogTitle>
-      <DialogContent>{children}</DialogContent>
-      <DialogActions>
-        <Button onClick={handleCancel}>Cancel</Button>
-        <Button onClick={handleOk} disabled={!valid}>
-          Ok
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
+export interface PropertyChangerTextProps extends PropertyChangerProps<string> {
+  multiline: boolean;
+}
+
+export function PropertyChanger<T extends PropertyChangerProps<unknown>>(props: T) {
+  switch (props.propertyType) {
+    case PropertyTypes.AUTO_COMPLETE:
+      return <PropertyChangerAutocomplete {...props} />;
+
+    case PropertyTypes.DATE_RANGE:
+      const dateRangeProps = props as PropertyChangerDateRangeProps;
+      return <PropertyChangerDateRange {...dateRangeProps} />;
+
+    case PropertyTypes.DATE:
+      const dateProps = props as PropertyChangerDateProps;
+      return <PropertyChangerDate {...dateProps} />;
+
+    case PropertyTypes.PERSON_NAMES:
+      const namesProps = props as PropertyChangerPersonNamesProps;
+      return <PropertyChangerPersonNames {...namesProps} />;
+
+    case PropertyTypes.TEXT:
+      const textProps = props as unknown as PropertyChangerTextProps;
+      return <PropertyChangerText {...textProps} />;
+
+    case PropertyTypes.RADIO:
+      return <PropertyChangerRadio {...props} />;
+  }
+
+  throw new Error('invalid property type: ' + props.propertyType);
 }

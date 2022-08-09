@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import format from 'date-fns/format';
 
 // see https://usehooks-ts.com/react-hook/use-debounce

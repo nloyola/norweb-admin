@@ -2,14 +2,11 @@ import { TextField } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useState } from 'react';
-import { PropertyChanger, PropertyChangerProps } from './PropertyChanger';
-
-export interface PropertyChangerDateProps extends PropertyChangerProps<Date> {
-  minDate?: Date;
-  maxDate?: Date;
-}
+import { PropertyChangerDateProps } from './PropertyChanger';
+import { PropertyChangerDialog } from './PropertyChangerDialog';
 
 export const PropertyChangerDate = ({
+  propertyName,
   title,
   label,
   value,
@@ -21,15 +18,15 @@ export const PropertyChangerDate = ({
   const [input, setInput] = useState(value);
 
   const handleOk = () => {
-    onClose(input ? new Date(input) : undefined);
+    onClose(propertyName, input ? new Date(input) : undefined);
   };
 
   const handleCancel = () => {
-    onClose(undefined);
+    onClose(propertyName, undefined);
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!input}>
+    <PropertyChangerDialog title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!input}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DatePicker
           label={label}
@@ -46,6 +43,6 @@ export const PropertyChangerDate = ({
           )}
         />
       </LocalizationProvider>
-    </PropertyChanger>
+    </PropertyChangerDialog>
   );
 };

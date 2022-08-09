@@ -1,23 +1,23 @@
 import { Grid, TextField } from '@mui/material';
 import { useState } from 'react';
-import { PropertyChanger, PropertyChangerProps } from './PropertyChanger';
+import { PersonNames, PropertyChangerPersonNamesProps, PropertyChangerProps } from './PropertyChanger';
 import * as yup from 'yup';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-
-export interface PersonNames {
-  givenNames: string;
-  familyNames: string;
-}
+import { PropertyChangerDialog } from './PropertyChangerDialog';
 
 const schema = yup.object().shape({
   givenNames: yup.string(),
   familyNames: yup.string().required('at least one family name is required')
 });
 
-export interface PropertyChangerPersonNamesProps extends PropertyChangerProps<PersonNames> {}
-
-export function PropertyChangerPersonNames({ title, id, value, open, onClose }: PropertyChangerPersonNamesProps) {
+export function PropertyChangerPersonNames({
+  propertyName,
+  title,
+  value,
+  open,
+  onClose
+}: PropertyChangerPersonNamesProps) {
   const [input, setInput] = useState<PersonNames | undefined>(value);
 
   const {
@@ -36,15 +36,15 @@ export function PropertyChangerPersonNames({ title, id, value, open, onClose }: 
   };
 
   const handleOk = () => {
-    onClose(input);
+    onClose(propertyName, input);
   };
 
   const handleCancel = () => {
-    onClose(undefined);
+    onClose(propertyName, undefined);
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={isValid}>
+    <PropertyChangerDialog title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={isValid}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={12}>
@@ -83,6 +83,6 @@ export function PropertyChangerPersonNames({ title, id, value, open, onClose }: 
           </Grid>
         </Grid>
       </form>
-    </PropertyChanger>
+    </PropertyChangerDialog>
   );
 }

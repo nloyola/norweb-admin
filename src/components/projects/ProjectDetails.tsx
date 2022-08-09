@@ -1,31 +1,38 @@
-import { createElement, FC, useEffect, useState } from 'react';
-import { PropertiesGrid, PropertyChangers, PropertyInfo } from '@app/components/PropertiesGrid/PropertiesGrid';
-import { PropertyChangerProps } from '@app/components/PropertyChanger/PropertyChanger';
-import { projectPropertySchema } from './project-schema';
+import { useEffect, useState } from 'react';
+import { PropertyChanger } from '@app/components/PropertyChanger/PropertyChanger';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { Alert, CircularProgress, Fab, Stack } from '@mui/material';
+import { Alert, CircularProgress, Fab, Grid, Stack } from '@mui/material';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { ArrowBack } from '@mui/icons-material';
 import { useProject } from '@app/hooks/useProject';
 import { ProjectContextType } from '@app/pages/projects/ProjectPage';
 import { DateRange } from '../PropertyChanger';
-import { ProjectKeyword, ProjectKeywordAdd } from '@app/models/projects/ProjectKeyword';
+import { ProjectKeyword, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import { Keywords } from './Keywords';
-import { PropertyChangerProjectKeyword } from '../PropertyChanger/PropertyChangerProjectKeyword';
+import { datesRangeToString, dateToString } from '@app/utils/utils';
+import { PropertyKeywordUpdate } from './PropertyKeywordUpdates';
+import { EntityProperty } from '../EntityProperty';
+import { countryCodeToCountry as countryCodeToName, statusToLabel } from '@app/models';
+import { projectPropertiesSchemas } from './projectPropertiesSchema';
+import { nlToFragments } from '@app/utils/nltoFragments';
 
-// useOutletContext is used on this page, because the use can modify the project's name or shorthand
-// If they are modified, the parent page has to know about it, therefore they share this context
+/**
+ * A component that shows a project's settings and allows the user to modify them.
+ *
+ * useOutletContext is used on this page, because the user can modify the project's name or shorthand.
+ * If they are modified, the parent page has to know about it, therefore they share this context.
+ */
 export function ProjectDetails() {
   const params = useParams();
   const navigate = useNavigate();
   const { project, updateProject }: ProjectContextType = useOutletContext();
   const [open, setOpen] = useState(false);
-  const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
+  const [propertyToUpdate, setPropertyToUpdate] = useState<string | null>(null);
   const [saveError, setSaveError] = useState('');
   const [saving, setSaving] = useState(false);
   const { error, loading, project: reloadedProject, loadProject } = useProject(Number(params.projectId));
   const [openUpdateKeyword, setOpenUpdateKeyword] = useState(false);
-  const [selectedKeyword, setSelectedKeyword] = useState<ProjectKeywordAdd | undefined>(undefined);
+  const [selectedKeyword, setSelectedKeyword] = useState<ProjectKeywordUpdate | undefined>(undefined);
 
   // it is possible that the page was reloaded by the user, in this case the project must be retrieved from the backend
   useEffect(() => {
@@ -35,32 +42,45 @@ export function ProjectDetails() {
     }
   }, []);
 
-  const onPropChange = (propInfo: PropertyInfo<unknown>) => {
-    setPropInfo(propInfo);
+  const onPropChange = (propertyName: string) => {
+    setPropertyToUpdate(propertyName);
     setOpen(true);
   };
 
-  const handleClose = <T extends unknown>(newValue?: T) => {
+  const handleClose = <T extends unknown>(propertyName: string, newValue?: T) => {
     const saveData = async () => {
       if (!newValue) {
         return;
       }
 
+      if (!project || !updateProject) {
+        throw new Error('setProject is invalid');
+      }
+
+      const newValues: any = { ...project };
+
+      if (propertyName === 'duration') {
+        const newDates = newValue as DateRange;
+        newValues.startDate = newDates.startDate;
+        newValues.endDate = newDates.endDate;
+      } else {
+        newValues[propertyName] = newValue;
+      }
+
       try {
-        if (!project || !updateProject) {
-          throw new Error('setProject is invalid');
-        }
-
-        const newValues: any = { ...project };
-        if (propInfo.propName === 'duration') {
-          const newDates = newValue as DateRange;
-          newValues.startDate = newDates.startDate;
-          newValues.endDate = newDates.endDate;
-        } else {
-          newValues[propInfo.propName] = newValue;
-        }
-
-        const modifiedProject = await ProjectsService.update(newValues);
+        const modifiedProject = await ProjectsService.update({
+          id: project.id,
+          version: project.version,
+          name: newValues.name,
+          shorthand: newValues.shorthand,
+          startDate: dateToString(newValues.startDate),
+          endDate: dateToString(newValues.endDate),
+          description: newValues.description,
+          goals: newValues.goals,
+          vision: newValues.vision,
+          countryCode: newValues.countryCode,
+          status: newValues.status
+        });
         updateProject(modifiedProject);
       } catch (err) {
         console.error(err);
@@ -76,27 +96,6 @@ export function ProjectDetails() {
 
   const backClicked = () => {
     navigate(-1);
-  };
-
-  const propertyToElement = (propInfo: PropertyInfo<unknown>) => {
-    if (!propInfo.propertyChanger) {
-      throw Error('property changer is undefined');
-    }
-
-    if (PropertyChangers[propInfo.propertyChanger] === undefined) {
-      throw Error(`property changer is invalid: ${propInfo.propertyChanger}`);
-    }
-
-    const props: PropertyChangerProps<unknown> = {
-      title: 'Project: change settings',
-      id: propInfo.propName,
-      label: propInfo.label,
-      open,
-      onClose: handleClose,
-      ...propInfo.changerPropsExtra
-    };
-
-    return createElement<PropertyChangerProps<unknown>>(PropertyChangers[propInfo.propertyChanger] as FC, props);
   };
 
   if (loading || saving) {
@@ -117,50 +116,104 @@ export function ProjectDetails() {
     setSelectedKeyword(kw);
   };
 
-  const handleKeywordUpdateClosed = () => {
+  const handleKeywordUpdateClosed = (updatedKeyword?: ProjectKeywordUpdate) => {
     setOpenUpdateKeyword(false);
+    if (!updatedKeyword) {
+      return;
+    }
+
+    const saveUpdatedKeyword = async () => {
+      if (!project || !updateProject) {
+        throw new Error('setProject is invalid');
+      }
+
+      try {
+        await ProjectsService.updateKeyword(project.id, updatedKeyword);
+      } catch (err) {
+        console.error(err);
+        setSaveError(err instanceof Error ? err.message : JSON.stringify(err));
+      } finally {
+        setSaving(false);
+      }
+    };
+
+    console.log(updatedKeyword);
+    saveUpdatedKeyword();
   };
 
-  const schema = projectPropertySchema(project);
+  // FIXME: add validation to keywords, cannot have a value outside of 0 to 1
 
-  // special handling for keywords
-  schema['keywords'] = {
-    propName: 'keywords',
-    label: 'Keywords',
-    value: <Keywords keywords={project.keywords} onClick={handleKeywordClicked} onDelete={handleKeywordDeleted} />
-  };
-
-  const displayOrder = [
-    'name',
-    'shorthand',
-    'description',
-    'duratrion',
-    'goals',
-    'vision',
-    'keywords',
-    'country',
-    'status'
-  ];
+  const schemas = projectPropertiesSchemas(project);
 
   return (
     <>
-      <PropertiesGrid schema={schema} displayOrder={displayOrder} handleChange={onPropChange} />
+      <Grid container spacing={4}>
+        <EntityProperty propName="name" label="Project Name" value={project.name} handleChange={onPropChange} />
+        <EntityProperty propName="shorthand" label="Shorthand" value={project.shorthand} handleChange={onPropChange} />
+        <EntityProperty
+          propName="description"
+          label="Description"
+          value={nlToFragments(project.description)}
+          handleChange={onPropChange}
+        />
+        <EntityProperty
+          propName="duration"
+          label="Duration"
+          value={datesRangeToString(
+            new Date(project.startDate),
+            project.endDate ? new Date(project.endDate) : undefined
+          )}
+          handleChange={onPropChange}
+        />
+        <EntityProperty
+          propName="goals"
+          label="Goals"
+          value={nlToFragments(project.goals)}
+          handleChange={onPropChange}
+        />
+        <EntityProperty
+          propName="vision"
+          label="Vision"
+          value={nlToFragments(project.vision)}
+          handleChange={onPropChange}
+        />
+        <EntityProperty
+          propName="keywords"
+          label="Keywords"
+          value={
+            <Keywords keywords={project.keywords} onClick={handleKeywordClicked} onDelete={handleKeywordDeleted} />
+          }
+        />
+        <EntityProperty
+          propName="countryCode"
+          label="Country"
+          value={project.countryCode ? countryCodeToName(project.countryCode) : undefined}
+          handleChange={onPropChange}
+        />
+        <EntityProperty
+          propName="status"
+          label="Status"
+          value={project.status ? statusToLabel(project.status) : undefined}
+          handleChange={onPropChange}
+        />
+      </Grid>
+
       <Stack spacing={2} direction="row" mt={5}>
         <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
           <ArrowBack sx={{ mr: 1 }} />
           Back
         </Fab>
       </Stack>
-      {open && propertyToElement(propInfo)}
-      {openUpdateKeyword && (
-        <PropertyChangerProjectKeyword
+      {open && propertyToUpdate && schemas[propertyToUpdate].propertyType && (
+        <PropertyChanger
           title={'Project: change settings'}
-          id={'keyword'}
-          label={'Keyword'}
-          value={selectedKeyword}
-          open={openUpdateKeyword}
-          onClose={handleKeywordUpdateClosed}
+          {...schemas[propertyToUpdate]}
+          open={open}
+          onClose={handleClose}
         />
+      )}
+      {openUpdateKeyword && (
+        <PropertyKeywordUpdate keyword={selectedKeyword} open={openUpdateKeyword} onClose={handleKeywordUpdateClosed} />
       )}
     </>
   );

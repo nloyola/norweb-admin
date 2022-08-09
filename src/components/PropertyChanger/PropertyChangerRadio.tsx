@@ -1,36 +1,38 @@
 import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
-import { PropertyChanger, PropertyChangerProps, PropertyOption } from './PropertyChanger';
+import { PropertyChangerProps, PropertyOption } from './PropertyChanger';
+import { PropertyChangerDialog } from './PropertyChangerDialog';
 
-export const PropertyChangerRadio = <T extends unknown>({
+export function PropertyChangerRadio({
+  propertyName,
   title,
   label,
   value,
   open,
   onClose,
-  options
-}: PropertyChangerProps<T>) => {
-  const option = options?.find((option) => option.id === value);
-  const [input, setInput] = useState<PropertyOption<T> | undefined>(option);
+  propertyOptions
+}: PropertyChangerProps<unknown>) {
+  const selectedOption = propertyOptions?.find((option) => option.id === value);
+  const [input, setInput] = useState<PropertyOption<unknown> | undefined>(selectedOption);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newValue = (event.target as HTMLInputElement).value;
-    const opt = options?.find((option) => option.id === newValue);
+    const opt = propertyOptions?.find((option) => option.id === newValue);
     if (opt) {
       setInput(opt);
     }
   };
 
   const handleOk = () => {
-    onClose(input?.id);
+    onClose(propertyName, input?.id);
   };
 
   const handleCancel = () => {
-    onClose(undefined);
+    onClose(propertyName, undefined);
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid>
+    <PropertyChangerDialog title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid>
       <FormControl>
         <FormLabel id="demo-radio-buttons-group-label">{label}</FormLabel>
         <RadioGroup
@@ -39,11 +41,11 @@ export const PropertyChangerRadio = <T extends unknown>({
           name="radio-buttons-group"
           onChange={handleChange}
         >
-          {(options || []).map((option) => (
+          {(propertyOptions || []).map((option) => (
             <FormControlLabel key={option.label} value={option.id} control={<Radio />} label={option.label} />
           ))}
         </RadioGroup>
       </FormControl>
-    </PropertyChanger>
+    </PropertyChangerDialog>
   );
-};
+}

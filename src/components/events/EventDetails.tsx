@@ -1,13 +1,15 @@
-import { createElement, FC, useContext, useEffect, useState } from 'react';
-import { Alert, CircularProgress, Fab, Stack } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Alert, CircularProgress, Fab, Grid, Stack } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
-import { PropertyChangerProps } from '@app/components/PropertyChanger/PropertyChanger';
-import { PropertiesGrid, PropertyChangers, PropertyInfo } from '@app/components/PropertiesGrid/PropertiesGrid';
 import { useNavigate, useParams } from 'react-router-dom';
 import { EventsService } from '@app/services/events/EventsService';
-import { eventPropertySchema } from './event-schema';
 import { useEvent } from '@app/hooks/useEvent';
-import { DateRange } from '../PropertyChanger';
+import { DateRange, PropertyChanger } from '../PropertyChanger';
+import { datesRangeToString, dateToString } from '@app/utils/utils';
+import { eventPropertiesSchema } from './eventPropertiesSchemas';
+import { EntityProperty } from '../EntityProperty';
+import { nlToFragments } from '@app/utils/nltoFragments';
+import { eventTypeToLabel } from '@app/models/events';
 
 export function EventDetails() {
   const navigate = useNavigate();
@@ -16,34 +18,37 @@ export function EventDetails() {
   const eventId = Number(params.eventId);
 
   const { error, loading, event, loadEvent, updateEvent } = useEvent(projectId, eventId);
-  const [propInfo, setPropInfo] = useState<PropertyInfo<unknown>>({ propName: '', label: '' });
+  const [propertyToUpdate, setPropertyToUpdate] = useState<string | null>(null);
+
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
-  useEffect(() => loadEvent, []);
+  useEffect(() => {
+    loadEvent();
+  }, []);
 
-  const onPropChange = (propInfo: PropertyInfo<unknown>) => {
-    setPropInfo(propInfo);
+  const onPropChange = (propertyName: string) => {
+    setPropertyToUpdate(propertyName);
     setOpen(true);
   };
 
-  const handleClose = <T extends unknown>(newValue?: T) => {
+  const handleClose = <T extends unknown>(propertyName: string, newValue?: T) => {
     const saveData = async () => {
       if (!newValue) {
         return;
       }
 
-      try {
-        const newValues: any = { ...event };
-        if (propInfo.propName === 'duration') {
-          const newDates = newValue as DateRange;
-          newValues.startDate = newDates.startDate;
-          newValues.endDate = newDates.endDate;
-        } else {
-          newValues[propInfo.propName] = newValue;
-        }
+      const newValues: any = { ...event };
+      if (propertyName === 'duration') {
+        const newDates = newValue as DateRange;
+        newValues.startDate = dateToString(newDates.startDate);
+        newValues.endDate = dateToString(newDates.endDate);
+      } else {
+        newValues[propertyName] = newValue;
+      }
 
+      try {
         const modifiedEvent = await EventsService.update(projectId, newValues);
         updateEvent(modifiedEvent);
       } catch (err) {
@@ -56,26 +61,6 @@ export function EventDetails() {
 
     setOpen(false);
     saveData();
-  };
-
-  const propertyToElement = (propInfo: PropertyInfo<unknown>) => {
-    if (propInfo.propertyChanger === undefined) {
-      throw new Error('property changer is undefined');
-    }
-    if (PropertyChangers[propInfo.propertyChanger] === undefined) {
-      throw Error(`property changer is invalid: ${propInfo.propertyChanger}`);
-    }
-
-    const props: PropertyChangerProps<unknown> = {
-      title: 'Change Event Settings',
-      id: propInfo.propName,
-      label: propInfo.label,
-      open,
-      onClose: handleClose,
-      ...propInfo.changerPropsExtra
-    };
-
-    return createElement<PropertyChangerProps<unknown>>(PropertyChangers[propInfo.propertyChanger] as FC, props);
   };
 
   const backClicked = () => {
@@ -94,19 +79,48 @@ export function EventDetails() {
     return <Alert severity="error">{saveError}</Alert>;
   }
 
-  const schema = eventPropertySchema(event);
-  const displayOrder = Object.keys(schema);
+  const schemas = eventPropertiesSchema(event);
 
   return (
     <>
-      <PropertiesGrid schema={schema} displayOrder={displayOrder} handleChange={onPropChange} />
+      <Grid container spacing={4}>
+        <EntityProperty propName="title" label="Event title" value={event.title} handleChange={onPropChange} />
+        <EntityProperty
+          propName="description"
+          label="Description"
+          value={nlToFragments(event.description)}
+          handleChange={onPropChange}
+        />
+        <EntityProperty
+          propName="duration"
+          label="Duration"
+          value={datesRangeToString(new Date(event.startDate), event.endDate ? new Date(event.endDate) : undefined)}
+          handleChange={onPropChange}
+        />
+        <EntityProperty propName="venue" label="Venue" value={event.venue} handleChange={onPropChange} />
+        <EntityProperty propName="organizer" label="Organizer" value={event.organizer} handleChange={onPropChange} />
+        <EntityProperty propName="url" label="Website" value={event.url} handleChange={onPropChange} />
+        <EntityProperty
+          propName="type"
+          label="Type"
+          value={event.type ? eventTypeToLabel(event.type) : undefined}
+          handleChange={onPropChange}
+        />
+      </Grid>
       <Stack spacing={2} direction="row" mt={2}>
         <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
           <ArrowBack sx={{ mr: 1 }} />
           Back
         </Fab>
       </Stack>
-      {open && propertyToElement(propInfo)}
+      {open && propertyToUpdate && schemas[propertyToUpdate].propertyType && (
+        <PropertyChanger
+          title={'Event: change settings'}
+          {...schemas[propertyToUpdate]}
+          open={open}
+          onClose={handleClose}
+        />
+      )}
     </>
   );
 }

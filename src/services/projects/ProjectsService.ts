@@ -1,7 +1,6 @@
 import { PaginatedResponse } from '@app/models';
-import { Project, ProjectAdd } from '@app/models/projects';
-import { ProjectKeyword, ProjectKeywordAdd as ProjectKeywordAddOrUpdate } from '@app/models/projects/ProjectKeyword';
-import { dateToString } from '@app/utils/utils';
+import { Project, ProjectAdd, ProjectUpdate } from '@app/models/projects';
+import { ProjectKeywordAdd, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 
 export class ProjectsService {
   private static apiBaseUrl = '/api/projects/';
@@ -58,8 +57,8 @@ export class ProjectsService {
     return true;
   }
 
-  static async update(project: Project): Promise<Project> {
-    const data = { data: this.projectToApiRepr(project) };
+  static async update(project: ProjectUpdate): Promise<Project> {
+    const data = { data: project };
     const url = `${this.apiBaseUrl}${project.id}/`;
     const response = await fetch(url, {
       headers: {
@@ -79,7 +78,7 @@ export class ProjectsService {
     return json;
   }
 
-  static async addKeyword(projectId: number, keyword: ProjectKeywordAddOrUpdate): Promise<Event> {
+  static async addKeyword(projectId: number, keyword: ProjectKeywordAdd): Promise<Event> {
     const data = { data: keyword };
     const response = await fetch(this.apiBaseUrl + `${projectId}/keywords/`, {
       headers: {
@@ -102,9 +101,9 @@ export class ProjectsService {
     return result;
   }
 
-  static async updateKeyword(projectId: number, keywordId: number, keyword: ProjectKeywordAddOrUpdate): Promise<Event> {
+  static async updateKeyword(projectId: number, keyword: ProjectKeywordUpdate): Promise<Event> {
     const data = { data: keyword };
-    const url = `${this.apiBaseUrl}${projectId}/events/${keywordId}/`;
+    const url = `${this.apiBaseUrl}${projectId}/keywords/${keyword.id}/`;
     const response = await fetch(url, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
@@ -125,14 +124,5 @@ export class ProjectsService {
     }
 
     return json;
-  }
-
-  private static projectToApiRepr(project: Project): any {
-    return {
-      ...project,
-      startDate: dateToString(project.startDate),
-      endDate: project.endDate ? dateToString(project.endDate) : undefined,
-      events: undefined
-    };
   }
 }

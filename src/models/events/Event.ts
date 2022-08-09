@@ -17,3 +17,5 @@ export type EventAdd = Pick<
   Event,
   'title' | 'description' | 'startDate' | 'endDate' | 'venue' | 'organizer' | 'url' | 'type'
 >;
+
+export type EventUpdate = EventAdd & Pick<Event, 'id'>;

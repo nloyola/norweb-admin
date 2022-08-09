@@ -1,11 +1,12 @@
 import { Grid, TextField } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { PropertyChanger, PropertyChangerProps } from './PropertyChanger';
 import * as yup from 'yup';
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ProjectKeywordAdd } from '@app/models/projects/ProjectKeyword';
+import { ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
+import { PropertyChangerDialog } from './PropertyChangerDialog';
+import { PropertyChangerProjectKeywordProps } from './PropertyChanger';
 
 const schema = yup.object().shape({
   name: yup.string().required('name is required'),
@@ -17,32 +18,34 @@ const schema = yup.object().shape({
     )
 });
 
-export interface PropertyChangerProjectKeywordProps extends PropertyChangerProps<ProjectKeywordAdd> {}
-
-export function PropertyChangerProjectKeyword({ title, value, open, onClose }: PropertyChangerProjectKeywordProps) {
+export function PropertyChangerProjectKeyword({
+  propertyName,
+  title,
+  value,
+  open,
+  onClose
+}: PropertyChangerProjectKeywordProps) {
   const {
     control,
     getValues,
     formState: { isValid, errors }
-  } = useForm<ProjectKeywordAdd>({
+  } = useForm<ProjectKeywordUpdate>({
     mode: 'all',
     reValidateMode: 'onChange',
     resolver: yupResolver(schema),
     defaultValues: value
   });
 
-  console.log(title, value, open);
-
   const handleOk = () => {
-    onClose(getValues());
+    onClose(propertyName, getValues());
   };
 
   const handleCancel = () => {
-    onClose(undefined);
+    onClose(propertyName, undefined);
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={isValid}>
+    <PropertyChangerDialog title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={isValid}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <form>
           <Grid container spacing={3}>
@@ -85,6 +88,6 @@ export function PropertyChangerProjectKeyword({ title, value, open, onClose }: P
           </Grid>
         </form>
       </LocalizationProvider>
-    </PropertyChanger>
+    </PropertyChangerDialog>
   );
 }

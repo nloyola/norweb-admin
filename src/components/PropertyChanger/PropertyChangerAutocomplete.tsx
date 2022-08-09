@@ -1,14 +1,16 @@
 import { Autocomplete, TextField } from '@mui/material';
 import { useState } from 'react';
-import { PropertyChanger, PropertyChangerProps, PropertyOption } from './PropertyChanger';
+import { PropertyChangerProps, PropertyOption } from './PropertyChanger';
+import { PropertyChangerDialog } from './PropertyChangerDialog';
 
 export const PropertyChangerAutocomplete = <T extends unknown>({
+  propertyName,
   title,
   label,
   value,
   open,
   onClose,
-  options
+  propertyOptions: options
 }: PropertyChangerProps<T>) => {
   if (!options) {
     throw new Error('invalid options');
@@ -22,15 +24,15 @@ export const PropertyChangerAutocomplete = <T extends unknown>({
   };
 
   const handleOk = () => {
-    onClose(input?.id);
+    onClose(propertyName, input?.id);
   };
 
   const handleCancel = () => {
-    onClose(undefined);
+    onClose(propertyName, undefined);
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!input}>
+    <PropertyChangerDialog title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={!!input}>
       <Autocomplete
         options={options}
         value={input}
@@ -38,6 +40,6 @@ export const PropertyChangerAutocomplete = <T extends unknown>({
         onChange={handleChange}
         renderInput={(params) => <TextField {...params} label={label} variant="standard" />}
       />
-    </PropertyChanger>
+    </PropertyChangerDialog>
   );
 };

@@ -7,6 +7,8 @@ export interface ProjectKeyword extends DomainEntity {
 
 export type ProjectKeywordAdd = Pick<ProjectKeyword, 'name' | 'weight'>;
 
+export type ProjectKeywordUpdate = ProjectKeywordAdd & Pick<ProjectKeyword, 'id'>;
+
 export function keywordWeight(keyword: ProjectKeyword): number {
   return parseFloat(keyword.weight);
 }

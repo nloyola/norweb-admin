@@ -25,3 +25,5 @@ export type ProjectAdd = Pick<
   Project,
   'name' | 'shorthand' | 'startDate' | 'endDate' | 'description' | 'goals' | 'vision' | 'countryCode'
 >;
+
+export type ProjectUpdate = ProjectAdd & Pick<Project, 'id' | 'version' | 'status'>;

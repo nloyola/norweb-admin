@@ -1,18 +1,18 @@
 import { ReactElement } from 'react';
-import { Divider, Grid, IconButton, Tooltip, Typography } from '@mui/material';
+import { Chip, Divider, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { Edit } from '@mui/icons-material';
 
 export interface GridItemPropertyProps {
   propName: string;
   label: string;
   value?: string | ReactElement | ReactElement[];
-  handleChange?: (propInfo: GridItemPropertyProps) => void;
+  handleChange?: (propertyName: string) => void;
 }
 
-export function GridItemProperty<T extends GridItemPropertyProps>(propInfo: T) {
+export function EntityProperty({ propName, label, value, handleChange }: GridItemPropertyProps) {
   const handleClick = () => {
-    if (propInfo.handleChange) {
-      propInfo.handleChange(propInfo);
+    if (handleChange) {
+      handleChange(propName);
     }
   };
 
@@ -22,18 +22,19 @@ export function GridItemProperty<T extends GridItemPropertyProps>(propInfo: T) {
       <Grid item xs={12} alignItems="flex-start" container style={{ padding: '0 1rem' }}>
         <Grid item xs={2}>
           <Typography component="h6" variant="subtitle2">
-            {propInfo.label}
+            {label}
           </Typography>
         </Grid>
         <Grid item xs={9}>
-          {typeof propInfo.value === 'string' && (
+          {!value && <Chip label="Not avaiable" />}
+          {typeof value === 'string' && (
             <Typography component="p" variant="body1">
-              {propInfo.value}
+              {value}
             </Typography>
           )}
-          {typeof propInfo.value !== 'string' && propInfo.value}
+          {typeof value !== 'string' && value}
         </Grid>
-        {propInfo.handleChange && (
+        {handleChange && (
           <Grid item xs="auto">
             <Tooltip title="Change" arrow placement="left">
               <IconButton size="small" color="primary" onClick={handleClick}>

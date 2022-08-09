@@ -11,7 +11,7 @@ type KeywordsProps = {
 export function Keywords({ keywords, onClick, onDelete }: KeywordsProps) {
   return (
     <Box>
-      {keywords.map((kw, index) => {
+      {(keywords || []).map((kw, index) => {
         const weight = keywordWeight(kw);
 
         const handleClicked = () => {

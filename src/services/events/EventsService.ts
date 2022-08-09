@@ -1,6 +1,5 @@
 import { PaginatedResponse } from '@app/models';
-import { Event, EventAdd } from '@app/models/events';
-import { dateToString } from '@app/utils/utils';
+import { Event, EventAdd, EventUpdate } from '@app/models/events';
 
 export class EventsService {
   private static apiBaseUrl = '/api/projects/';
@@ -52,8 +51,8 @@ export class EventsService {
     return result;
   }
 
-  static async update(projectId: number, event: Event): Promise<Event> {
-    const data = { data: this.eventToApiRepr(event) };
+  static async update(projectId: number, event: EventUpdate): Promise<Event> {
+    const data = { data: event };
     const url = `${this.apiBaseUrl}${projectId}/events/${event.id}/`;
     const response = await fetch(url, {
       headers: {
@@ -72,12 +71,5 @@ export class EventsService {
     }
 
     return json;
-  }
-
-  private static eventToApiRepr(event: Event): any {
-    const startDate = dateToString(event.startDate);
-    const endDate = event.endDate ? dateToString(event.endDate) : undefined;
-
-    return { ...event, startDate, endDate };
   }
 }

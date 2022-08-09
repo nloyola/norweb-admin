@@ -1,16 +1,12 @@
 import { Grid } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { PropertyChanger, PropertyChangerProps } from './PropertyChanger';
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import DateSelectForm from '../DateSelectForm';
-
-export interface DateRange {
-  startDate: Date;
-  endDate: Date;
-}
+import { PropertyChangerDialog } from './PropertyChangerDialog';
+import { DateRange, PropertyChangerDateRangeProps } from './PropertyChanger';
 
 const schema = yup.object().shape({
   startDate: yup
@@ -36,9 +32,7 @@ const schema = yup.object().shape({
     })
 });
 
-export interface PropertyChangerDateRangeProps extends PropertyChangerProps<DateRange> {}
-
-export function PropertyChangerDateRange({ title, value, open, onClose }: PropertyChangerDateRangeProps) {
+export function PropertyChangerDateRange({ propertyName, title, value, open, onClose }: PropertyChangerDateRangeProps) {
   const {
     control,
     getValues,
@@ -48,22 +42,25 @@ export function PropertyChangerDateRange({ title, value, open, onClose }: Proper
     mode: 'all',
     reValidateMode: 'onChange',
     resolver: yupResolver(schema),
-    defaultValues: value
+    defaultValues: {
+      startDate: value?.startDate,
+      endDate: value?.endDate
+    }
   });
 
-  const watchStartDate = watch('startDate');
-  const watchEndDate = watch('endDate');
+  const watchStartDate = watch('startDate', value?.startDate);
+  const watchEndDate = watch('endDate', value?.endDate);
 
   const handleOk = () => {
-    onClose(getValues());
+    onClose(propertyName, getValues());
   };
 
   const handleCancel = () => {
-    onClose(undefined);
+    onClose(propertyName, undefined);
   };
 
   return (
-    <PropertyChanger title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={isValid}>
+    <PropertyChangerDialog title={title} open={open} onOk={handleOk} onCancel={handleCancel} valid={isValid}>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <form>
           <Grid item xs={12} md={12}>
@@ -77,6 +74,6 @@ export function PropertyChangerDateRange({ title, value, open, onClose }: Proper
           </Grid>
         </form>
       </LocalizationProvider>
-    </PropertyChanger>
+    </PropertyChangerDialog>
   );
 }
