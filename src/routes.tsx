@@ -10,66 +10,66 @@ import { ProjectPage } from './pages/projects/ProjectPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
 
 function NoMatch() {
-    return (
-        <div>
-            <h2>It looks like you're lost...</h2>
-            <p>
-                <Link to="/">Go to the home page</Link>
-            </p>
-        </div>
-    );
+  return (
+    <div>
+      <h2>It looks like you're lost...</h2>
+      <p>
+        <Link to="/">Go to the home page</Link>
+      </p>
+    </div>
+  );
 }
 
 export const routes: RouteObject[] = [
-    {
-        path: '/',
-        element: <App />,
+  {
+    path: '/',
+    element: <App />,
+    children: [
+      {
+        path: 'people',
         children: [
-            {
-                path: 'people',
-                children: [
-                    {
-                        element: <PeoplePage />
-                    },
-                    {
-                        element: <PersonPage />
-                    }
-                ]
-            },
-            {
-                path: 'projects',
-                children: [
-                    {
-                        element: <ProjectsPage />
-                    },
-                    {
-                        path: ':projectId',
-                        element: <ProjectPage />,
-                        children: [
-                            {
-                                element: <ProjectDetails />
-                            },
-                            {
-                                path: 'events',
-                                children: [
-                                    {
-                                        element: <Events />
-                                    },
-                                    {
-                                        path: 'add',
-                                        element: <EventAdd />
-                                    },
-                                    {
-                                        path: ':eventId',
-                                        element: <EventDetails />
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            { path: '*', element: <NoMatch /> }
+          {
+            element: <PeoplePage />
+          },
+          {
+            element: <PersonPage />
+          }
         ]
-    }
+      },
+      {
+        path: 'projects',
+        children: [
+          {
+            element: <ProjectsPage />
+          },
+          {
+            path: ':projectId',
+            element: <ProjectPage />,
+            children: [
+              {
+                element: <ProjectDetails />
+              },
+              {
+                path: 'events',
+                children: [
+                  {
+                    element: <Events />
+                  },
+                  {
+                    path: 'add',
+                    element: <EventAdd />
+                  },
+                  {
+                    path: ':eventId',
+                    element: <EventDetails />
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      { path: '*', element: <NoMatch /> }
+    ]
+  }
 ];
