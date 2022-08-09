@@ -5,7 +5,7 @@ import { datesRangeToString } from '@app/utils/utils';
 
 export function eventPropertySchema(event: Event): PropertiesSchema {
   const startDate = new Date(event.startDate);
-  const endDate = new Date(event.endDate);
+  const endDate = event.endDate ? new Date(event.endDate) : undefined;
 
   const result: PropertiesSchema = {
     title: {

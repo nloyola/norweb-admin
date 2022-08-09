@@ -14,7 +14,7 @@ function keywordToArray(keywords: string): string[] {
 
 export function projectPropertySchema(project: Project): PropertiesSchema {
   const startDate = new Date(project.startDate);
-  const endDate = new Date(project.endDate);
+  const endDate = project.endDate ? new Date(project.endDate) : undefined;
 
   const result: PropertiesSchema = {
     name: {

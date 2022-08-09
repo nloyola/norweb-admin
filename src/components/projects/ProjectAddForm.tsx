@@ -10,7 +10,7 @@ import DateSelectForm from '@app/components/DateSelectForm';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Project } from '@app/models/projects';
+import { dateToString } from '@app/utils/utils';
 
 type FormInputs = {
   name: string;
@@ -73,7 +73,16 @@ const ProjectAddForm = () => {
     const saveData = async () => {
       try {
         setSaving(true);
-        await ProjectsService.add(data as Project);
+        await ProjectsService.add({
+          name: data.name,
+          shorthand: data.shorthand,
+          startDate: data.startDate ? dateToString(data.startDate) : '',
+          endDate: data.endDate ? dateToString(data.endDate) : undefined,
+          description: data.description,
+          goals: data.goals,
+          vision: data.vision,
+          countryCode: data.countryCode
+        });
         const action = (key: SnackbarKey) => (
           <Button onClick={() => closeSnackbar(key)}>
             <IconButton color="default" aria-label="close button" component="span" size="small">

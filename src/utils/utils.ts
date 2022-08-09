@@ -67,7 +67,7 @@ export function dateToString(date: Date | string): string {
   return date;
 }
 
-export function datesRangeToString(startDate: Date, endDate: Date | null): string {
+export function datesRangeToString(startDate: Date, endDate: Date | undefined): string {
   const dayStart = startDate.getDate();
   const monthStart = startDate.getMonth();
   const yearStart = startDate.getFullYear();

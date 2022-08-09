@@ -32,7 +32,6 @@ export function EventDetails() {
     const saveData = async () => {
       if (!newValue) {
         return;
-        p;
       }
 
       try {

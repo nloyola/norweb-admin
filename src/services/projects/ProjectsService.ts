@@ -1,5 +1,5 @@
 import { PaginatedResponse } from '@app/models';
-import { Project } from '@app/models/projects';
+import { Project, ProjectAdd } from '@app/models/projects';
 import { dateToString } from '@app/utils/utils';
 
 export class ProjectsService {
@@ -39,8 +39,8 @@ export class ProjectsService {
     return result;
   }
 
-  static async add(project: Project): Promise<boolean> {
-    const data = { data: this.projectToApiRepr(project) };
+  static async add(project: ProjectAdd): Promise<boolean> {
+    const data = { data: project };
     const response = await fetch(this.apiBaseUrl, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
@@ -82,7 +82,7 @@ export class ProjectsService {
     return {
       ...project,
       startDate: dateToString(project.startDate),
-      endDate: dateToString(project.endDate),
+      endDate: project.endDate ? dateToString(project.endDate) : undefined,
       events: undefined
     };
   }

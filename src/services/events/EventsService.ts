@@ -1,5 +1,5 @@
 import { PaginatedResponse } from '@app/models';
-import { Event } from '@app/models/events';
+import { Event, EventAdd } from '@app/models/events';
 import { dateToString } from '@app/utils/utils';
 
 export class EventsService {
@@ -32,8 +32,8 @@ export class EventsService {
     return result;
   }
 
-  static async add(projectId: number, event: Event): Promise<Event> {
-    const data = { data: this.eventToApiRepr(event) };
+  static async add(projectId: number, event: EventAdd): Promise<Event> {
+    const data = { data: event };
     const response = await fetch(this.apiBaseUrl + `${projectId}/events/`, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
@@ -75,10 +75,9 @@ export class EventsService {
   }
 
   private static eventToApiRepr(event: Event): any {
-    return {
-      ...event,
-      startDate: dateToString(event.startDate),
-      endDate: dateToString(event.endDate)
-    };
+    const startDate = dateToString(event.startDate);
+    const endDate = event.endDate ? dateToString(event.endDate) : undefined;
+
+    return { ...event, startDate, endDate };
   }
 }

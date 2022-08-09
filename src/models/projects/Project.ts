@@ -6,7 +6,7 @@ export interface Project extends ConcurrencySafeEntity {
   readonly name: string;
   readonly shorthand: string;
   readonly startDate: string;
-  readonly endDate: string;
+  readonly endDate?: string;
   readonly description: string;
   readonly goals: string;
   readonly vision: string;
@@ -19,3 +19,8 @@ export interface Project extends ConcurrencySafeEntity {
   readonly status: Status;
   readonly events: Event[];
 }
+
+export type ProjectAdd = Pick<
+  Project,
+  'name' | 'shorthand' | 'startDate' | 'endDate' | 'description' | 'goals' | 'vision' | 'countryCode'
+>;

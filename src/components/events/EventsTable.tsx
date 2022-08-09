@@ -52,7 +52,7 @@ export function EventsTable({ events }: EventsTableProps) {
                 <TableCell>{event.venue}</TableCell>
                 <TableCell>{event.organizer}</TableCell>
                 <TableCell>{new Date(event.startDate).toLocaleDateString()}</TableCell>
-                <TableCell>{new Date(event.endDate).toLocaleDateString()}</TableCell>
+                <TableCell>{event.endDate ? new Date(event.endDate).toLocaleDateString() : ''}</TableCell>
                 <TableCell align="right">
                   <Link to={`${event.id}`}>
                     <Button size="small" variant="outlined">
