@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
 import { PropertyChanger } from '@app/components/PropertyChanger/PropertyChanger';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { Alert, CircularProgress, Fab, Grid, Stack } from '@mui/material';
+import { Alert, CircularProgress, Fab, Grid, Stack, Typography } from '@mui/material';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { ArrowBack } from '@mui/icons-material';
 import { useProject } from '@app/hooks/useProject';
 import { ProjectContextType } from '@app/pages/projects/ProjectPage';
 import { DateRange } from '../PropertyChanger';
-import { ProjectKeyword, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import { Keywords } from './Keywords';
 import { datesRangeToString, dateToString } from '@app/utils/utils';
-import { PropertyKeywordUpdate } from './PropertyKeywordUpdates';
 import { EntityProperty } from '../EntityProperty';
 import { countryCodeToCountry as countryCodeToName, statusToLabel } from '@app/models';
 import { projectPropertiesSchemas } from './projectPropertiesSchema';
@@ -31,8 +29,6 @@ export function ProjectDetails() {
   const [saveError, setSaveError] = useState('');
   const [saving, setSaving] = useState(false);
   const { error, loading, project: reloadedProject, loadProject } = useProject(Number(params.projectId));
-  const [openUpdateKeyword, setOpenUpdateKeyword] = useState(false);
-  const [selectedKeyword, setSelectedKeyword] = useState<ProjectKeywordUpdate | undefined>(undefined);
 
   // it is possible that the page was reloaded by the user, in this case the project must be retrieved from the backend
   useEffect(() => {
@@ -102,46 +98,13 @@ export function ProjectDetails() {
     return <CircularProgress />;
   }
 
-  if (error !== '' || saveError !== '') {
+  if (error !== '') {
     return <Alert severity="error">{error}</Alert>;
   }
 
-  const handleKeywordClicked = (kw: ProjectKeyword) => {
-    setSelectedKeyword(kw);
-    setOpenUpdateKeyword(true);
-  };
-
-  const handleKeywordDeleted = (kw: ProjectKeyword) => {
-    console.log('delete pressed', kw);
-    setSelectedKeyword(kw);
-  };
-
-  const handleKeywordUpdateClosed = (updatedKeyword?: ProjectKeywordUpdate) => {
-    setOpenUpdateKeyword(false);
-    if (!updatedKeyword) {
-      return;
-    }
-
-    const saveUpdatedKeyword = async () => {
-      if (!project || !updateProject) {
-        throw new Error('setProject is invalid');
-      }
-
-      try {
-        await ProjectsService.updateKeyword(project.id, updatedKeyword);
-      } catch (err) {
-        console.error(err);
-        setSaveError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setSaving(false);
-      }
-    };
-
-    console.log(updatedKeyword);
-    saveUpdatedKeyword();
-  };
-
-  // FIXME: add validation to keywords, cannot have a value outside of 0 to 1
+  if (saveError !== '') {
+    return <Alert severity="error">{saveError}</Alert>;
+  }
 
   const schemas = projectPropertiesSchemas(project);
 
@@ -177,13 +140,7 @@ export function ProjectDetails() {
           value={nlToFragments(project.vision)}
           handleChange={onPropChange}
         />
-        <EntityProperty
-          propName="keywords"
-          label="Keywords"
-          value={
-            <Keywords keywords={project.keywords} onClick={handleKeywordClicked} onDelete={handleKeywordDeleted} />
-          }
-        />
+        <EntityProperty propName="keywords" label="Keywords" value={<Keywords initialKeywords={project.keywords} />} />
         <EntityProperty
           propName="countryCode"
           label="Country"
@@ -211,9 +168,6 @@ export function ProjectDetails() {
           open={open}
           onClose={handleClose}
         />
-      )}
-      {openUpdateKeyword && (
-        <PropertyKeywordUpdate keyword={selectedKeyword} open={openUpdateKeyword} onClose={handleKeywordUpdateClosed} />
       )}
     </>
   );

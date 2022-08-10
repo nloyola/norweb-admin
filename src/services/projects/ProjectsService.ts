@@ -78,7 +78,7 @@ export class ProjectsService {
     return json;
   }
 
-  static async addKeyword(projectId: number, keyword: ProjectKeywordAdd): Promise<Event> {
+  static async addKeyword(projectId: number, keyword: ProjectKeywordAdd): Promise<Project> {
     const data = { data: keyword };
     const response = await fetch(this.apiBaseUrl + `${projectId}/keywords/`, {
       headers: {
@@ -101,7 +101,7 @@ export class ProjectsService {
     return result;
   }
 
-  static async updateKeyword(projectId: number, keyword: ProjectKeywordUpdate): Promise<Event> {
+  static async updateKeyword(projectId: number, keyword: ProjectKeywordUpdate): Promise<Project> {
     const data = { data: keyword };
     const url = `${this.apiBaseUrl}${projectId}/keywords/${keyword.id}/`;
     const response = await fetch(url, {
@@ -111,6 +111,29 @@ export class ProjectsService {
       },
       method: 'PUT',
       body: JSON.stringify(data)
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Not found');
+      } else {
+        throw new Error('HTTP error: status: ' + response.status);
+      }
+    }
+
+    return json;
+  }
+
+  static async deleteKeyword(projectId: number, keywordId: number): Promise<Project> {
+    const url = `${this.apiBaseUrl}${projectId}/keywords/${keywordId}/`;
+    const response = await fetch(url, {
+      headers: {
+        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
+        'Content-Type': 'application/json'
+      },
+      method: 'DELETE'
     });
 
     const json = await response.json();
