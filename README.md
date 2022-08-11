@@ -56,4 +56,4 @@ npm run dev
 After this command starts, it will display a URL. Open this URL in your web browser and you will see
 the application's homepage.
 
-Usually, the URL is [http://127.0.0.1:5173/](http://127.0.0.1:5173/).
+Usually, the URL is [http://127.0.0.1:3000/](http://127.0.0.1:3000/).

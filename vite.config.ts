@@ -12,6 +12,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [react(), tsconfigPaths(), splitVendorChunkPlugin()],
     server: {
+      port: 3000,
       proxy: {
         '/api': {
           target: proxyTarget,
