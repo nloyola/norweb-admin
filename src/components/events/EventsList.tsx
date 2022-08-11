@@ -7,7 +7,7 @@ import { SearchTermInput } from '../SearchTermInput';
 import { useProjectEvents } from '@app/hooks/useProjectEvents';
 import AddIcon from '@mui/icons-material/Add';
 
-export function Events() {
+export function EventsList() {
   const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
   const navigate = useNavigate();
 
@@ -18,7 +18,7 @@ export function Events() {
   const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search'));
 
-  const { error, loading, pagination, loadEvents } = useProjectEvents(projectId);
+  const { error, loading, pagination, loadPage } = useProjectEvents(projectId);
 
   useEffect(() => {
     const params: any = {};
@@ -32,7 +32,7 @@ export function Events() {
     }
     setSearchParams(params);
 
-    loadEvents(page, searchTerm || '');
+    loadPage(page, searchTerm || '');
   }, [page, searchTerm]);
 
   const handlePageChange = (_event: ChangeEvent<unknown>, newPage: number) => {

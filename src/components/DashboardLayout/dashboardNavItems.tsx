@@ -1,14 +1,16 @@
 import { createElement } from 'react';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import { ListAlt, PersonOutline } from '@mui/icons-material';
 import { DashboardItem } from './DashboardItem';
 import { ListItemButton, ListItemIcon, ListItemText, Tooltip } from '@mui/material';
 import { NavLink } from 'react-router-dom';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 
 export const dashboardNavItems: DashboardItem[] = [
   { icon: DashboardIcon, label: 'Dashboard', href: '/' },
   { icon: PersonOutline, label: 'People', href: '/people' },
-  { icon: ListAlt, label: 'Projects', href: '/projects' }
+  { icon: ListAlt, label: 'Projects', href: '/projects' },
+  { icon: CreditCardIcon, label: 'Funders', href: '/funders' }
 ];
 
 export const dashboardLinkItems = (

@@ -249,7 +249,7 @@ export const countryCodes: CountryCode[] = [
   { name: 'Zimbabwe', code: 'ZW' }
 ];
 
-export function countryCodeToCountry(c: string): string {
+export function countryCodeToName(c: string): string {
   const countryCode = countryCodes.find((code) => code.code === c);
   if (countryCode) {
     return countryCode.name;

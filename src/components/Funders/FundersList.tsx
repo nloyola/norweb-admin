@@ -1,28 +1,24 @@
-import { Box, Stack, Alert, CircularProgress, Pagination } from '@mui/material';
+import { useFunders } from '@app/hooks/useFunders';
+import { Alert, CircularProgress, Pagination, Stack } from '@mui/material';
+import { Box } from '@mui/system';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ProjectsTable } from './ProjectsTable';
 import { SearchTermInput } from '../SearchTermInput';
-import { useProjects } from '@app/hooks/useProjects';
+import { FundersTable } from './FundersTable';
 
-export function ProjectsSearchableTable() {
+export function FundersList() {
   const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
   const paramsPage = searchParams.get('page');
 
   const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search'));
 
-  const { error, loading, pagination, loadPage } = useProjects();
+  const { error, loading, pagination, loadPage } = useFunders();
 
   const handlePageChange = (_event: ChangeEvent<unknown>, newPage: number) => {
     if (page !== newPage) {
       setPage(newPage);
     }
-  };
-
-  const handleSearchTermChange = (input: string) => {
-    setSearchTerm(input);
-    setPage(1);
   };
 
   useEffect(() => {
@@ -36,8 +32,14 @@ export function ProjectsSearchableTable() {
       params['search'] = searchTerm;
     }
     setSearchParams(params);
+
     loadPage(page, searchTerm || '');
   }, [page, searchTerm]);
+
+  const handleSearchTermChange = (input: string) => {
+    setSearchTerm(input);
+    setPage(1);
+  };
 
   if (error !== '') {
     return <Alert severity="error">{error}</Alert>;
@@ -49,7 +51,7 @@ export function ProjectsSearchableTable() {
       {(loading || !pagination) && <CircularProgress />}
       {!loading && pagination && (
         <>
-          <ProjectsTable projects={pagination.pagedResults?.results || []} />
+          <FundersTable funders={pagination.pagedResults?.results || []} />
           {pagination.count > 1 && (
             <Box
               sx={{

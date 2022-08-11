@@ -6,6 +6,7 @@ import { Alert, CircularProgress } from '@mui/material';
 
 const PeopleRoutes = lazy(() => import('./routes/PeopleRoutes'));
 const ProjectsRoutes = lazy(() => import('./routes/ProjectsRoutes'));
+const FundersRoutes = lazy(() => import('./routes/FundersRoutes'));
 
 const PeopleRoutesLazy = () => (
   <Suspense fallback={<CircularProgress />}>
@@ -19,6 +20,12 @@ const ProjectsRoutesLazy = () => (
   </Suspense>
 );
 
+const FundersRoutesLazy = () => (
+  <Suspense fallback={<CircularProgress />}>
+    <FundersRoutes />
+  </Suspense>
+);
+
 export function App() {
   return (
     <Routes>
@@ -26,6 +33,7 @@ export function App() {
         <Route index element={<HomePage />} />
         <Route path="people/*" element={<PeopleRoutesLazy />} />
         <Route path="projects/*" element={<ProjectsRoutesLazy />} />
+        <Route path="funders/*" element={<FundersRoutesLazy />} />
         <Route
           path="*"
           element={

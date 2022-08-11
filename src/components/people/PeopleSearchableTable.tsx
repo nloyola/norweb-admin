@@ -12,7 +12,7 @@ export function PeopleSearchableTable() {
   const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search'));
 
-  const { error, loading, pagination, loadPeople } = usePeople();
+  const { error, loading, pagination, loadPage } = usePeople();
 
   const handlePageChange = (_event: ChangeEvent<unknown>, newPage: number) => {
     if (page !== newPage) {
@@ -37,7 +37,7 @@ export function PeopleSearchableTable() {
     }
     setSearchParams(params);
 
-    loadPeople(page, searchTerm || '');
+    loadPage(page, searchTerm || '');
   }, [page, searchTerm]);
 
   if (error !== '') {

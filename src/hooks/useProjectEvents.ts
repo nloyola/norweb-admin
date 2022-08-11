@@ -1,53 +1,11 @@
-import { PaginatedResponse } from '@app/models';
-import { Event } from '@app/models/events';
 import { EventsService } from '@app/services/events/EventsService';
-import { useCallback, useState } from 'react';
+import { usePaginator } from './usePaginator';
 
-type PaginationData = {
-  pagedResults?: PaginatedResponse<Event>;
-  count: number;
-};
-
-// see https://betterprogramming.pub/fetching-data-with-react-72df95683c70
-
+/**
+ * Retrieves a list of events belonging to a project from the backend.
+ *
+ * The events are returned in a paginated fashion. See {@link PaginationData}.
+ */
 export function useProjectEvents(projectId: number) {
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState<PaginationData | null>(null);
-
-  const loadEvents = useCallback(
-    (page: number, searchTerm: string) => {
-      const fetchData = async () => {
-        setLoading(true);
-        setError('');
-
-        try {
-          // use this for testing delay
-          // await new Promise((r) => setTimeout(r, 2000));
-          const pg = await EventsService.paginate(projectId, page, searchTerm);
-          setPagination({
-            pagedResults: pg,
-            count: pg.next ? Math.ceil(pg.total / pg.results.length) : page
-          });
-        } catch (err) {
-          if (err instanceof Error) {
-            if (err.message.includes('Not found')) {
-              setPagination(null);
-            } else {
-              setError(JSON.stringify(err));
-            }
-          } else {
-            setError(JSON.stringify(err));
-          }
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchData();
-    },
-    [projectId]
-  );
-
-  return { error, loading, pagination, loadEvents };
+  return usePaginator((page: number, searchTerm: string) => EventsService.paginate(projectId, page, searchTerm));
 }

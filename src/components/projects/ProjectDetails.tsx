@@ -10,7 +10,7 @@ import { DateRange } from '../PropertyChanger';
 import { Keywords } from './Keywords';
 import { datesRangeToString, dateToString } from '@app/utils/utils';
 import { EntityProperty } from '../EntityProperty';
-import { countryCodeToCountry as countryCodeToName, statusToLabel } from '@app/models';
+import { countryCodeToName as countryCodeToName, statusToLabel } from '@app/models';
 import { projectPropertiesSchemas } from './projectPropertiesSchema';
 import { nlToFragments } from '@app/utils/nltoFragments';
 
