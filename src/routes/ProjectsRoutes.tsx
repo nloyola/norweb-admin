@@ -7,7 +7,7 @@ import { ProjectDetails } from '@app/components/projects/ProjectDetails';
 import { EventAdd } from '@app/components/events/EventAdd';
 import { EventDetails } from '@app/components/events/EventDetails';
 
-export function ProjectsRoutes() {
+export default function ProjectsRoutes() {
   return (
     <Routes>
       <Route index element={<ProjectsPage />} />

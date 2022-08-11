@@ -3,7 +3,7 @@ import { PeoplePage } from '@app/pages/people/PeoplePage';
 import { PersonPage } from '@app/pages/people/PersonPage';
 import { PersonBio } from '@app/components/people/PersonBio';
 
-export function PeopleRoutes() {
+export default function PeopleRoutes() {
   return (
     <Routes>
       <Route index element={<PeoplePage />} />
