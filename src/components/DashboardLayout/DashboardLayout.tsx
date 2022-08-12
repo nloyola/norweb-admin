@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import { dashboardLinkItems } from './dashboardNavItems';
+import { DashboardLinkItems } from './DashboardNavItems';
 import { AppBar } from '@app/components/AppBar/AppBar';
 import { DashboardDrawer } from '../DashboardDrawer/DashboardDrawer';
 import { Container, ThemeProvider } from '@mui/material';
@@ -73,7 +72,7 @@ export function DashboardLayout() {
               </IconButton>
             </Toolbar>
             <Divider />
-            <List component="nav">{dashboardLinkItems}</List>
+            <DashboardLinkItems />
           </DashboardDrawer>
           <Box
             component="main"
