@@ -13,6 +13,7 @@ import {
   Box
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { dateToString } from '@app/utils/utils';
 
 type EventsTableProps = {
   events?: Event[];
@@ -51,8 +52,8 @@ export function EventsTable({ events }: EventsTableProps) {
                 </TableCell>
                 <TableCell>{event.venue}</TableCell>
                 <TableCell>{event.organizer}</TableCell>
-                <TableCell>{new Date(event.startDate).toLocaleDateString()}</TableCell>
-                <TableCell>{event.endDate ? new Date(event.endDate).toLocaleDateString() : ''}</TableCell>
+                <TableCell>{dateToString(event.startDate)}</TableCell>
+                <TableCell>{dateToString(event.endDate)}</TableCell>
                 <TableCell align="right">
                   <Link to={`${event.id}`}>
                     <Button size="small" variant="outlined">

@@ -1,14 +1,13 @@
-import { DomainEntity } from '@app/models';
+import { z } from 'zod';
+import { domainEntitySchema } from '../DomainEntity';
 
-export interface ProjectKeyword extends DomainEntity {
-  readonly name: string;
-  readonly weight: string;
-}
+export const projectKeywordSchema = domainEntitySchema.extend({
+  name: z.string(),
+  weight: z.preprocess((a) => parseFloat(z.string().parse(a)), z.number().min(0).max(1))
+});
+
+export type ProjectKeyword = z.infer<typeof projectKeywordSchema>;
 
 export type ProjectKeywordAdd = Pick<ProjectKeyword, 'name' | 'weight'>;
 
 export type ProjectKeywordUpdate = ProjectKeywordAdd & Pick<ProjectKeyword, 'id'>;
-
-export function keywordWeight(keyword: ProjectKeyword): number {
-  return parseFloat(keyword.weight);
-}

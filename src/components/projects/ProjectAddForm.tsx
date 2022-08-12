@@ -1,46 +1,39 @@
-import { Controller, SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import * as yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
+import DateSelectForm from '@app/components/DateSelectForm';
+import { CountryCodes } from '@app/models';
+import { ProjectsService } from '@app/services/projects/ProjectsService';
+import { zodResolver } from '@hookform/resolvers/zod';
+import CloseIcon from '@mui/icons-material/Close';
 import { Alert, Button, CircularProgress, Grid, IconButton, Slide, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { SnackbarKey, useSnackbar } from 'notistack';
-import CloseIcon from '@mui/icons-material/Close';
-import DateSelectForm from '@app/components/DateSelectForm';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { dateToString } from '@app/utils/utils';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 
-type FormInputs = {
-  name: string;
-  shorthand: string;
-  startDate: Date | null;
-  endDate: Date | null;
-  description: string;
-  goals: string;
-  vision: string;
-  countryCode: string;
-};
-
-const schema = yup.object().shape({
-  name: yup.string().required('Project name is required'),
-  shorthand: yup.string(),
-  description: yup.string(),
-  goals: yup.string(),
-  vision: yup.string(),
-  startDate: yup.date().nullable().typeError('invalid date').required('start date is required'),
-  endDate: yup
-    .date()
-    .nullable()
-    .typeError('invalid date')
-    .test('oneOfRequired', 'must be later than start date', function (endDate) {
-      if (!endDate) {
+const schema = z
+  .object({
+    name: z.string(),
+    shorthand: z.string(),
+    description: z.string(),
+    goals: z.string(),
+    vision: z.string(),
+    startDate: z.date(),
+    endDate: z.date().nullable()
+    //countryCode: z.nativeEnum(CountryCodes).nullable()
+  })
+  .refine(
+    (data) => {
+      if (!data.startDate || !data.endDate) {
         return true;
       }
-      return this.parent.startDate <= endDate;
-    })
-});
+      return data.startDate <= data.endDate;
+    },
+    { message: 'must be later than start date' }
+  );
+
+export type FormInputs = z.infer<typeof schema>;
 
 const ProjectAddForm = () => {
   const navigate = useNavigate();
@@ -52,36 +45,52 @@ const ProjectAddForm = () => {
   const {
     control,
     handleSubmit,
+    watch,
     formState: { isDirty, isValid, errors }
   } = useForm<FormInputs>({
     mode: 'all',
     reValidateMode: 'onChange',
-    resolver: yupResolver(schema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: '',
       shorthand: '',
       description: '',
       goals: '',
       vision: '',
-      startDate: null,
-      endDate: null,
-      countryCode: ''
+      startDate: new Date(),
+      endDate: null
+      //countryCode: null
     }
   });
 
+  const watchStartDate = watch('startDate');
+  const watchEndDate = watch('endDate');
+
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
     const saveData = async () => {
+      if (!data.startDate) {
+        throw Error('start date is invalid');
+      }
+
+      if (!data.endDate) {
+        throw Error('end date is invalid');
+      }
+
+      // if (!data.countryCode) {
+      //   throw Error('country code is invalid');
+      // }
+
       try {
         setSaving(true);
         await ProjectsService.add({
           name: data.name,
           shorthand: data.shorthand,
-          startDate: data.startDate ? dateToString(data.startDate) : '',
-          endDate: data.endDate ? dateToString(data.endDate) : undefined,
+          startDate: data.startDate,
+          endDate: data.endDate,
           description: data.description,
           goals: data.goals,
           vision: data.vision,
-          countryCode: data.countryCode
+          countryCode: CountryCodes.SE // FIXME: country code need to be added to the form
         });
         const action = (key: SnackbarKey) => (
           <Button onClick={() => closeSnackbar(key)}>
@@ -214,7 +223,13 @@ const ProjectAddForm = () => {
             </Grid>
 
             <Grid item xs={12} md={12}>
-              <DateSelectForm control={control} names={['startDate', 'endDate']} errors={errors}></DateSelectForm>
+              <DateSelectForm
+                control={control}
+                names={['startDate', 'endDate']}
+                errors={errors}
+                minDate={watchStartDate}
+                maxDate={watchEndDate}
+              ></DateSelectForm>
             </Grid>
           </Grid>
           <Stack spacing={2} direction="row" mt={5}>

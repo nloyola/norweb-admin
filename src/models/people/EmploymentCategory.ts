@@ -1,6 +1,9 @@
-import { DomainEntity } from '@app/models';
+import { domainEntitySchema, Status } from '@app/models';
+import { z } from 'zod';
 
-export interface EmploymentCategory extends DomainEntity {
-    readonly name: string;
-    readonly status: string;
-}
+export const employmentCategorySchema = domainEntitySchema.extend({
+  name: z.string(),
+  status: z.nativeEnum(Status)
+});
+
+export type EmploymentCategory = z.infer<typeof employmentCategorySchema>;

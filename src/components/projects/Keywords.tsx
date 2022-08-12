@@ -1,11 +1,11 @@
-import { keywordWeight, ProjectKeyword, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
+import { ProjectKeyword, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { Alert, Button, Chip, CircularProgress, Grid, Stack } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ProjectKeywordDeleteDialog } from './ProjectKeywordDeleteDialog';
-import { KeywordDialog } from './KeywordDialog';
+import { KeywordDialog, KeywordFormInput } from './KeywordDialog';
 
 type KeywordsProps = {
   initialKeywords: ProjectKeyword[];
@@ -31,7 +31,7 @@ export function Keywords({ initialKeywords }: KeywordsProps) {
     setOpenAdd(true);
   };
 
-  const handleAddClosed = (newKeyword?: ProjectKeywordUpdate) => {
+  const handleAddClosed = (newKeyword?: KeywordFormInput) => {
     setOpenAdd(false);
     if (!newKeyword) {
       return;
@@ -52,15 +52,22 @@ export function Keywords({ initialKeywords }: KeywordsProps) {
     addKeyword();
   };
 
-  const handleUpdateClosed = (updatedKeyword?: ProjectKeywordUpdate) => {
+  const handleUpdateClosed = (updatedKeyword?: KeywordFormInput) => {
     setOpenUpdate(false);
     if (!updatedKeyword) {
       return;
     }
 
     const updateKeyword = async () => {
+      if (!selected) {
+        throw new Error('selected is invalid');
+      }
+
       try {
-        const modifiedProject = await ProjectsService.updateKeyword(projectId, updatedKeyword);
+        const modifiedProject = await ProjectsService.updateKeyword(projectId, {
+          ...selected,
+          ...updatedKeyword
+        });
         setKeywords(modifiedProject.keywords);
       } catch (err) {
         console.error(err);
@@ -111,8 +118,6 @@ export function Keywords({ initialKeywords }: KeywordsProps) {
       <Grid item xs>
         <Box>
           {keywords.map((kw, index) => {
-            const weight = keywordWeight(kw);
-
             const handleClicked = () => {
               setSelected(kw);
               setOpenUpdate(true);
@@ -126,7 +131,7 @@ export function Keywords({ initialKeywords }: KeywordsProps) {
             return (
               <Chip
                 key={`${kw.name}-${index}`}
-                label={`${kw.name} | ${weight}`}
+                label={`${kw.name} | ${kw.weight}`}
                 color="primary"
                 sx={{ margin: '0.2rem' }}
                 onClick={handleClicked}

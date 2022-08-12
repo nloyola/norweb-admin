@@ -1,44 +1,44 @@
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import * as yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { Status } from '@app/models';
+import DateSelectForm from '@app/components/DateSelectForm';
+import { EventType, eventTypeToLabel } from '@app/models/events';
 import { Button, Grid, MenuItem, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { EventType, eventTypeToLabel } from '@app/models/events';
-import DateSelectForm from '@app/components/DateSelectForm';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
-export type EventFormInputs = {
-  title: string;
-  description: string;
-  venue: string;
-  organizer: string;
-  url: string;
-  startDate: Date | null;
-  endDate: Date | null;
-  type: EventType | string;
-  status: Status;
-};
+const schema = z
+  .object({
+    title: z.string().min(1, { message: 'a title is required' }),
+    description: z.string(),
+    venue: z.string(),
+    organizer: z.string(),
+    url: z.string().url({ message: 'not a valid URL' }),
+    startDate: z.date(),
+    endDate: z.date().nullable(),
+    type: z.union([z.string().min(1), z.nativeEnum(EventType)])
+  })
+  .superRefine((data, ctx) => {
+    if (!data.startDate || !data.endDate) {
+      return true;
+    }
 
-const schema = yup.object().shape({
-  title: yup.string().required('Event name is required'),
-  description: yup.string(),
-  venue: yup.string(),
-  organizer: yup.string(),
-  url: yup.string().url(),
-  startDate: yup.date().nullable().typeError('invalid date').required('start date is required'),
-  endDate: yup
-    .date()
-    .nullable()
-    .typeError('invalid date')
-    .test('oneOfRequired', 'must be later than start date', function (endDate) {
-      if (!endDate) {
-        return true;
-      }
-      return this.parent.startDate <= endDate;
-    }),
-  type: yup.mixed<EventType>().oneOf(Object.values(EventType)).required()
-});
+    if (data.startDate > data.endDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['startDate'],
+        message: 'must be before the end date'
+      });
+
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endDate'],
+        message: 'must be fater the start date'
+      });
+    }
+  });
+
+export type EventFormInputs = z.infer<typeof schema>;
 
 type EventAddFormProps = {
   onSubmit: (values: EventFormInputs) => void;
@@ -46,25 +46,32 @@ type EventAddFormProps = {
 };
 
 export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
+  const initialDate = new Date();
+  initialDate.setHours(0, 0, 0, 0);
+
   const {
     control,
     handleSubmit,
+    watch,
     formState: { isDirty, isValid, errors }
   } = useForm<EventFormInputs>({
     mode: 'all',
+    resolver: zodResolver(schema),
     reValidateMode: 'onChange',
-    resolver: yupResolver(schema),
     defaultValues: {
       title: '',
       description: '',
       venue: '',
       organizer: '',
       url: '',
-      startDate: null,
+      startDate: initialDate,
       endDate: null,
       type: ''
     }
   });
+
+  const watchStartDate = watch('startDate');
+  const watchEndDate = watch('endDate');
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -159,7 +166,13 @@ export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
             />
           </Grid>
           <Grid item xs={12} md={12}>
-            <DateSelectForm control={control} names={['startDate', 'endDate']} errors={errors}></DateSelectForm>
+            <DateSelectForm
+              control={control}
+              names={['startDate', 'endDate']}
+              errors={errors}
+              minDate={watchStartDate}
+              maxDate={watchEndDate}
+            ></DateSelectForm>
           </Grid>
         </Grid>
         <Grid item xs={6} md={6}>

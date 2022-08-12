@@ -1,4 +1,4 @@
-import { countryCodes, Status, statusToLabel } from '@app/models';
+import { CountryNames, Status, statusToLabel } from '@app/models';
 import { Project } from '@app/models/projects';
 import { PropertiesSchema, PropertyTypes } from '../PropertyChanger';
 
@@ -28,8 +28,8 @@ export function projectPropertiesSchemas(project: Project): PropertiesSchema {
       propertyType: PropertyTypes.DATE_RANGE,
       label: 'Duration',
       value: {
-        startDate: new Date(project.startDate),
-        endDate: project.endDate ? new Date(project.endDate) : undefined
+        startDate: project.startDate,
+        endDate: project.endDate
       }
     },
     goals: {
@@ -51,7 +51,7 @@ export function projectPropertiesSchemas(project: Project): PropertiesSchema {
       propertyType: PropertyTypes.AUTO_COMPLETE,
       label: 'Country',
       value: project.countryCode,
-      propertyOptions: countryCodes.map((country) => ({ id: country.code, label: country.name }))
+      propertyOptions: Object.entries(CountryNames).map(([id, label]) => ({ id, label }))
     },
     status: {
       propertyName: 'status',

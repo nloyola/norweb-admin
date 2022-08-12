@@ -1,6 +1,5 @@
 import { useLocation, matchPath } from 'react-router-dom';
 import { capitalizeWord } from '@app/utils/utils';
-import { Event } from '@app/models/events';
 import { Project } from '@app/models/projects';
 import { Breadcrumbs } from './Breadcrumbs';
 
@@ -29,7 +28,7 @@ export function ProjectBreadcrumbs({ project }: ProjectBreadcrumbsProps) {
     const eventMatch = matchPath({ path: '/projects/:projectId/events/:eventId', end: true }, route);
     if (eventMatch && route === eventMatch.pathname) {
       const eventId = Number(eventMatch.params.eventId);
-      const event = project.events.find((ev: Event) => ev.id === eventId);
+      const event = project.events.find((ev) => ev.id === eventId);
       if (event) {
         label = event.title;
       }

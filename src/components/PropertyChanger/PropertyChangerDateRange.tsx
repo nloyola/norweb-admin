@@ -1,36 +1,37 @@
 import { Grid } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
 import DateSelectForm from '../DateSelectForm';
 import { PropertyChangerDialog } from './PropertyChangerDialog';
 import { DateRange, PropertyChangerDateRangeProps } from './PropertyChanger';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
-const schema = yup.object().shape({
-  startDate: yup
-    .date()
-    .nullable()
-    .typeError('invalid date')
-    .required('start date is required')
-    .test('oneOfRequired', 'must be before end date', function (startDate) {
-      if (!startDate) {
-        return false;
-      }
-      return startDate <= this.parent.endDate;
-    }),
-  endDate: yup
-    .date()
-    .nullable()
-    .typeError('invalid date')
-    .test('oneOfRequired', 'must be later than start date', function (endDate) {
-      if (!endDate) {
-        return true;
-      }
-      return this.parent.startDate <= endDate;
-    })
-});
+const schema = z
+  .object({
+    startDate: z.date(),
+    endDate: z.date().nullable()
+  })
+  .superRefine((data, ctx) => {
+    if (!data.startDate || !data.endDate) {
+      return true;
+    }
+
+    if (data.startDate > data.endDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['startDate'],
+        message: 'must be before the end date'
+      });
+
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['endDate'],
+        message: 'must be fater the start date'
+      });
+    }
+  });
 
 export function PropertyChangerDateRange({ propertyName, title, value, open, onClose }: PropertyChangerDateRangeProps) {
   const {
@@ -39,9 +40,9 @@ export function PropertyChangerDateRange({ propertyName, title, value, open, onC
     watch,
     formState: { isValid, errors }
   } = useForm<DateRange>({
+    resolver: zodResolver(schema),
     mode: 'all',
     reValidateMode: 'onChange',
-    resolver: yupResolver(schema),
     defaultValues: {
       startDate: value?.startDate,
       endDate: value?.endDate
@@ -50,6 +51,8 @@ export function PropertyChangerDateRange({ propertyName, title, value, open, onC
 
   const watchStartDate = watch('startDate', value?.startDate);
   const watchEndDate = watch('endDate', value?.endDate);
+
+  console.log(watchStartDate, watchEndDate);
 
   const handleOk = () => {
     onClose(propertyName, getValues());

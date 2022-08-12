@@ -24,11 +24,13 @@ export function usePaginator<T>(
         // use this for testing delay
         // await new Promise((r) => setTimeout(r, 2000));
         const pg = await paginationFetcher(page, searchTerm);
+
         setPagination({
           pagedResults: pg,
           count: pg.next ? Math.ceil(pg.total / pg.results.length) : page
         });
       } catch (err) {
+        console.error(err);
         if (err instanceof Error) {
           if (err.message.includes('Not found')) {
             setPagination(null);

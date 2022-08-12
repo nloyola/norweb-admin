@@ -1,6 +1,7 @@
-import { PaginatedResponse } from '@app/models';
-import { Project, ProjectAdd, ProjectUpdate } from '@app/models/projects';
+import { PaginatedResponse, paginatedResponseSchema } from '@app/models';
+import { Project, ProjectAdd, projectSchema, ProjectUpdate } from '@app/models/projects';
 import { ProjectKeywordAdd, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
+import { dateToString } from '@app/utils/utils';
 
 export class ProjectsService {
   private static apiBaseUrl = '/api/projects/';
@@ -8,7 +9,7 @@ export class ProjectsService {
   /**
    * Retrieves a Project using an ID.
    */
-  static async get(id: number): Promise<Project> {
+  static async get(id: number) {
     const url = this.apiBaseUrl + `${id}/`;
     const response = await fetch(url);
     const result = await response.json();
@@ -21,10 +22,10 @@ export class ProjectsService {
         throw new Error('HTTP error: status: ' + response.status);
       }
     }
-    return result;
+    return projectSchema.parse(result);
   }
 
-  static async paginate(page: number, search: string): Promise<PaginatedResponse<Project>> {
+  static async paginate(page: number, search: string) {
     let url = this.apiBaseUrl + `?page=${page}`;
     if (search !== '') {
       url = `${url}&search=${search}`;
@@ -36,11 +37,17 @@ export class ProjectsService {
       console.error(result);
       throw new Error('HTTP error: status: ' + response.status);
     }
-    return result;
+    return paginatedResponseSchema(projectSchema).parse(result);
   }
 
-  static async add(project: ProjectAdd): Promise<boolean> {
-    const data = { data: project };
+  static async add(project: ProjectAdd) {
+    const data = {
+      data: {
+        ...project,
+        startDate: dateToString(project.startDate),
+        endDate: dateToString(project.endDate)
+      }
+    };
     const response = await fetch(this.apiBaseUrl, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
@@ -54,11 +61,17 @@ export class ProjectsService {
       console.error(result);
       throw new Error('HTTP error: status: ' + response.status);
     }
-    return true;
+    return projectSchema.parse(result);
   }
 
-  static async update(project: ProjectUpdate): Promise<Project> {
-    const data = { data: project };
+  static async update(project: ProjectUpdate) {
+    const data = {
+      data: {
+        ...project,
+        startDate: dateToString(project.startDate),
+        endDate: dateToString(project.endDate)
+      }
+    };
     const url = `${this.apiBaseUrl}${project.id}/`;
     const response = await fetch(url, {
       headers: {
@@ -75,7 +88,7 @@ export class ProjectsService {
       throw new Error(JSON.stringify(json, null, 2));
     }
 
-    return json;
+    return projectSchema.parse(json);
   }
 
   static async addKeyword(projectId: number, keyword: ProjectKeywordAdd): Promise<Project> {

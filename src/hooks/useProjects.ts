@@ -7,5 +7,6 @@ import { usePaginator } from './usePaginator';
  * The projects are returned in a paginated fashion. See {@link PaginationData}.
  */
 export function useProjects() {
-  return usePaginator((page: number, searchTerm: string) => ProjectsService.paginate(page, searchTerm));
+  const fetcher = (page: number, searchTerm: string) => ProjectsService.paginate(page, searchTerm);
+  return usePaginator(fetcher);
 }

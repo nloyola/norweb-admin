@@ -1,13 +1,12 @@
+import { EventType } from '@app/models/events';
+import { EventsService } from '@app/services/events/EventsService';
+import CloseIcon from '@mui/icons-material/Close';
 import { Alert, Button, CircularProgress, IconButton, Slide, Stack, Typography } from '@mui/material';
 import { SnackbarKey, useSnackbar } from 'notistack';
 import { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
-import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate, useParams } from 'react-router-dom';
 import { EventAddForm, EventFormInputs } from './EventAddForm';
-import { EventsService } from '@app/services/events/EventsService';
-import { EventType } from '@app/models/events';
-import { dateToString } from '@app/utils/utils';
 
 export function EventAdd() {
   const navigate = useNavigate();
@@ -33,8 +32,8 @@ export function EventAdd() {
         await EventsService.add(projectId, {
           title: data.title,
           description: data.description,
-          startDate: dateToString(data.startDate),
-          endDate: data.endDate ? dateToString(data.endDate) : undefined,
+          startDate: data.startDate,
+          endDate: data.endDate,
           venue: data.venue,
           organizer: data.organizer,
           url: data.url,

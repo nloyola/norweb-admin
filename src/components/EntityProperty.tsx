@@ -6,7 +6,7 @@ import { Box } from '@mui/system';
 export interface EntityPropertyProps {
   propName: string;
   label: string;
-  value?: string | ReactElement | ReactElement[];
+  value?: string | ReactElement | ReactElement[] | null | undefined;
   handleChange?: (propertyName: string) => void;
 }
 

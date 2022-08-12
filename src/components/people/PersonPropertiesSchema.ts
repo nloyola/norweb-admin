@@ -1,4 +1,4 @@
-import { Person, personName } from '@app/models/people';
+import { Person } from '@app/models/people';
 import { PropertiesSchema, PropertyTypes } from '../PropertyChanger';
 
 export function personPropertiesSchema(person: Person): PropertiesSchema {
@@ -32,8 +32,8 @@ export function personPropertiesSchema(person: Person): PropertiesSchema {
       label: 'Website',
       value: person.website
     },
-    telephone: {
-      propertyName: 'telephone',
+    phone: {
+      propertyName: 'phone',
       propertyType: PropertyTypes.TEXT,
       label: 'Telephone',
       value: person.phone

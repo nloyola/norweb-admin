@@ -10,7 +10,7 @@ import { DateRange } from '../PropertyChanger';
 import { Keywords } from './Keywords';
 import { datesRangeToString, dateToString } from '@app/utils/utils';
 import { EntityProperty } from '../EntityProperty';
-import { countryCodeToName as countryCodeToName, statusToLabel } from '@app/models';
+import { CountryNames, statusToLabel } from '@app/models';
 import { projectPropertiesSchemas } from './projectPropertiesSchema';
 import { nlToFragments } from '@app/utils/nltoFragments';
 
@@ -69,8 +69,8 @@ export function ProjectDetails() {
           version: project.version,
           name: newValues.name,
           shorthand: newValues.shorthand,
-          startDate: dateToString(newValues.startDate),
-          endDate: dateToString(newValues.endDate),
+          startDate: newValues.startDate,
+          endDate: newValues.endDate,
           description: newValues.description,
           goals: newValues.goals,
           vision: newValues.vision,
@@ -122,29 +122,26 @@ export function ProjectDetails() {
         <EntityProperty
           propName="duration"
           label="Duration"
-          value={datesRangeToString(
-            new Date(project.startDate),
-            project.endDate ? new Date(project.endDate) : undefined
-          )}
+          value={datesRangeToString(project.startDate, project.endDate)}
           handleChange={onPropChange}
         />
         <EntityProperty
           propName="goals"
           label="Goals"
-          value={nlToFragments(project.goals)}
+          value={project.goals ? nlToFragments(project.goals) : null}
           handleChange={onPropChange}
         />
         <EntityProperty
           propName="vision"
           label="Vision"
-          value={nlToFragments(project.vision)}
+          value={project.vision ? nlToFragments(project.vision) : null}
           handleChange={onPropChange}
         />
         <EntityProperty propName="keywords" label="Keywords" value={<Keywords initialKeywords={project.keywords} />} />
         <EntityProperty
           propName="countryCode"
           label="Country"
-          value={project.countryCode ? countryCodeToName(project.countryCode) : undefined}
+          value={CountryNames[project.countryCode]}
           handleChange={onPropChange}
         />
         <EntityProperty

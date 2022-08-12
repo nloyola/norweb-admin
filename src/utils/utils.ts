@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import format from 'date-fns/format';
+import { useEffect, useState } from 'react';
 
 // see https://usehooks-ts.com/react-hook/use-debounce
 export function useDebounce<T>(value: T, delay?: number): T {
@@ -60,16 +60,16 @@ export function stringAvatar(name: string, fontSize: number = 12, width: number 
   };
 }
 
-export function dateToString(date: Date | string): string {
+export function dateToString(date: Date | string | null): string | null {
   if (date instanceof Date) {
     return format(date, 'yyy-MM-dd');
   }
   return date;
 }
 
-export function datesRangeToString(startDate: Date, endDate: Date | undefined): string {
+export function datesRangeToString(startDate: Date, endDate: Date | null): string {
   const dayStart = startDate.getDate();
-  const monthStart = startDate.getMonth();
+  const monthStart = startDate.toLocaleString('default', { month: 'long' });
   const yearStart = startDate.getFullYear();
 
   if (!endDate) {
@@ -77,7 +77,7 @@ export function datesRangeToString(startDate: Date, endDate: Date | undefined): 
   }
 
   const dayEnd = endDate.getDate();
-  const monthEnd = endDate.getMonth();
+  const monthEnd = endDate.toLocaleString('default', { month: 'long' });
   const yearEnd = endDate.getFullYear();
 
   let datesFormat = '';
@@ -98,30 +98,21 @@ export function datesRangeToString(startDate: Date, endDate: Date | undefined): 
   let dates = '';
 
   switch (datesFormat) {
-    case 'same-day': {
-      const monthName = endDate.toLocaleString('default', { month: 'long' });
-      dates = `${dayEnd} ${monthName} ${yearEnd}`;
+    case 'same-day':
+      dates = `${dayEnd} ${monthEnd} ${yearEnd}`;
       break;
-    }
-    case 'within-same-month': {
-      const monthName = endDate.toLocaleString('default', { month: 'long' });
-      dates = `${dayStart} - ${dayEnd} ${monthName}, ${yearEnd}`;
-      break;
-    }
 
-    case 'within-same-year': {
-      const startMonthName = startDate.toLocaleString('default', { month: 'long' });
-      const endMonthName = endDate.toLocaleString('default', { month: 'long' });
-      dates = `${dayStart} ${startMonthName}  - ${dayEnd} ${endMonthName}, ${yearEnd}`;
+    case 'within-same-month':
+      dates = `${dayStart} - ${dayEnd} ${monthEnd}, ${yearEnd}`;
       break;
-    }
 
-    case 'spans-years': {
-      const startMonthName = startDate.toLocaleString('default', { month: 'long' });
-      const endMonthName = endDate.toLocaleString('default', { month: 'long' });
-      dates = `${dayStart} ${startMonthName}, ${yearStart} - ${dayEnd} ${endMonthName}, ${yearEnd}`;
+    case 'within-same-year':
+      dates = `${dayStart} ${monthStart}  - ${dayEnd} ${monthEnd}, ${yearEnd}`;
       break;
-    }
+
+    case 'spans-years':
+      dates = `${dayStart} ${monthStart}, ${yearStart} - ${dayEnd} ${monthEnd}, ${yearEnd}`;
+      break;
   }
   return dates;
 }

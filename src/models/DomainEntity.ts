@@ -1,6 +1,7 @@
-export interface DomainEntity {
-    /**
-     * The unique ID that identifies an object of this type.
-     */
-    readonly id: number;
-}
+import { z } from 'zod';
+
+export const domainEntitySchema = z.object({
+  id: z.number().min(1)
+});
+
+export type DomainEntity = z.infer<typeof domainEntitySchema>;

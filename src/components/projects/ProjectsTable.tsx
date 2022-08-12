@@ -1,5 +1,5 @@
 import { Project } from '@app/models/projects';
-import { stringAvatar } from '@app/utils/utils';
+import { dateToString, stringAvatar } from '@app/utils/utils';
 import {
   Paper,
   Table,
@@ -10,21 +10,20 @@ import {
   TableRow,
   Button,
   Avatar,
-  Box
+  Box,
+  Chip
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { Status, statusToLabel } from '@app/models';
 
-type ProjectsTableProps = {
-  projects: Project[];
-};
-
-export function ProjectsTable({ projects }: ProjectsTableProps) {
+export const ProjectsTable: React.FC<{ projects: Project[] }> = ({ projects }) => {
   return (
     <TableContainer component={Paper}>
       <Table size="small" aria-label="projects" sx={{ minWidth: 300 }}>
         <TableHead>
           <TableRow>
             <TableCell>Name</TableCell>
+            <TableCell>Status</TableCell>
             <TableCell>Start</TableCell>
             <TableCell>End</TableCell>
             <TableCell align="right"></TableCell>
@@ -47,8 +46,14 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
                     {project.name}
                   </Box>
                 </TableCell>
-                <TableCell>{new Date(project.startDate).toLocaleDateString()}</TableCell>
-                <TableCell>{project.endDate ? new Date(project.endDate).toLocaleDateString() : ''}</TableCell>
+                <TableCell>
+                  <Chip
+                    color={project.status === Status.ACTIVE ? 'primary' : 'default'}
+                    label={statusToLabel(project.status)}
+                  />
+                </TableCell>
+                <TableCell>{dateToString(project.startDate)}</TableCell>
+                <TableCell>{dateToString(project.endDate)}</TableCell>
                 <TableCell align="right">
                   <Link to={`/projects/${project.id}`}>
                     <Button size="small" variant="outlined">
@@ -63,4 +68,4 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
       </Table>
     </TableContainer>
   );
-}
+};

@@ -1,35 +1,49 @@
-import { ConcurrencySafeEntity } from '../ConcurrencySafeEntity';
-import { Award } from './Award';
-import { Employment } from './Employment';
+import { z } from 'zod';
+import { concurrencySafeEntitySchema } from '../ConcurrencySafeEntity';
+import { CountryCodes } from '../CountryCodes';
+import { domainEntitySchema } from '../DomainEntity';
+import { Employment, employmentSchema } from './Employment';
 
-export interface Person extends ConcurrencySafeEntity {
-  readonly slug: string;
-  readonly givenNames: string;
-  readonly familyNames: string;
-  readonly honorific: string;
-  readonly personNummer: string;
-  readonly gender: string;
-  readonly email: string;
-  readonly website: string;
-  readonly phone: string;
-  readonly birthDate: Date;
-  readonly birthCity: string;
-  readonly birthCountryCode: string;
-  readonly cvBrief: string;
-  readonly cvText: string;
-  readonly msInstitute: string;
-  readonly msYear: number;
-  readonly msCountryCode: string;
-  readonly phdInstitute: string;
-  readonly phdYear: number;
-  readonly phdCountryCode: string;
-  readonly photo: string;
+export const personBriefSchema = domainEntitySchema.extend({
+  slug: z.string(),
+  givenNames: z.nullable(z.string()),
+  familyNames: z.string(),
+  email: z.nullable(z.string()),
+  photo: z.nullable(z.string()),
+  honorific: z.nullable(z.string())
+});
 
-  readonly employments: Employment[];
-  readonly awards: Award[];
-}
+export type PersonBrief = z.infer<typeof personBriefSchema>;
 
-export function personName(person: Person): string {
+export const personSchema = personBriefSchema.merge(concurrencySafeEntitySchema).extend({
+  personNummer: z.nullable(z.string()),
+  gender: z.nullable(z.string()),
+  emailsHistorical: z.nullable(z.string()),
+  website: z.nullable(z.string().url()),
+  phone: z.nullable(z.string()),
+  birthDate: z.nullable(z.preprocess((a) => new Date(z.string().parse(a)), z.date())),
+  birthCountryCode: z.nullable(z.nativeEnum(CountryCodes)),
+  passportCountryCode: z.nullable(z.nativeEnum(CountryCodes)),
+  cvBrief: z.nullable(z.string()),
+  cvText: z.nullable(z.string()),
+
+  msInstitute: z.nullable(z.string()),
+  msYear: z.nullable(z.number().min(1900).max(2099)),
+  msCountryCode: z.nullable(z.nativeEnum(CountryCodes)),
+
+  phdInstitute: z.nullable(z.string()),
+  phdYear: z.nullable(z.number().min(1900).max(2099)),
+  phdCountryCode: z.nullable(z.nativeEnum(CountryCodes)),
+
+  leaveOfAbsence: z.nullable(z.string()),
+  notYetArrived: z.nullable(z.string()),
+
+  employments: z.array(employmentSchema)
+});
+
+export type Person = z.infer<typeof personSchema>;
+
+export function personName(person: Person | PersonBrief): string {
   if (person.givenNames && person.givenNames !== '') {
     return person.givenNames + ' ' + person.familyNames;
   }
@@ -37,7 +51,10 @@ export function personName(person: Person): string {
 }
 
 export function personTitles(person: Person): string {
-  return person.employments?.map((emp) => emp.title.name).join(', ');
+  return person.employments
+    ?.filter((emp: Employment) => emp.title !== undefined)
+    .map((emp: Employment) => emp.title?.name)
+    .join(', ');
 }
 
 export function personBranch(person: Person): string | null {

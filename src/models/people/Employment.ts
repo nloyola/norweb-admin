@@ -1,19 +1,20 @@
-import { Group } from './Group';
-import { DomainEntity } from '@app/models';
-import { EmploymentTitle } from './EmploymentTitle';
+import { domainEntitySchema } from '@app/models';
+import { z } from 'zod';
+import { employmentTitleBriefSchema } from './EmploymentTitle';
 
-export interface Employment extends DomainEntity {
-    readonly type: string;
-    readonly etitid: number;
-    readonly avid: number;
-    readonly groupid: number;
-    readonly fromDate: Date;
-    readonly toDate: Date;
-    readonly office: string;
-    readonly branch: string;
-    readonly updatedAt: Date;
-    readonly createdAt: Date;
+export const employmentSchema = domainEntitySchema.extend({
+  type: z.string(),
+  startDate: z.string().transform((str) => new Date(str)),
+  endDate: z
+    .string()
+    .transform((str) => new Date(str))
+    .nullable(),
+  office: z.nullable(z.string()),
+  branch: z.nullable(z.string()),
+  personId: z.number().min(1),
+  employmentTitleId: z.number().min(1),
+  groupId: z.number().min(1).nullable(),
+  title: z.optional(employmentTitleBriefSchema)
+});
 
-    readonly title: EmploymentTitle;
-    readonly group: Group;
-}
+export type Employment = z.infer<typeof employmentSchema>;

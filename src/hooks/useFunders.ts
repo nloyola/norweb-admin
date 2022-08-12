@@ -7,5 +7,6 @@ import { usePaginator } from './usePaginator';
  * The funders are returned in a paginated fashion. See {@link PaginationData}.
  */
 export function useFunders() {
-  return usePaginator((page: number, searchTerm: string) => FundersService.paginate(page, searchTerm));
+  const fetcher = (page: number, searchTerm: string) => FundersService.paginate(page, searchTerm);
+  return usePaginator(fetcher);
 }

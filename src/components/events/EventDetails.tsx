@@ -88,13 +88,13 @@ export function EventDetails() {
         <EntityProperty
           propName="description"
           label="Description"
-          value={nlToFragments(event.description)}
+          value={event.description ? nlToFragments(event.description) : null}
           handleChange={onPropChange}
         />
         <EntityProperty
           propName="duration"
           label="Duration"
-          value={datesRangeToString(new Date(event.startDate), event.endDate ? new Date(event.endDate) : undefined)}
+          value={datesRangeToString(event.startDate, event.endDate)}
           handleChange={onPropChange}
         />
         <EntityProperty propName="venue" label="Venue" value={event.venue} handleChange={onPropChange} />

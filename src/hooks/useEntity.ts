@@ -19,6 +19,7 @@ export function useEntity<T extends DomainEntity>(entityFetcher: () => Promise<T
         const entity = await entityFetcher();
         setEntity(entity);
       } catch (err) {
+        console.log(err);
         if (err instanceof Error) {
           if (err.message.includes('Not found')) {
             setEntity(null);
@@ -42,3 +43,4 @@ export function useEntity<T extends DomainEntity>(entityFetcher: () => Promise<T
 
   return { error, loading, entity, loadEntity, updateEntity };
 }
+1;

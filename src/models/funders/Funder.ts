@@ -1,15 +1,19 @@
-import { ConcurrencySafeEntity } from '../ConcurrencySafeEntity';
+import { concurrencySafeEntitySchema } from '../ConcurrencySafeEntity';
 import { Status } from '../Status';
 import { FunderTypes } from './FunderTypes';
+import { CountryCodes } from '../CountryCodes';
+import { z } from 'zod';
 
-export interface Funder extends ConcurrencySafeEntity {
-  readonly name: string;
-  readonly acronym: string;
-  readonly countryCode: string;
-  readonly web: string;
-  readonly type: FunderTypes;
-  readonly status: Status;
-}
+export const funderSchema = concurrencySafeEntitySchema.extend({
+  name: z.string(),
+  acronym: z.string(),
+  countryCode: z.nativeEnum(CountryCodes),
+  web: z.nullable(z.string().url()),
+  type: z.nativeEnum(FunderTypes),
+  status: z.nativeEnum(Status)
+});
+
+export type Funder = z.infer<typeof funderSchema>;
 
 export type FunderAdd = Pick<Funder, 'name' | 'acronym' | 'countryCode' | 'web' | 'type'>;
 

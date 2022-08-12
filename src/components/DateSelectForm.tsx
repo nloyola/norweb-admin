@@ -7,7 +7,7 @@ type DateSelectFormProps = {
   control: any; // FIXME declare with correct type
   errors: any; // FIXME declare with correct type
   minDate?: Date;
-  maxDate?: Date;
+  maxDate?: Date | null;
 };
 
 export function DateSelectForm({ names, control, errors, minDate, maxDate }: DateSelectFormProps) {

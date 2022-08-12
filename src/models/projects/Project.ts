@@ -1,25 +1,28 @@
-import { ConcurrencySafeEntity } from '../ConcurrencySafeEntity';
-import { Event } from '../events';
+import { z } from 'zod';
+import { concurrencySafeEntitySchema } from '../ConcurrencySafeEntity';
+import { CountryCodes } from '../CountryCodes';
+import { eventBriefSchema } from '../events';
 import { Status } from '../Status';
-import { ProjectKeyword } from './ProjectKeyword';
+import { projectKeywordSchema } from './ProjectKeyword';
 
-export interface Project extends ConcurrencySafeEntity {
-  readonly name: string;
-  readonly shorthand: string;
-  readonly startDate: string;
-  readonly endDate?: string;
-  readonly description: string;
-  readonly goals: string;
-  readonly vision: string;
-  readonly groupId: number;
-  readonly parentProjectId: number;
-  readonly subproject: string;
-  readonly countryCode: string;
-  readonly cntr: string;
-  readonly status: Status;
-  readonly events: Event[];
-  readonly keywords: ProjectKeyword[];
-}
+export const projectSchema = concurrencySafeEntitySchema.extend({
+  name: z.string(),
+  shorthand: z.string(),
+  description: z.string(),
+  startDate: z.preprocess((a) => new Date(z.string().parse(a)), z.date()),
+  endDate: z.nullable(z.preprocess((a) => new Date(z.string().parse(a)), z.date())),
+  goals: z.nullable(z.string()),
+  vision: z.nullable(z.string()),
+  groupId: z.number().min(1).nullable(),
+  parentProjectId: z.number().min(1).nullable(),
+  countryCode: z.nativeEnum(CountryCodes).nullable(),
+  cntr: z.nullable(z.string()),
+  status: z.nativeEnum(Status),
+  events: z.array(eventBriefSchema),
+  keywords: z.array(projectKeywordSchema)
+});
+
+export type Project = z.infer<typeof projectSchema>;
 
 export type ProjectAdd = Pick<
   Project,

@@ -1,5 +1,5 @@
-import { PaginatedResponse } from '@app/models';
-import { Funder, FunderAdd, FunderUpdate } from '@app/models/funders';
+import { paginatedResponseSchema } from '@app/models';
+import { Funder, FunderAdd, FunderUpdate, funderSchema } from '@app/models/funders';
 
 export class FundersService {
   private static apiBaseUrl = '/api/funders/';
@@ -20,22 +20,22 @@ export class FundersService {
         throw new Error('HTTP error: status: ' + response.status);
       }
     }
-    return result;
+    return funderSchema.parse(result);
   }
 
-  static async paginate(page: number, search: string): Promise<PaginatedResponse<Funder>> {
+  static async paginate(page: number, search: string) {
     let url = this.apiBaseUrl + `?page=${page}`;
     if (search !== '') {
       url = `${url}&search=${search}`;
     }
 
     const response = await fetch(url);
-    const result = await response.json();
+    const pagination = await response.json();
     if (!response.ok) {
-      console.error(result);
+      console.error(pagination);
       throw new Error('HTTP error: status: ' + response.status);
     }
-    return result;
+    return paginatedResponseSchema(funderSchema).parse(pagination);
   }
 
   static async add(funder: FunderAdd): Promise<boolean> {

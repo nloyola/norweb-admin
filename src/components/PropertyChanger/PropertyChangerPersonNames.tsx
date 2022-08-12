@@ -1,14 +1,14 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Grid, TextField } from '@mui/material';
 import { useState } from 'react';
-import { PersonNames, PropertyChangerPersonNamesProps, PropertyChangerProps } from './PropertyChanger';
-import * as yup from 'yup';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+import { z } from 'zod';
+import { PersonNames, PropertyChangerPersonNamesProps } from './PropertyChanger';
 import { PropertyChangerDialog } from './PropertyChangerDialog';
 
-const schema = yup.object().shape({
-  givenNames: yup.string(),
-  familyNames: yup.string().required('at least one family name is required')
+const schema = z.object({
+  givenNames: z.string(),
+  familyNames: z.string().min(1, { message: 'at least one family name is required' })
 });
 
 export function PropertyChangerPersonNames({
@@ -27,7 +27,7 @@ export function PropertyChangerPersonNames({
   } = useForm<PersonNames>({
     mode: 'all',
     reValidateMode: 'onChange',
-    resolver: yupResolver(schema),
+    resolver: zodResolver(schema),
     defaultValues: value
   });
 

@@ -15,7 +15,10 @@ export function PersonPage() {
   const { error, loading, person: loadedPerson, loadPerson } = usePerson(Number(params.personId));
   const [person, setPerson] = useState<Person | null>(null);
 
-  useEffect(loadPerson, []);
+  useEffect(() => {
+    loadPerson();
+    setPerson(loadedPerson);
+  }, []);
 
   useEffect(() => {
     setPerson(loadedPerson);
@@ -38,7 +41,7 @@ export function PersonPage() {
         }}
       >
         <Stack spacing={2} mb={10} direction="row">
-          <Avatar variant="rounded" src={person.photo} sx={{ width: 200, height: 200 }} />
+          {person.photo && <Avatar variant="rounded" src={person.photo} sx={{ width: 200, height: 200 }} />}
           <Stack spacing={2}>
             <Typography component="h1" variant="h3">
               {personName(person)}

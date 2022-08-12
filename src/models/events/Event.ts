@@ -1,17 +1,25 @@
+import { z } from 'zod';
 import { EventType } from './EventType';
-import { DomainEntity } from '@app/models';
+import { domainEntitySchema } from '@app/models';
 
-export interface Event extends DomainEntity {
-  readonly title: string;
-  readonly description: string;
-  readonly startDate: string;
-  readonly endDate?: string;
-  readonly venue: string;
-  readonly organizer: string;
-  readonly url: string;
-  readonly type: EventType;
-  readonly projectId: number;
-}
+export const eventBriefSchema = domainEntitySchema.extend({
+  title: z.string(),
+  startDate: z.preprocess((a) => new Date(z.string().parse(a)), z.date()),
+  endDate: z.nullable(z.preprocess((a) => new Date(z.string().parse(a)), z.date())),
+  url: z.nullable(z.string().url()),
+  type: z.nativeEnum(EventType)
+});
+
+export const eventSchema = eventBriefSchema.extend({
+  description: z.string().nullable(),
+  venue: z.string().nullable(),
+  organizer: z.string().nullable(),
+  projectId: z.number().min(1).nullable()
+});
+
+export type EventBrief = z.infer<typeof eventBriefSchema>;
+
+export type Event = z.infer<typeof eventSchema>;
 
 export type EventAdd = Pick<
   Event,

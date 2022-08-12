@@ -1,27 +1,26 @@
-import { ProjectKeywordAdd, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
-import * as yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { Controller, useForm } from 'react-hook-form';
+import { ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
+import { Controller, useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-const schema = yup.object().shape({
-  name: yup.string().required('name is required'),
-  weight: yup
-    .number()
-    .required('weight is required')
-    .min(0)
-    .max(1)
-    .test('maxDigitsAfterDecimal', 'can only have a maximum of 5 digits after the decimal', (number) =>
-      /^\d(\.\d{1,5})?$/.test(`${number}`)
-    )
+const schema = z.object({
+  name: z.string(),
+  weight: z
+    .preprocess((a) => parseFloat(z.string().parse(a)), z.number().min(0).max(1))
+    .refine((number) => /^\d(\.\d{1,5})?$/.test(`${number}`), {
+      message: 'can only have a maximum of 5 digits after the decimal'
+    })
 });
+
+export type KeywordFormInput = z.infer<typeof schema>;
 
 type KeywordsDialogProps = {
   keyword?: ProjectKeywordUpdate;
   open: boolean;
-  onClose: (keyword?: ProjectKeywordUpdate) => void;
+  onClose: (keyword?: KeywordFormInput) => void;
 };
 
 /**
@@ -34,11 +33,11 @@ export function KeywordDialog({ keyword, open, onClose }: KeywordsDialogProps) {
     control,
     getValues,
     formState: { isValid, errors }
-  } = useForm<ProjectKeywordUpdate>({
+  } = useForm<KeywordFormInput>({
     mode: 'all',
     reValidateMode: 'onChange',
-    resolver: yupResolver(schema),
-    defaultValues: keyword ?? { name: '', weight: '' }
+    resolver: zodResolver(schema),
+    defaultValues: { name: keyword?.name || '', weight: keyword?.weight }
   });
 
   const handleOk = () => {

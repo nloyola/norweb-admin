@@ -9,6 +9,8 @@ import { PersonContextType } from '@app/pages/people/PersonPage';
 import { personPropertiesSchema } from './PersonPropertiesSchema';
 import { EntityProperty } from '../EntityProperty';
 
+// FIXME: Brief CV and CV fields have pencil icon on same row
+
 export function PersonBio() {
   const navigate = useNavigate();
   const { person, updatePerson }: PersonContextType = useOutletContext();
@@ -65,6 +67,8 @@ export function PersonBio() {
   }
 
   const schemas = personPropertiesSchema(person);
+
+  // console.log(propertyToUpdate, schemas[propertyToUpdate]);
 
   return (
     <>

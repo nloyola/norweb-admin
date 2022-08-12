@@ -21,8 +21,8 @@ export function eventPropertiesSchema(event: Event): PropertiesSchema {
       propertyType: PropertyTypes.DATE_RANGE,
       label: 'Duration',
       value: {
-        startDate: new Date(event.startDate),
-        endDate: event.endDate ? new Date(event.endDate) : undefined
+        startDate: event.startDate,
+        endDate: event.endDate
       }
     },
     venue: {

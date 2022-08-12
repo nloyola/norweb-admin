@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export enum FunderTypes {
   NORDITA = 'nordita',
   UNIVERSITY_OR_RESEARCH_INSTITUTE = 'university-or-research-institute',
@@ -5,6 +7,9 @@ export enum FunderTypes {
   PRIVATE_FUNDING_AGENCY = 'private-funding-agency',
   OTHER = 'other'
 }
+
+export const FunderTypesEnum = z.nativeEnum(FunderTypes);
+export type FunderTypesEnum = z.infer<typeof FunderTypesEnum>;
 
 export function funderTypeToLabel(ft: FunderTypes): string {
   switch (ft) {

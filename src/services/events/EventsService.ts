@@ -1,5 +1,6 @@
-import { PaginatedResponse } from '@app/models';
-import { Event, EventAdd, EventUpdate } from '@app/models/events';
+import { PaginatedResponse, paginatedResponseSchema } from '@app/models';
+import { Event, EventAdd, eventSchema, EventUpdate } from '@app/models/events';
+import { dateToString } from '@app/utils/utils';
 
 export class EventsService {
   private static apiBaseUrl = '/api/projects/';
@@ -13,7 +14,7 @@ export class EventsService {
       console.error(result);
       throw new Error('HTTP error: status: ' + response.status);
     }
-    return result;
+    return eventSchema.parse(result);
   }
 
   static async paginate(projectId: number, page: number, search: string): Promise<PaginatedResponse<Event>> {
@@ -28,11 +29,17 @@ export class EventsService {
       console.error(result);
       throw new Error('HTTP error: status: ' + response.status);
     }
-    return result;
+    return paginatedResponseSchema(eventSchema).parse(result);
   }
 
   static async add(projectId: number, event: EventAdd): Promise<Event> {
-    const data = { data: event };
+    const data = {
+      data: {
+        ...event,
+        startDate: dateToString(event.startDate),
+        endDate: dateToString(event.endDate)
+      }
+    };
     const response = await fetch(this.apiBaseUrl + `${projectId}/events/`, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
@@ -48,11 +55,17 @@ export class EventsService {
       throw new Error('HTTP error: status: ' + response.status);
     }
 
-    return result;
+    return eventSchema.parse(result);
   }
 
   static async update(projectId: number, event: EventUpdate): Promise<Event> {
-    const data = { data: event };
+    const data = {
+      data: {
+        ...event,
+        startDate: dateToString(event.startDate),
+        endDate: dateToString(event.endDate)
+      }
+    };
     const url = `${this.apiBaseUrl}${projectId}/events/${event.id}/`;
     const response = await fetch(url, {
       headers: {
@@ -70,6 +83,6 @@ export class EventsService {
       throw new Error('HTTP error: status: ' + response.status);
     }
 
-    return json;
+    return eventSchema.parse(json);
   }
 }
