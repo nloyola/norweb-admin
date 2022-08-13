@@ -174,21 +174,21 @@ export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
               maxDate={watchEndDate}
             ></DateSelectForm>
           </Grid>
-        </Grid>
-        <Grid item xs={6} md={6}>
-          <Controller
-            control={control}
-            name="type"
-            render={({ field }) => (
-              <TextField {...field} select label="Event type" variant="standard" fullWidth margin="dense">
-                {Object.values(EventType).map((value) => (
-                  <MenuItem key={value} value={value}>
-                    {eventTypeToLabel(value)}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-          />
+          <Grid item xs={12} md={12}>
+            <Controller
+              control={control}
+              name="type"
+              render={({ field }) => (
+                <TextField {...field} select label="Event type" variant="standard" fullWidth margin="dense">
+                  {Object.values(EventType).map((value) => (
+                    <MenuItem key={value} value={value}>
+                      {eventTypeToLabel(value)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+          </Grid>
         </Grid>
         <Stack spacing={2} direction="row" mt={5}>
           <Button type="submit" variant="contained" disabled={!isDirty || !isValid}>

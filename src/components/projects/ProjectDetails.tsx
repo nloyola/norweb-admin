@@ -141,7 +141,7 @@ export function ProjectDetails() {
         <EntityProperty
           propName="countryCode"
           label="Country"
-          value={CountryNames[project.countryCode]}
+          value={project.countryCode ? CountryNames[project.countryCode] : null}
           handleChange={onPropChange}
         />
         <EntityProperty
