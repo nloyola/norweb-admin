@@ -1,6 +1,7 @@
 import { ReactElement } from 'react';
 import { Chip, Divider, Grid, IconButton, Tooltip, Typography } from '@mui/material';
 import { Edit } from '@mui/icons-material';
+import { Box } from '@mui/system';
 
 export interface EntityPropertyProps {
   propName: string;
@@ -33,7 +34,7 @@ export function EntityProperty({ propName, label, value, handleChange }: EntityP
     return <>{value}</>;
   };
 
-  // the "change" icon is only displayed if the prop handleChange is defined */
+  // // the "change" icon is only displayed if the prop handleChange is defined */
   return (
     <>
       <Grid item xs={12} container style={{ marginRight: '1.5rem', padding: '0 1rem' }}>
@@ -42,7 +43,7 @@ export function EntityProperty({ propName, label, value, handleChange }: EntityP
             {label}
           </Typography>
         </Grid>
-        <Grid item xs={10} container justifyContent="space-between" alignItems="flex-start">
+        <Grid item xs={10} container flexWrap="nowrap" justifyContent="space-between" alignItems="flex-start">
           <Value />
           {handleChange && (
             <Tooltip title="Change" arrow placement="left">
