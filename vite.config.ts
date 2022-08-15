@@ -8,6 +8,7 @@ export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   const proxyTarget = `http://${env.BACKEND_SERVER}`;
+  console.log('proxy target', proxyTarget);
 
   return {
     plugins: [react(), tsconfigPaths(), splitVendorChunkPlugin()],
