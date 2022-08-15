@@ -1,11 +1,13 @@
-import { ChangeEvent, useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, Box, CircularProgress, Fab, Pagination, Stack, Typography } from '@mui/material';
+import { EventsService } from '@app/services/events/EventsService';
 import { ArrowBack } from '@mui/icons-material';
-import { EventsTable } from './EventsTable';
-import { SearchTermInput } from '../SearchTermInput';
-import { useProjectEvents } from '@app/hooks/useProjectEvents';
 import AddIcon from '@mui/icons-material/Add';
+import { Alert, Box, CircularProgress, Fab, Pagination, Stack, Typography } from '@mui/material';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { SearchTermInput } from '../SearchTermInput';
+import { ShowError } from '../ShowError';
+import { EventsTable } from './EventsTable';
 
 export function EventsList() {
   const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
@@ -18,7 +20,19 @@ export function EventsList() {
   const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search'));
 
-  const { error, loading, pagination, loadPage } = useProjectEvents(projectId);
+  const {
+    error,
+    isError,
+    isLoading,
+    isFetching,
+    data: pagination
+  } = useQuery(
+    ['projects', projectId, 'events', page, searchTerm],
+    () => EventsService.paginate(projectId, page, searchTerm || ''),
+    {
+      keepPreviousData: true
+    }
+  );
 
   useEffect(() => {
     const params: any = {};
@@ -31,8 +45,6 @@ export function EventsList() {
       params['search'] = searchTerm;
     }
     setSearchParams(params);
-
-    loadPage(page, searchTerm || '');
   }, [page, searchTerm]);
 
   const handlePageChange = (_event: ChangeEvent<unknown>, newPage: number) => {
@@ -55,8 +67,8 @@ export function EventsList() {
     navigate('../../');
   };
 
-  if (error !== '') {
-    return <Alert severity="error">{error}</Alert>;
+  if (isError) {
+    return <ShowError error={error} />;
   }
 
   return (
@@ -85,11 +97,11 @@ export function EventsList() {
           <SearchTermInput initialInput={searchTerm} onChange={handleSearchTermChange} />
         </Box>
       </Stack>
-      {(loading || !pagination) && <CircularProgress />}
-      {!loading && pagination && (
+      {(isLoading || !pagination) && <CircularProgress />}
+      {!isLoading && pagination && (
         <>
-          <EventsTable events={pagination.pagedResults?.results || []} />
-          {pagination.count > 1 && (
+          <EventsTable events={pagination.results || []} />
+          {pagination.pages > 1 && (
             <Box
               sx={{
                 display: 'flex',
@@ -97,7 +109,13 @@ export function EventsList() {
                 mt: 2
               }}
             >
-              <Pagination count={pagination.count || 1} page={page} boundaryCount={2} onChange={handlePageChange} />
+              <Pagination
+                count={pagination.pages}
+                page={page}
+                boundaryCount={2}
+                onChange={handlePageChange}
+                disabled={isFetching}
+              />
             </Box>
           )}
         </>

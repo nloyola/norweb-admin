@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react';
-import { Alert, CircularProgress, Fab, Grid, Stack } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { EventsService } from '@app/services/events/EventsService';
 import { useEvent } from '@app/hooks/useEvent';
-import { DateRange, PropertyChanger } from '../PropertyChanger';
-import { datesRangeToString, dateToString } from '@app/utils/utils';
-import { eventPropertiesSchema } from './eventPropertiesSchemas';
-import { EntityProperty } from '../EntityProperty';
+import { Event, eventTypeToLabel } from '@app/models/events';
+import { EventsService } from '@app/services/events/EventsService';
 import { nlToFragments } from '@app/utils/nltoFragments';
-import { eventTypeToLabel } from '@app/models/events';
+import { datesRangeToString } from '@app/utils/utils';
+import { ArrowBack } from '@mui/icons-material';
+import { CircularProgress, Fab, Grid, Stack } from '@mui/material';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { EntityProperty } from '../EntityProperty';
+import { DateRange, PropertyChanger } from '../PropertyChanger';
+import { ShowError } from '../ShowError';
+import { eventPropertiesSchema } from './eventPropertiesSchemas';
 
 export function EventDetails() {
   const navigate = useNavigate();
@@ -17,16 +19,18 @@ export function EventDetails() {
   const projectId = Number(params.projectId);
   const eventId = Number(params.eventId);
 
-  const { error, loading, event, loadEvent, updateEvent } = useEvent(projectId, eventId);
   const [propertyToUpdate, setPropertyToUpdate] = useState<string | null>(null);
-
   const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState('');
 
-  useEffect(() => {
-    loadEvent();
-  }, []);
+  const { error, isError, isLoading, data: event } = useEvent(projectId, eventId);
+  const queryClient = useQueryClient();
+
+  const updateEvent = useMutation((event: Event) => EventsService.update(projectId, event), {
+    onSuccess: (newEvent: Event) => {
+      queryClient.setQueryData(['projects', projectId, 'events', eventId], newEvent);
+      queryClient.invalidateQueries(['projects', projectId]);
+    }
+  });
 
   const onPropChange = (propertyName: string) => {
     setPropertyToUpdate(propertyName);
@@ -34,49 +38,42 @@ export function EventDetails() {
   };
 
   const handleClose = <T extends unknown>(propertyName: string, newValue?: T) => {
-    const saveData = async () => {
-      if (!newValue) {
-        return;
-      }
-
-      const newValues: any = { ...event };
-      if (propertyName === 'duration') {
-        const newDates = newValue as DateRange;
-        newValues.startDate = dateToString(newDates.startDate);
-        newValues.endDate = dateToString(newDates.endDate);
-      } else {
-        newValues[propertyName] = newValue;
-      }
-
-      try {
-        const modifiedEvent = await EventsService.update(projectId, newValues);
-        updateEvent(modifiedEvent);
-      } catch (err) {
-        console.error(err);
-        setSaveError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setSaving(false);
-      }
-    };
-
     setOpen(false);
-    saveData();
+    if (!newValue) {
+      return;
+    }
+
+    if (!event) {
+      throw new Error('event is invalid');
+    }
+
+    const newValues = { ...event };
+    if (propertyName === 'duration') {
+      const newDates = newValue as DateRange;
+      newValues.startDate = newDates.startDate;
+      newValues.endDate = newDates.endDate;
+    } else {
+      // see https://bobbyhadz.com/blog/typescript-create-type-from-object-keys
+      newValues[propertyName as keyof Event] = newValue as keyof Event[keyof Event];
+    }
+
+    updateEvent.mutate(newValues);
   };
 
   const backClicked = () => {
     navigate(-1);
   };
 
-  if (loading || saving || !event) {
+  if (isError) {
+    return <ShowError error={error} />;
+  }
+
+  if (updateEvent.isError) {
+    return <ShowError error={updateEvent.error} />;
+  }
+
+  if (isLoading || !event) {
     return <CircularProgress />;
-  }
-
-  if (error !== '') {
-    return <Alert severity="error">{error}</Alert>;
-  }
-
-  if (saveError !== '') {
-    return <Alert severity="error">{saveError}</Alert>;
   }
 
   const schemas = eventPropertiesSchema(event);

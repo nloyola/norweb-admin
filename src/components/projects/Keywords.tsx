@@ -6,15 +6,17 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ProjectKeywordDeleteDialog } from './ProjectKeywordDeleteDialog';
 import { KeywordDialog, KeywordFormInput } from './KeywordDialog';
+import { ShowError } from '../ShowError';
 
 type KeywordsProps = {
   initialKeywords: ProjectKeyword[];
+  disabled: boolean;
 };
 
 /**
  * A component that allows the user to add, update and delete keywords from a Project.
  */
-export function Keywords({ initialKeywords }: KeywordsProps) {
+export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
   const params = useParams();
   const projectId = Number(params.projectId);
 
@@ -110,7 +112,7 @@ export function Keywords({ initialKeywords }: KeywordsProps) {
   }
 
   if (backendError !== '') {
-    return <Alert severity="error">{backendError}</Alert>;
+    return <ShowError error={backendError} />;
   }
 
   return (
@@ -142,13 +144,13 @@ export function Keywords({ initialKeywords }: KeywordsProps) {
         </Box>
       </Grid>
       <Grid item>
-        <Button size="small" variant="outlined" onClick={handleAdd}>
+        <Button size="small" variant="outlined" onClick={handleAdd} disabled={disabled}>
           Add
         </Button>
       </Grid>
-      {openAdd && <KeywordDialog keyword={undefined} open={openAdd} onClose={handleAddClosed} />}
-      {openUpdate && <KeywordDialog keyword={selected} open={openUpdate} onClose={handleUpdateClosed} />}
-      {openDelete && selected && (
+      {openAdd && !disabled && <KeywordDialog keyword={undefined} open={openAdd} onClose={handleAddClosed} />}
+      {openUpdate && !disabled && <KeywordDialog keyword={selected} open={openUpdate} onClose={handleUpdateClosed} />}
+      {openDelete && !disabled && selected && (
         <ProjectKeywordDeleteDialog
           keyword={selected}
           open={openDelete}

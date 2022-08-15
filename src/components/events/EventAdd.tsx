@@ -1,11 +1,11 @@
-import { EventType } from '@app/models/events';
+import { Event, EventAdd as EventAddType } from '@app/models/events';
 import { EventsService } from '@app/services/events/EventsService';
-import CloseIcon from '@mui/icons-material/Close';
-import { Alert, Button, CircularProgress, IconButton, Slide, Stack, Typography } from '@mui/material';
-import { SnackbarKey, useSnackbar } from 'notistack';
-import { useState } from 'react';
-import { SubmitHandler } from 'react-hook-form';
+import { Stack, Typography } from '@mui/material';
+import { useSnackbar } from 'notistack';
+import { useMutation, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ShowError } from '../ShowError';
+import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
 import { EventAddForm, EventFormInputs } from './EventAddForm';
 
 export function EventAdd() {
@@ -13,73 +13,41 @@ export function EventAdd() {
   const params = useParams();
   const projectId = Number(params.projectId);
 
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
-  const handleSubmit: SubmitHandler<EventFormInputs> = (data) => {
-    const saveData = async () => {
-      try {
-        if (data.startDate === null) {
-          throw Error('start date is null');
-        }
+  const queryClient = useQueryClient();
+  const addEvent = useMutation((event: EventAddType) => EventsService.add(projectId, event), {
+    onSuccess: (newEvent: Event) => {
+      queryClient.setQueryData(['projects', projectId, 'events'], newEvent);
+      queryClient.invalidateQueries(['events']);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The event was saved');
+      navigate('..');
+    }
+  });
 
-        if (data.endDate === null) {
-          throw Error('end date is null');
-        }
+  const handleSubmit = (data: EventFormInputs) => {
+    if (!data.startDate) {
+      throw Error('start date is null');
+    }
 
-        setSaving(true);
-        await EventsService.add(projectId, {
-          title: data.title,
-          description: data.description,
-          startDate: data.startDate,
-          endDate: data.endDate,
-          venue: data.venue,
-          organizer: data.organizer,
-          url: data.url,
-          type: data.type as EventType
-        });
+    if (!data.endDate) {
+      throw Error('end date is null');
+    }
 
-        const action = (key: SnackbarKey) => (
-          <Button onClick={() => closeSnackbar(key)}>
-            <IconButton color="default" aria-label="close button" component="span" size="small">
-              <CloseIcon />
-            </IconButton>
-          </Button>
-        );
+    if (!data.type) {
+      throw Error('event type is null');
+    }
 
-        navigate('../');
-
-        enqueueSnackbar('The event was saved', {
-          action,
-          variant: 'success',
-          anchorOrigin: {
-            vertical: 'top',
-            horizontal: 'right'
-          },
-          TransitionComponent: Slide
-        });
-      } catch (err) {
-        console.error(err);
-        setError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setSaving(false);
-      }
-    };
-
-    saveData();
+    const newEvent: EventAddType = { ...data, startDate: data.startDate, type: data.type };
+    addEvent.mutate(newEvent);
   };
 
   const handleCancel = () => {
     navigate('../');
   };
 
-  if (saving) {
-    return <CircularProgress />;
-  }
-
-  if (error !== '') {
-    return <Alert severity="error">Error in backend adding a project: {error}</Alert>;
+  if (addEvent.isError) {
+    return <ShowError error={`Error in backend adding a project: ${addEvent.error}`} />;
   }
 
   return (

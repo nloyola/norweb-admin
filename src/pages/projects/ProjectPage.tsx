@@ -1,11 +1,11 @@
-import { Project } from '@app/models/projects';
-import { Alert, Avatar, CircularProgress, Divider, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
-import { Link, Outlet, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { stringAvatar } from '@app/utils/utils';
-import { Box } from '@mui/system';
 import { ProjectBreadcrumbs } from '@app/components/Breadcrumbs/ProjectBreadcrumbs';
+import { ShowError } from '@app/components/ShowError';
 import { useProject } from '@app/hooks/useProject';
+import { Project } from '@app/models/projects';
+import { stringAvatar } from '@app/utils/utils';
+import { Avatar, CircularProgress, Divider, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Box } from '@mui/system';
+import { Link, Outlet, useParams } from 'react-router-dom';
 
 export type ProjectContextType = {
   project: Project;
@@ -14,35 +14,24 @@ export type ProjectContextType = {
 
 export function ProjectPage() {
   const params = useParams();
-  const { error, loading, project: loadedProject, loadProject } = useProject(Number(params.projectId));
-  const [project, setProject] = useState<Project | null>(null);
+  const { isError, error, isLoading, data: project } = useProject(Number(params.projectId));
 
   let currentTab = 'settings';
   if (location.pathname.includes('events')) {
     currentTab = 'events';
   }
 
-  useEffect(loadProject, []);
+  if (isError) {
+    return <ShowError error={error} />;
+  }
 
-  useEffect(() => {
-    setProject(loadedProject);
-  }, [loadedProject]);
-
-  if (loading) {
+  if (isLoading || !project) {
     return <CircularProgress />;
-  }
-
-  if (error !== '') {
-    return <Alert severity="error">{error}</Alert>;
-  }
-
-  if (project === null) {
-    return <Alert severity="error">Project does not exist</Alert>;
   }
 
   return (
     <Stack spacing={1}>
-      <ProjectBreadcrumbs project={project} />
+      <ProjectBreadcrumbs projectId={project.id} />
       <Stack spacing={1} pt={5} direction="row">
         {project.name && <Avatar {...stringAvatar(project.name)}></Avatar>}
         <Stack spacing={0}>
@@ -67,7 +56,7 @@ export function ProjectPage() {
               <Tab label="Events" value="events" component={Link} to="events" />
             </Tabs>
           </Box>
-          <Outlet context={{ project, updateProject: setProject }} />
+          <Outlet />
         </Stack>
       </Paper>
     </Stack>

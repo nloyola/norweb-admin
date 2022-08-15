@@ -6,7 +6,7 @@ type DateSelectFormProps = {
   names: string[];
   control: any; // FIXME declare with correct type
   errors: any; // FIXME declare with correct type
-  minDate?: Date;
+  minDate?: Date | null;
   maxDate?: Date | null;
 };
 
@@ -66,4 +66,3 @@ export function DateSelectForm({ names, control, errors, minDate, maxDate }: Dat
     </Grid>
   );
 }
-export default DateSelectForm;

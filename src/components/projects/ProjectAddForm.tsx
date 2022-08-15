@@ -1,16 +1,18 @@
-import DateSelectForm from '@app/components/DateSelectForm';
+import { DateSelectForm } from '@app/components/DateSelectForm';
 import { CountryCodes } from '@app/models';
+import { Project, ProjectAdd } from '@app/models/projects';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { zodResolver } from '@hookform/resolvers/zod';
-import CloseIcon from '@mui/icons-material/Close';
-import { Alert, Button, CircularProgress, Grid, IconButton, Slide, Stack, TextField } from '@mui/material';
+import { Button, Grid, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { SnackbarKey, useSnackbar } from 'notistack';
-import { useState } from 'react';
+import { useSnackbar } from 'notistack';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { useMutation, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { ShowError } from '../ShowError';
+import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
 
 const schema = z
   .object({
@@ -19,7 +21,7 @@ const schema = z
     description: z.string(),
     goals: z.string(),
     vision: z.string(),
-    startDate: z.date(),
+    startDate: z.date().nullable(),
     endDate: z.date().nullable()
     //countryCode: z.nativeEnum(CountryCodes).nullable()
   })
@@ -35,12 +37,9 @@ const schema = z
 
 export type FormInputs = z.infer<typeof schema>;
 
-const ProjectAddForm = () => {
+export const ProjectAddForm = () => {
   const navigate = useNavigate();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-
-  const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
   const {
     control,
@@ -57,9 +56,19 @@ const ProjectAddForm = () => {
       description: '',
       goals: '',
       vision: '',
-      startDate: new Date(),
+      startDate: null,
       endDate: null
       //countryCode: null
+    }
+  });
+
+  const queryClient = useQueryClient();
+  const addProject = useMutation((project: ProjectAdd) => ProjectsService.add(project), {
+    onSuccess: (newProject: Project) => {
+      queryClient.setQueryData(['projects', newProject.id], newProject);
+      queryClient.invalidateQueries(['projects']);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The project was saved');
+      navigate('..');
     }
   });
 
@@ -67,67 +76,37 @@ const ProjectAddForm = () => {
   const watchEndDate = watch('endDate');
 
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    const saveData = async () => {
-      if (!data.startDate) {
-        throw Error('start date is invalid');
-      }
+    if (!data.startDate) {
+      throw Error('start date is invalid');
+    }
 
-      if (!data.endDate) {
-        throw Error('end date is invalid');
-      }
+    if (!data.startDate) {
+      throw Error('start date is invalid');
+    }
 
-      // if (!data.countryCode) {
-      //   throw Error('country code is invalid');
-      // }
+    if (!data.endDate) {
+      throw Error('end date is invalid');
+    }
 
-      try {
-        setSaving(true);
-        await ProjectsService.add({
-          name: data.name,
-          shorthand: data.shorthand,
-          startDate: data.startDate,
-          endDate: data.endDate,
-          description: data.description,
-          goals: data.goals,
-          vision: data.vision,
-          countryCode: CountryCodes.SE // FIXME: country code need to be added to the form
-        });
-        const action = (key: SnackbarKey) => (
-          <Button onClick={() => closeSnackbar(key)}>
-            <IconButton color="default" aria-label="close button" component="span" size="small">
-              <CloseIcon />
-            </IconButton>
-          </Button>
-        );
+    // if (!data.countryCode) {
+    //   throw Error('country code is invalid');
+    // }
 
-        enqueueSnackbar('The project was saved', {
-          action,
-          variant: 'success',
-          anchorOrigin: {
-            vertical: 'top',
-            horizontal: 'right'
-          },
-          TransitionComponent: Slide
-        });
-
-        navigate('..');
-      } catch (err) {
-        console.error(err);
-        setError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setSaving(false);
-      }
-    };
-    saveData();
+    addProject.mutate({
+      ...data,
+      startDate: data.startDate,
+      countryCode: CountryCodes.SE // FIXME: country code need to be added to the form
+    });
   };
+
+  console.log({ isValid, errors });
 
   const onCancel = () => navigate('..');
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      {!saving && error !== '' && <Alert severity="error">Error in backend adding a project: {error}</Alert>}
-      {saving && <CircularProgress />}
-      {!saving && error === '' && (
+      {addProject.isError && <ShowError error={addProject.error} />}
+      {!addProject.isError && (
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={12}>
@@ -245,5 +224,3 @@ const ProjectAddForm = () => {
     </LocalizationProvider>
   );
 };
-
-export default ProjectAddForm;

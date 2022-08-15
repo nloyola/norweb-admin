@@ -1,7 +1,6 @@
 import { FundersService } from '@app/services/funders/FundersService';
-import { useEntity } from './useEntity';
+import { useQuery } from 'react-query';
 
 export function useFunder(id: number) {
-  const { error, loading, entity, loadEntity } = useEntity(() => FundersService.get(id));
-  return { error, loading, funder: entity, loadFunder: loadEntity };
+  return useQuery(['funders', id], async () => FundersService.get(id));
 }

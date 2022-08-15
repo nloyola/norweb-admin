@@ -58,7 +58,7 @@ export class EventsService {
     return eventSchema.parse(result);
   }
 
-  static async update(projectId: number, event: EventUpdate): Promise<Event> {
+  static async update(projectId: number, event: Event): Promise<Event> {
     const data = {
       data: {
         ...event,

@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { ShowError } from '../ShowError';
 
 const schema = z.object({
   name: z.string(),
@@ -32,7 +33,6 @@ export const FunderAddForm = () => {
   const {
     control,
     handleSubmit,
-    watch,
     formState: { isDirty, isValid, errors }
   } = useForm<FormInputs>({
     mode: 'all',
@@ -96,7 +96,7 @@ export const FunderAddForm = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      {!saving && error !== '' && <Alert severity="error">Error in backend adding a funder: {error}</Alert>}
+      {!saving && error !== '' && <ShowError error={`Error in backend adding a funder: ${error}}`} />}
       {saving && <CircularProgress />}
       {!saving && error === '' && (
         <form onSubmit={handleSubmit(onSubmit)}>

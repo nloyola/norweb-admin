@@ -1,42 +1,43 @@
-import { useEffect, useState } from 'react';
 import { PropertyChanger } from '@app/components/PropertyChanger/PropertyChanger';
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { Alert, CircularProgress, Fab, Grid, Stack, Typography } from '@mui/material';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
-import { ArrowBack } from '@mui/icons-material';
 import { useProject } from '@app/hooks/useProject';
-import { ProjectContextType } from '@app/pages/projects/ProjectPage';
-import { DateRange } from '../PropertyChanger';
-import { Keywords } from './Keywords';
-import { datesRangeToString, dateToString } from '@app/utils/utils';
-import { EntityProperty } from '../EntityProperty';
 import { CountryNames, statusToLabel } from '@app/models';
-import { projectPropertiesSchemas } from './projectPropertiesSchema';
+import { Project } from '@app/models/projects';
+import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { nlToFragments } from '@app/utils/nltoFragments';
+import { datesRangeToString } from '@app/utils/utils';
+import { ArrowBack } from '@mui/icons-material';
+import { CircularProgress, Fab, Grid, Stack } from '@mui/material';
+import { useSnackbar } from 'notistack';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { EntityProperty } from '../EntityProperty';
+import { DateRange } from '../PropertyChanger';
+import { ShowError } from '../ShowError';
+import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
+import { Keywords } from './Keywords';
+import { projectPropertiesSchemas } from './projectPropertiesSchema';
 
 /**
  * A component that shows a project's settings and allows the user to modify them.
- *
- * useOutletContext is used on this page, because the user can modify the project's name or shorthand.
- * If they are modified, the parent page has to know about it, therefore they share this context.
  */
 export function ProjectDetails() {
   const params = useParams();
+  const projectId = Number(params.projectId);
   const navigate = useNavigate();
-  const { project, updateProject }: ProjectContextType = useOutletContext();
   const [open, setOpen] = useState(false);
   const [propertyToUpdate, setPropertyToUpdate] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState('');
-  const [saving, setSaving] = useState(false);
-  const { error, loading, project: reloadedProject, loadProject } = useProject(Number(params.projectId));
+  const { error, isError, isLoading, isFetching, data: project } = useProject(projectId);
+  const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
 
-  // it is possible that the page was reloaded by the user, in this case the project must be retrieved from the backend
-  useEffect(() => {
-    loadProject();
-    if (updateProject && reloadedProject) {
-      updateProject(reloadedProject);
+  const updateProject = useMutation((project: Project) => ProjectsService.update(project), {
+    onSuccess: (newProject: Project) => {
+      queryClient.setQueryData(['projects', projectId], newProject);
+      queryClient.invalidateQueries(['projects']);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The project was updated');
     }
-  }, []);
+  });
 
   const onPropChange = (propertyName: string) => {
     setPropertyToUpdate(propertyName);
@@ -44,66 +45,43 @@ export function ProjectDetails() {
   };
 
   const handleClose = <T extends unknown>(propertyName: string, newValue?: T) => {
-    const saveData = async () => {
-      if (!newValue) {
-        return;
-      }
-
-      if (!project || !updateProject) {
-        throw new Error('setProject is invalid');
-      }
-
-      const newValues: any = { ...project };
-
-      if (propertyName === 'duration') {
-        const newDates = newValue as DateRange;
-        newValues.startDate = newDates.startDate;
-        newValues.endDate = newDates.endDate;
-      } else {
-        newValues[propertyName] = newValue;
-      }
-
-      try {
-        const modifiedProject = await ProjectsService.update({
-          id: project.id,
-          version: project.version,
-          name: newValues.name,
-          shorthand: newValues.shorthand,
-          startDate: newValues.startDate,
-          endDate: newValues.endDate,
-          description: newValues.description,
-          goals: newValues.goals,
-          vision: newValues.vision,
-          countryCode: newValues.countryCode,
-          status: newValues.status
-        });
-        updateProject(modifiedProject);
-      } catch (err) {
-        console.error(err);
-        setSaveError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setSaving(false);
-      }
-    };
-
     setOpen(false);
-    saveData();
+    if (!newValue) {
+      return;
+    }
+
+    if (!project) {
+      throw new Error('project is invalid');
+    }
+
+    const newValues = { ...project };
+
+    if (propertyName === 'duration') {
+      const newDates = newValue as DateRange;
+      newValues.startDate = newDates.startDate;
+      newValues.endDate = newDates.endDate;
+    } else {
+      // see https://bobbyhadz.com/blog/typescript-create-type-from-object-keys
+      newValues[propertyName as keyof Project] = newValue as keyof Project[keyof Project];
+    }
+
+    updateProject.mutate(newValues);
   };
 
   const backClicked = () => {
-    navigate(-1);
+    navigate('../../');
   };
 
-  if (loading || saving) {
+  if (isError) {
+    return <ShowError error={error} />;
+  }
+
+  if (updateProject.isError) {
+    return <ShowError error={updateProject.error} />;
+  }
+
+  if (isLoading || !project) {
     return <CircularProgress />;
-  }
-
-  if (error !== '') {
-    return <Alert severity="error">{error}</Alert>;
-  }
-
-  if (saveError !== '') {
-    return <Alert severity="error">{saveError}</Alert>;
   }
 
   const schemas = projectPropertiesSchemas(project);
@@ -137,7 +115,11 @@ export function ProjectDetails() {
           value={project.vision ? nlToFragments(project.vision) : null}
           handleChange={onPropChange}
         />
-        <EntityProperty propName="keywords" label="Keywords" value={<Keywords initialKeywords={project.keywords} />} />
+        <EntityProperty
+          propName="keywords"
+          label="Keywords"
+          value={<Keywords initialKeywords={project.keywords} disabled={isFetching} />}
+        />
         <EntityProperty
           propName="countryCode"
           label="Country"

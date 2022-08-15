@@ -3,16 +3,25 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ProjectsTable } from './ProjectsTable';
 import { SearchTermInput } from '../SearchTermInput';
-import { useProjects } from '@app/hooks/useProjects';
+import { useQuery } from 'react-query';
+import { ProjectsService } from '@app/services/projects/ProjectsService';
+import { ShowError } from '../ShowError';
 
 export function ProjectsSearchableTable() {
   const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
   const paramsPage = searchParams.get('page');
-
   const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('search'));
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 
-  const { error, loading, pagination, loadPage } = useProjects();
+  const {
+    error,
+    isError,
+    isLoading,
+    isFetching,
+    data: pagination
+  } = useQuery(['projects', page, searchTerm], () => ProjectsService.paginate(page, searchTerm), {
+    keepPreviousData: true
+  });
 
   const handlePageChange = (_event: ChangeEvent<unknown>, newPage: number) => {
     if (page !== newPage) {
@@ -36,21 +45,20 @@ export function ProjectsSearchableTable() {
       params['search'] = searchTerm;
     }
     setSearchParams(params);
-    loadPage(page, searchTerm || '');
   }, [page, searchTerm]);
 
-  if (error !== '') {
-    return <Alert severity="error">{error}</Alert>;
+  if (isError) {
+    return <ShowError error={error} />;
   }
 
   return (
     <Stack spacing={2} mb={2}>
       <SearchTermInput initialInput={searchTerm} onChange={handleSearchTermChange} />
-      {(loading || !pagination) && <CircularProgress />}
-      {!loading && pagination && (
+      {(isLoading || !pagination) && <CircularProgress />}
+      {!isLoading && pagination && (
         <>
-          <ProjectsTable projects={pagination.pagedResults?.results || []} />
-          {pagination.count > 1 && (
+          <ProjectsTable projects={pagination?.results || []} />
+          {pagination.pages > 1 && (
             <Box
               sx={{
                 display: 'flex',
@@ -58,7 +66,13 @@ export function ProjectsSearchableTable() {
                 mt: 2
               }}
             >
-              <Pagination count={pagination.count} page={page} boundaryCount={2} onChange={handlePageChange} />
+              <Pagination
+                count={pagination.pages}
+                page={page}
+                boundaryCount={2}
+                onChange={handlePageChange}
+                disabled={isFetching}
+              />
             </Box>
           )}
         </>

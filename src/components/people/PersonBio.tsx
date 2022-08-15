@@ -1,24 +1,26 @@
-import { useState } from 'react';
+import { usePerson } from '@app/hooks/usePerson';
 import { personName } from '@app/models/people';
-import { Alert, CircularProgress, Fab, Grid, Stack } from '@mui/material';
-import { PropertyChanger } from '../PropertyChanger/PropertyChanger';
-import { useNavigate, useOutletContext } from 'react-router-dom';
 import { ArrowBack } from '@mui/icons-material';
+import { Alert, CircularProgress, Fab, Grid, Stack } from '@mui/material';
 import { Box } from '@mui/system';
-import { PersonContextType } from '@app/pages/people/PersonPage';
-import { personPropertiesSchema } from './PersonPropertiesSchema';
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { EntityProperty } from '../EntityProperty';
+import { PropertyChanger } from '../PropertyChanger/PropertyChanger';
+import { ShowError } from '../ShowError';
+import { personPropertiesSchema } from './PersonPropertiesSchema';
 
 // FIXME: Brief CV and CV fields have pencil icon on same row
 
 export function PersonBio() {
   const navigate = useNavigate();
-  const { person, updatePerson }: PersonContextType = useOutletContext();
+  const params = useParams();
+  const personId = Number(params.personId);
+
   const [open, setOpen] = useState(false);
   const [propertyToUpdate, setPropertyToUpdate] = useState<string | null>(null);
 
-  const [saveError, setSaveError] = useState('');
-  const [saving, setSaving] = useState(false);
+  const { error, isError, isLoading, data: person } = usePerson(personId);
 
   const onPropChange = (propertyName: string) => {
     setPropertyToUpdate(propertyName);
@@ -26,52 +28,42 @@ export function PersonBio() {
   };
 
   const handleClose = <T extends unknown>(propertyName: string, newValue?: T) => {
-    const saveData = async () => {
-      if (!newValue) {
-        return;
-      }
-
-      try {
-        if (!person) {
-          throw new Error('setPerson is invalid');
-        }
-
-        const newValues: any = { ...person };
-        newValues[propertyName] = newValue;
-
-        // FIXME: uncomment this when the backend can update a person
-        // const modifiedPerson = await PersonsService.update(newValues);
-        // updatePerson(modifiedPerson);
-      } catch (err) {
-        console.error(err);
-        setSaveError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setSaving(false);
-      }
-    };
-
     setOpen(false);
-    saveData();
+    if (!newValue) {
+      return;
+    }
+
+    if (!person) {
+      throw new Error('setPerson is invalid');
+    }
+
+    const newValues: any = { ...person };
+    newValues[propertyName] = newValue;
+
+    // FIXME: uncomment this when the backend can update a person
+    // const modifiedPerson = await PersonsService.update(newValues);
+    // updatePerson(modifiedPerson);
   };
 
   const backClicked = () => {
-    navigate(-1);
+    navigate('../../');
   };
 
-  if (saving) {
-    return <CircularProgress />;
+  if (isError) {
+    return <ShowError error={error} />;
   }
 
-  if (saveError !== '') {
-    return <Alert severity="error">{saveError}</Alert>;
+  if (isLoading || !person) {
+    return <CircularProgress />;
   }
 
   const schemas = personPropertiesSchema(person);
 
-  // console.log(propertyToUpdate, schemas[propertyToUpdate]);
-
   return (
     <>
+      <Stack mb={10}>
+        <Alert severity="warning">Does not save changes to the database yet!</Alert>
+      </Stack>
       <Box
         sx={{
           pl: 2

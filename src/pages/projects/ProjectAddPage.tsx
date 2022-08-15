@@ -1,5 +1,5 @@
 import { Box, Paper, Stack, Typography } from '@mui/material';
-import ProjectAddForm from '@app/components/projects/ProjectAddForm';
+import { ProjectAddForm } from '@app/components/projects/ProjectAddForm';
 
 export function ProjectAddPage() {
   return (

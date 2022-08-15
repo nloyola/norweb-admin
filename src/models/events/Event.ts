@@ -6,7 +6,7 @@ export const eventBriefSchema = domainEntitySchema.extend({
   title: z.string(),
   startDate: z.preprocess((a) => new Date(z.string().parse(a)), z.date()),
   endDate: z.nullable(z.preprocess((a) => new Date(z.string().parse(a)), z.date())),
-  url: z.nullable(z.string().url()),
+  url: z.string().url().nullable(),
   type: z.nativeEnum(EventType)
 });
 

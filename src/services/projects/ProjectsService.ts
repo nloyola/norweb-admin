@@ -1,4 +1,4 @@
-import { PaginatedResponse, paginatedResponseSchema } from '@app/models';
+import { paginatedResponseSchema } from '@app/models';
 import { Project, ProjectAdd, projectSchema, ProjectUpdate } from '@app/models/projects';
 import { ProjectKeywordAdd, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import { dateToString } from '@app/utils/utils';
@@ -16,11 +16,7 @@ export class ProjectsService {
 
     if (!response.ok) {
       console.error(result);
-      if (response.status === 404) {
-        throw new Error('Not found');
-      } else {
-        throw new Error('HTTP error: status: ' + response.status);
-      }
+      throw new Error('HTTP error: status: ' + response.status);
     }
     return projectSchema.parse(result);
   }
@@ -43,9 +39,13 @@ export class ProjectsService {
   static async add(project: ProjectAdd) {
     const data = {
       data: {
-        ...project,
+        name: project.name,
+        shorthand: project.shorthand,
         startDate: dateToString(project.startDate),
-        endDate: dateToString(project.endDate)
+        endDate: dateToString(project.endDate),
+        description: project.description,
+        goals: project.goals,
+        vision: project.vision
       }
     };
     const response = await fetch(this.apiBaseUrl, {
@@ -64,12 +64,20 @@ export class ProjectsService {
     return projectSchema.parse(result);
   }
 
-  static async update(project: ProjectUpdate) {
+  static async update(project: Project) {
     const data = {
       data: {
-        ...project,
+        id: project.id,
+        version: project.version,
+        name: project.name,
+        shorthand: project.shorthand,
         startDate: dateToString(project.startDate),
-        endDate: dateToString(project.endDate)
+        endDate: dateToString(project.endDate),
+        description: project.description,
+        goals: project.goals,
+        vision: project.vision,
+        countryCode: project.countryCode,
+        status: project.status
       }
     };
     const url = `${this.apiBaseUrl}${project.id}/`;
@@ -104,11 +112,7 @@ export class ProjectsService {
     const result = await response.json();
 
     if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Not found');
-      } else {
-        throw new Error('HTTP error: status: ' + response.status);
-      }
+      throw new Error('HTTP error: status: ' + response.status);
     }
 
     return result;
@@ -150,13 +154,8 @@ export class ProjectsService {
     });
 
     const json = await response.json();
-
     if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Not found');
-      } else {
-        throw new Error('HTTP error: status: ' + response.status);
-      }
+      throw new Error('HTTP error: status: ' + response.status);
     }
 
     return json;

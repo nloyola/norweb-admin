@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Alert, Avatar, CircularProgress, Paper, Stack, Typography } from '@mui/material';
-import { Person, personName, personTitles } from '@app/models/people';
 import { PersonBreadcrumbs } from '@app/components/Breadcrumbs/PersonBreadcrumbs';
+import { ShowError } from '@app/components/ShowError';
 import { usePerson } from '@app/hooks/usePerson';
+import { Person, personName, personTitles } from '@app/models/people';
+import { Avatar, CircularProgress, Paper, Stack, Typography } from '@mui/material';
 import { Outlet, useParams } from 'react-router-dom';
 
 export type PersonContextType = {
@@ -12,29 +12,19 @@ export type PersonContextType = {
 
 export function PersonPage() {
   const params = useParams();
-  const { error, loading, person: loadedPerson, loadPerson } = usePerson(Number(params.personId));
-  const [person, setPerson] = useState<Person | null>(null);
+  const { isError, error, isLoading, data: person } = usePerson(Number(params.personId));
 
-  useEffect(() => {
-    loadPerson();
-    setPerson(loadedPerson);
-  }, []);
-
-  useEffect(() => {
-    setPerson(loadedPerson);
-  }, [loadedPerson]);
-
-  if (loading || !person) {
-    return <CircularProgress />;
+  if (isError) {
+    return <ShowError error={error} />;
   }
 
-  if (error !== '') {
-    return <Alert severity="error">{error}</Alert>;
+  if (isLoading || !person) {
+    return <CircularProgress />;
   }
 
   return (
     <Stack spacing={2}>
-      <PersonBreadcrumbs person={person} />
+      <PersonBreadcrumbs personId={person.id} />
       <Paper
         sx={{
           p: 3
@@ -53,7 +43,7 @@ export function PersonPage() {
         </Stack>
 
         <Stack spacing={2} mt={5}>
-          <Outlet context={{ person, updatePerson: setPerson }} />
+          <Outlet />
         </Stack>
       </Paper>
     </Stack>

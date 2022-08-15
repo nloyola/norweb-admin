@@ -1,8 +1,8 @@
+import { Alert, CircularProgress } from '@mui/material';
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { DashboardLayout } from './components/DashboardLayout/DashboardLayout';
 import { HomePage } from './pages/HomePage';
-import { lazy, Suspense } from 'react';
-import { Alert, CircularProgress } from '@mui/material';
 
 const PeopleRoutes = lazy(() => import('./routes/PeopleRoutes'));
 const ProjectsRoutes = lazy(() => import('./routes/ProjectsRoutes'));

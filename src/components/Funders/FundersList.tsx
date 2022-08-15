@@ -1,9 +1,11 @@
-import { useFunders } from '@app/hooks/useFunders';
-import { Alert, CircularProgress, Pagination, Stack } from '@mui/material';
+import { FundersService } from '@app/services/funders/FundersService';
+import { CircularProgress, Pagination, Stack } from '@mui/material';
 import { Box } from '@mui/system';
 import { ChangeEvent, useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
 import { SearchTermInput } from '../SearchTermInput';
+import { ShowError } from '../ShowError';
 import { FundersTable } from './FundersTable';
 
 export function FundersList() {
@@ -13,7 +15,15 @@ export function FundersList() {
   const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search'));
 
-  const { error, loading, pagination, loadPage } = useFunders();
+  const {
+    error,
+    isError,
+    isLoading,
+    isFetching,
+    data: pagination
+  } = useQuery(['funders', page, searchTerm], () => FundersService.paginate(page, searchTerm || ''), {
+    keepPreviousData: true
+  });
 
   const handlePageChange = (_event: ChangeEvent<unknown>, newPage: number) => {
     if (page !== newPage) {
@@ -32,8 +42,6 @@ export function FundersList() {
       params['search'] = searchTerm;
     }
     setSearchParams(params);
-
-    loadPage(page, searchTerm || '');
   }, [page, searchTerm]);
 
   const handleSearchTermChange = (input: string) => {
@@ -41,18 +49,18 @@ export function FundersList() {
     setPage(1);
   };
 
-  if (error !== '') {
-    return <Alert severity="error">{error}</Alert>;
+  if (isError) {
+    return <ShowError error={error} />;
   }
 
   return (
     <Stack spacing={2} mb={2}>
       <SearchTermInput initialInput={searchTerm} onChange={handleSearchTermChange} />
-      {(loading || !pagination) && <CircularProgress />}
-      {!loading && pagination && (
+      {(isLoading || !pagination) && <CircularProgress />}
+      {!isLoading && pagination && (
         <>
-          <FundersTable funders={pagination.pagedResults?.results || []} />
-          {pagination.count > 1 && (
+          <FundersTable funders={pagination.results || []} />
+          {pagination.pages > 1 && (
             <Box
               sx={{
                 display: 'flex',
@@ -60,7 +68,13 @@ export function FundersList() {
                 mt: 2
               }}
             >
-              <Pagination count={pagination.count} page={page} boundaryCount={2} onChange={handlePageChange} />
+              <Pagination
+                count={pagination.pages}
+                page={page}
+                boundaryCount={2}
+                onChange={handlePageChange}
+                disabled={isFetching}
+              />
             </Box>
           )}
         </>

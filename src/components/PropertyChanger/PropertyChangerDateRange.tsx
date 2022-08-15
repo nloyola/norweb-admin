@@ -2,7 +2,7 @@ import { Grid } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useForm } from 'react-hook-form';
-import DateSelectForm from '../DateSelectForm';
+import { DateSelectForm } from '../DateSelectForm';
 import { PropertyChangerDialog } from './PropertyChangerDialog';
 import { DateRange, PropertyChangerDateRangeProps } from './PropertyChanger';
 import { zodResolver } from '@hookform/resolvers/zod';

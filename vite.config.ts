@@ -13,6 +13,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [react(), tsconfigPaths(), splitVendorChunkPlugin()],
     server: {
+      host: true,
       port: 3000,
       proxy: {
         '/api': {

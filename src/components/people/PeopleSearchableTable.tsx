@@ -1,9 +1,11 @@
-import { Box, Stack, Alert, CircularProgress, Pagination } from '@mui/material';
+import { PeopleService } from '@app/services/people/PeopleService';
+import { Alert, Box, CircularProgress, Pagination, Stack } from '@mui/material';
 import { ChangeEvent, useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
-import { PeopleTable } from './PeopleTable';
 import { SearchTermInput } from '../SearchTermInput';
-import { usePeople } from '@app/hooks/usePeople';
+import { ShowError } from '../ShowError';
+import { PeopleTable } from './PeopleTable';
 
 export function PeopleSearchableTable() {
   const [searchParams, setSearchParams] = useSearchParams({ page: '1', search: '' });
@@ -12,7 +14,15 @@ export function PeopleSearchableTable() {
   const [page, setPage] = useState(paramsPage ? Number(paramsPage) : 1);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search'));
 
-  const { error, loading, pagination, loadPage } = usePeople();
+  const {
+    error,
+    isError,
+    isLoading,
+    isFetching,
+    data: pagination
+  } = useQuery(['people', page, searchTerm], () => PeopleService.paginate(page, searchTerm || ''), {
+    keepPreviousData: true
+  });
 
   const handlePageChange = (_event: ChangeEvent<unknown>, newPage: number) => {
     if (page !== newPage) {
@@ -36,23 +46,21 @@ export function PeopleSearchableTable() {
       params['search'] = searchTerm;
     }
     setSearchParams(params);
-
-    loadPage(page, searchTerm || '');
   }, [page, searchTerm]);
 
-  if (error !== '') {
-    return <Alert severity="error">{error}</Alert>;
+  if (isError) {
+    return <ShowError error={error} />;
   }
 
   return (
     <>
       <Stack spacing={2} mb={2}>
         <SearchTermInput initialInput={searchTerm} onChange={handleSearchTermChange} />
-        {(loading || !pagination) && <CircularProgress />}
-        {!loading && pagination && (
+        {(isLoading || !pagination) && <CircularProgress />}
+        {!isLoading && pagination && (
           <>
-            <PeopleTable people={pagination?.pagedResults?.results || []} />
-            {pagination.count > 1 && (
+            <PeopleTable people={pagination.results || []} />
+            {pagination.pages > 1 && (
               <Box
                 sx={{
                   display: 'flex',
@@ -60,7 +68,13 @@ export function PeopleSearchableTable() {
                   mt: 2
                 }}
               >
-                <Pagination count={pagination.count} page={page} boundaryCount={2} onChange={handlePageChange} />
+                <Pagination
+                  count={pagination.pages}
+                  page={page}
+                  boundaryCount={2}
+                  onChange={handlePageChange}
+                  disabled={isFetching}
+                />
               </Box>
             )}
           </>

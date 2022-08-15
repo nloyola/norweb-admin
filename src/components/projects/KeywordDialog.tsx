@@ -40,8 +40,6 @@ export function KeywordDialog({ keyword, open, onClose }: KeywordsDialogProps) {
     defaultValues: { name: keyword?.name || '', weight: keyword?.weight || 0 }
   });
 
-  console.log(getValues());
-
   const handleOk = () => {
     onClose(getValues());
   };

@@ -1,18 +1,15 @@
-import { useLocation, matchPath } from 'react-router-dom';
+import { useProject } from '@app/hooks/useProject';
 import { capitalizeWord } from '@app/utils/utils';
-import { Project } from '@app/models/projects';
+import { matchPath, useLocation } from 'react-router-dom';
 import { Breadcrumbs } from './Breadcrumbs';
 
 // https://stackoverflow.com/questions/71592649/change-breadcrumb-component-that-was-done-with-react-router-v5-to-react-router-v
 
 // https://pavsaund.com/post/2022-02-23-dynamic-breadcrumbs-and-routes-with-react-router/
 
-type ProjectBreadcrumbsProps = {
-  project: Project;
-};
-
-export function ProjectBreadcrumbs({ project }: ProjectBreadcrumbsProps) {
+export const ProjectBreadcrumbs: React.FC<{ projectId: number }> = ({ projectId }) => {
   const { pathname } = useLocation();
+  const projectQuery = useProject(projectId);
 
   const pathnames = pathname.split('/').filter(Boolean);
   const breadcrumbs = pathnames.map((name, index) => {
@@ -21,14 +18,17 @@ export function ProjectBreadcrumbs({ project }: ProjectBreadcrumbsProps) {
     let label = capitalizeWord(name);
 
     const projectMatch = matchPath({ path: '/projects/:id', end: true }, route);
-    if (projectMatch && route === projectMatch.pathname) {
-      label = project.name;
+    if (projectQuery.data) {
+      if (projectMatch && route === projectMatch.pathname) {
+        label = projectQuery.data.name;
+      }
     }
 
     const eventMatch = matchPath({ path: '/projects/:projectId/events/:eventId', end: true }, route);
-    if (eventMatch && route === eventMatch.pathname) {
+    if (projectQuery.data && eventMatch && route === eventMatch.pathname) {
       const eventId = Number(eventMatch.params.eventId);
-      const event = project.events.find((ev) => ev.id === eventId);
+      const event = projectQuery.data.events.find((ev) => ev.id === eventId);
+
       if (event) {
         label = event.title;
       }
@@ -37,5 +37,9 @@ export function ProjectBreadcrumbs({ project }: ProjectBreadcrumbsProps) {
     return { label, route, isLast };
   });
 
+  if (projectQuery.isError || projectQuery.isLoading) {
+    return null;
+  }
+
   return <Breadcrumbs crumbs={breadcrumbs} />;
-}
+};

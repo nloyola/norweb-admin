@@ -1,14 +1,12 @@
-import { useLocation, matchPath } from 'react-router-dom';
+import { usePerson } from '@app/hooks/usePerson';
+import { personName } from '@app/models/people';
 import { capitalizeWord } from '@app/utils/utils';
-import { Person, personName } from '@app/models/people';
+import { matchPath, useLocation } from 'react-router-dom';
 import { Breadcrumbs } from './Breadcrumbs';
 
-type PersonBreadcrumbsProps = {
-  person: Person;
-};
-
-export function PersonBreadcrumbs({ person }: PersonBreadcrumbsProps) {
+export const PersonBreadcrumbs: React.FC<{ personId: number }> = ({ personId }) => {
   const { pathname } = useLocation();
+  const { isError, isLoading, data: person } = usePerson(personId);
 
   const pathnames = pathname.split('/').filter(Boolean);
   const breadcrumbs = pathnames.map((name, index) => {
@@ -17,12 +15,16 @@ export function PersonBreadcrumbs({ person }: PersonBreadcrumbsProps) {
     let label = capitalizeWord(name);
 
     const personMatch = matchPath({ path: '/people/:id', end: true }, route);
-    if (personMatch && route === personMatch.pathname) {
+    if (person && personMatch && route === personMatch.pathname) {
       label = personName(person);
     }
 
     return { label, route, isLast };
   });
 
+  if (isError || isLoading || !person) {
+    return null;
+  }
+
   return <Breadcrumbs crumbs={breadcrumbs} />;
-}
+};

@@ -1,4 +1,4 @@
-import DateSelectForm from '@app/components/DateSelectForm';
+import { DateSelectForm } from '@app/components/DateSelectForm';
 import { EventType, eventTypeToLabel } from '@app/models/events';
 import { Button, Grid, MenuItem, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -10,13 +10,13 @@ import { z } from 'zod';
 const schema = z
   .object({
     title: z.string().min(1, { message: 'a title is required' }),
-    description: z.string(),
-    venue: z.string(),
-    organizer: z.string(),
-    url: z.string().url({ message: 'not a valid URL' }),
+    description: z.string().nullable(),
+    venue: z.string().nullable(),
+    organizer: z.string().nullable(),
+    url: z.string().url({ message: 'not a valid URL' }).nullable(),
     startDate: z.date(),
     endDate: z.date().nullable(),
-    type: z.union([z.string().min(1), z.nativeEnum(EventType)])
+    type: z.nativeEnum(EventType).nullable()
   })
   .superRefine((data, ctx) => {
     if (!data.startDate || !data.endDate) {
@@ -66,7 +66,7 @@ export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
       url: '',
       startDate: initialDate,
       endDate: null,
-      type: ''
+      type: null
     }
   });
 

@@ -1,7 +1,6 @@
 import { PeopleService } from '@app/services/people/PeopleService';
-import { useEntity } from './useEntity';
+import { useQuery } from 'react-query';
 
 export function usePerson(id: number) {
-  const { error, loading, entity, loadEntity } = useEntity(() => PeopleService.get(id));
-  return { error, loading, person: entity, loadPerson: loadEntity };
+  return useQuery(['people', id], async () => PeopleService.get(id));
 }
