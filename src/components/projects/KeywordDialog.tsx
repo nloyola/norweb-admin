@@ -37,8 +37,10 @@ export function KeywordDialog({ keyword, open, onClose }: KeywordsDialogProps) {
     mode: 'all',
     reValidateMode: 'onChange',
     resolver: zodResolver(schema),
-    defaultValues: { name: keyword?.name || '', weight: keyword?.weight }
+    defaultValues: { name: keyword?.name || '', weight: keyword?.weight || 0 }
   });
+
+  console.log(getValues());
 
   const handleOk = () => {
     onClose(getValues());
