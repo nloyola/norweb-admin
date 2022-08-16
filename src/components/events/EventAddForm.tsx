@@ -16,7 +16,7 @@ const schema = z
     url: z.string().url({ message: 'not a valid URL' }).nullable(),
     startDate: z.date(),
     endDate: z.date().nullable(),
-    type: z.nativeEnum(EventType).nullable()
+    type: z.union([z.string().min(1), z.nativeEnum(EventType)])
   })
   .superRefine((data, ctx) => {
     if (!data.startDate || !data.endDate) {
@@ -66,7 +66,7 @@ export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
       url: '',
       startDate: initialDate,
       endDate: null,
-      type: null
+      type: ''
     }
   });
 
@@ -154,7 +154,7 @@ export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
               render={({ field }) => (
                 <TextField
                   {...field}
-                  inputProps={{ type: 'url' }}
+                  inputProps={{ type: 'url', id: 'website' }}
                   label="Url"
                   variant="standard"
                   error={!!errors.url}

@@ -1,9 +1,9 @@
 import { DateSelectForm } from '@app/components/DateSelectForm';
-import { CountryCodes } from '@app/models';
+import { CountryCodes, CountryNames } from '@app/models';
 import { Project, ProjectAdd } from '@app/models/projects';
 import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Grid, Stack, TextField } from '@mui/material';
+import { Autocomplete, Button, Grid, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useSnackbar } from 'notistack';
@@ -22,8 +22,8 @@ const schema = z
     goals: z.string(),
     vision: z.string(),
     startDate: z.date().nullable(),
-    endDate: z.date().nullable()
-    //countryCode: z.nativeEnum(CountryCodes).nullable()
+    endDate: z.date().nullable(),
+    countryCode: z.nativeEnum(CountryCodes).nullable()
   })
   .refine(
     (data) => {
@@ -57,8 +57,8 @@ export const ProjectAddForm = () => {
       goals: '',
       vision: '',
       startDate: null,
-      endDate: null
-      //countryCode: null
+      endDate: null,
+      countryCode: null
     }
   });
 
@@ -88,18 +88,17 @@ export const ProjectAddForm = () => {
       throw Error('end date is invalid');
     }
 
-    // if (!data.countryCode) {
-    //   throw Error('country code is invalid');
-    // }
+    if (!data.countryCode) {
+      throw Error('country code is invalid');
+    }
 
     addProject.mutate({
       ...data,
-      startDate: data.startDate,
-      countryCode: CountryCodes.SE // FIXME: country code need to be added to the form
+      startDate: data.startDate
     });
   };
 
-  console.log({ isValid, errors });
+  // console.log({ isValid, errors });
 
   const onCancel = () => navigate('..');
 
@@ -200,7 +199,28 @@ export const ProjectAddForm = () => {
                 )}
               />
             </Grid>
-
+            <Grid item xs={12} md={12}>
+              <Controller
+                name="countryCode"
+                control={control}
+                render={({ field: { onChange } }) => (
+                  <Autocomplete
+                    onChange={(_, data) => onChange(data?.id)}
+                    options={Object.entries(CountryNames).map(([id, label]) => ({ id, label: `${label} (${id})` }))}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Country"
+                        variant="standard"
+                        error={!!errors.countryCode}
+                        helperText={errors.countryCode ? errors.countryCode?.message : ''}
+                      />
+                    )}
+                  />
+                )}
+              />
+            </Grid>
             <Grid item xs={12} md={12}>
               <DateSelectForm
                 control={control}

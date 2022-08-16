@@ -45,7 +45,8 @@ export class ProjectsService {
         endDate: dateToString(project.endDate),
         description: project.description,
         goals: project.goals,
-        vision: project.vision
+        vision: project.vision,
+        countryCode: project.countryCode
       }
     };
     const response = await fetch(this.apiBaseUrl, {

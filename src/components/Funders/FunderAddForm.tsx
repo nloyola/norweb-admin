@@ -1,9 +1,19 @@
-import { CountryCodes } from '@app/models';
+import { CountryCodes, CountryNames } from '@app/models';
 import { FunderTypes, funderTypeToLabel } from '@app/models/funders';
 import { FundersService } from '@app/services/funders/FundersService';
 import { zodResolver } from '@hookform/resolvers/zod';
 import CloseIcon from '@mui/icons-material/Close';
-import { Alert, Button, CircularProgress, Grid, IconButton, MenuItem, Slide, Stack, TextField } from '@mui/material';
+import {
+  Autocomplete,
+  Button,
+  CircularProgress,
+  Grid,
+  IconButton,
+  MenuItem,
+  Slide,
+  Stack,
+  TextField
+} from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { SnackbarKey, useSnackbar } from 'notistack';
@@ -16,9 +26,12 @@ import { ShowError } from '../ShowError';
 const schema = z.object({
   name: z.string(),
   acronym: z.string(),
-  countryCode: z.union([z.string().min(1), z.nativeEnum(CountryCodes)]),
   web: z.string().url(),
-  type: z.union([z.string().min(1), z.nativeEnum(FunderTypes)])
+  type: z.union([z.string().min(1), z.nativeEnum(FunderTypes)]),
+
+  // use the following when country code is required
+  // countryCode: z.union([z.string().min(1), z.nativeEnum(CountryCodes)])
+  countryCode: z.nativeEnum(CountryCodes).nullable()
 });
 
 export type FormInputs = z.infer<typeof schema>;
@@ -41,9 +54,9 @@ export const FunderAddForm = () => {
     defaultValues: {
       name: '',
       acronym: '',
-      countryCode: '',
       web: '',
-      type: ''
+      type: '',
+      countryCode: null
     }
   });
 
@@ -145,12 +158,34 @@ export const FunderAddForm = () => {
                     {...field}
                     label="Website"
                     variant="standard"
-                    multiline
                     rows={4}
                     error={!!errors.web}
                     helperText={errors.web ? errors.web?.message : ''}
                     fullWidth
                     margin="dense"
+                    inputProps={{ type: 'url', id: 'website' }}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Controller
+                name="countryCode"
+                control={control}
+                render={({ field: { onChange } }) => (
+                  <Autocomplete
+                    onChange={(_, data) => onChange(data?.id)}
+                    options={Object.entries(CountryNames).map(([id, label]) => ({ id, label: `${label} (${id})` }))}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Country"
+                        variant="standard"
+                        error={!!errors.countryCode}
+                        helperText={errors.countryCode ? errors.countryCode?.message : ''}
+                      />
+                    )}
                   />
                 )}
               />
@@ -160,7 +195,16 @@ export const FunderAddForm = () => {
                 control={control}
                 name="type"
                 render={({ field }) => (
-                  <TextField {...field} select label="Funder type" variant="standard" fullWidth margin="dense">
+                  <TextField
+                    {...field}
+                    select
+                    label="Funder type"
+                    variant="standard"
+                    fullWidth
+                    margin="dense"
+                    error={!!errors.type}
+                    helperText={errors.type ? errors.type?.message : ''}
+                  >
                     {Object.values(FunderTypes).map((value) => (
                       <MenuItem key={value} value={value}>
                         {funderTypeToLabel(value)}

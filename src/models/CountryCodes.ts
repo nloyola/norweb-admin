@@ -246,7 +246,7 @@ export enum CountryCodes {
 }
 
 export const CountryNames: Record<CountryCodes, string> = {
-  AD: 'AndorrA',
+  AD: 'Andorra',
   AE: 'United Arab Emirates',
   AF: 'Afghanistan',
   AG: 'Antigua and Barbuda',
