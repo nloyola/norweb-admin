@@ -1,36 +1,23 @@
 import { CountryCodes, CountryNames } from '@app/models';
-import { FunderTypes, funderTypeToLabel } from '@app/models/funders';
+import { Funder, FunderAdd, FunderTypes, funderTypeToLabel } from '@app/models/funders';
 import { FundersService } from '@app/services/funders/FundersService';
 import { zodResolver } from '@hookform/resolvers/zod';
-import CloseIcon from '@mui/icons-material/Close';
-import {
-  Autocomplete,
-  Button,
-  CircularProgress,
-  Grid,
-  IconButton,
-  MenuItem,
-  Slide,
-  Stack,
-  TextField
-} from '@mui/material';
+import { Autocomplete, Button, Grid, MenuItem, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { SnackbarKey, useSnackbar } from 'notistack';
-import { useState } from 'react';
+import { useSnackbar } from 'notistack';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { useMutation, useQueryClient } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { ShowError } from '../ShowError';
+import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
 
 const schema = z.object({
   name: z.string(),
   acronym: z.string(),
   web: z.string().url(),
-  type: z.union([z.string().min(1), z.nativeEnum(FunderTypes)]),
-
-  // use the following when country code is required
-  // countryCode: z.union([z.string().min(1), z.nativeEnum(CountryCodes)])
+  type: z.nativeEnum(FunderTypes).nullable(),
   countryCode: z.nativeEnum(CountryCodes).nullable()
 });
 
@@ -38,10 +25,7 @@ export type FormInputs = z.infer<typeof schema>;
 
 export const FunderAddForm = () => {
   const navigate = useNavigate();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-
-  const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
   const {
     control,
@@ -55,63 +39,38 @@ export const FunderAddForm = () => {
       name: '',
       acronym: '',
       web: '',
-      type: '',
+      type: null,
       countryCode: null
     }
   });
 
+  const queryClient = useQueryClient();
+  const addFunder = useMutation((funder: FunderAdd) => FundersService.add(funder), {
+    onSuccess: (newFunder: Funder) => {
+      queryClient.setQueryData(['funders', newFunder.id], newFunder);
+      queryClient.invalidateQueries(['funders']);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The funder was saved');
+      navigate('..');
+    }
+  });
+
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    const saveData = async () => {
-      if (!data.countryCode) {
-        throw Error('country code is invalid');
-      }
+    if (!data.countryCode) {
+      throw Error('country code is invalid');
+    }
+    if (!data.type) {
+      throw Error('funder type code is invalid');
+    }
 
-      try {
-        setSaving(true);
-        await FundersService.add({
-          name: data.name,
-          acronym: data.acronym,
-          countryCode: data.countryCode as CountryCodes,
-          web: data.web,
-          type: data.type as FunderTypes
-        });
-
-        const action = (key: SnackbarKey) => (
-          <Button onClick={() => closeSnackbar(key)}>
-            <IconButton color="default" aria-label="close button" component="span" size="small">
-              <CloseIcon />
-            </IconButton>
-          </Button>
-        );
-
-        enqueueSnackbar('The funder was saved', {
-          action,
-          variant: 'success',
-          anchorOrigin: {
-            vertical: 'top',
-            horizontal: 'right'
-          },
-          TransitionComponent: Slide
-        });
-
-        navigate('..');
-      } catch (err) {
-        console.error(err);
-        setError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setSaving(false);
-      }
-    };
-    saveData();
+    addFunder.mutate({ ...data, countryCode: data.countryCode, type: data.type });
   };
 
   const onCancel = () => navigate('..');
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      {!saving && error !== '' && <ShowError error={`Error in backend adding a funder: ${error}}`} />}
-      {saving && <CircularProgress />}
-      {!saving && error === '' && (
+      {addFunder.isError && <ShowError error={`Error in backend adding a funder: ${addFunder.error}}`} />}
+      {!addFunder.isError && (
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={12}>
@@ -204,6 +163,7 @@ export const FunderAddForm = () => {
                     margin="dense"
                     error={!!errors.type}
                     helperText={errors.type ? errors.type?.message : ''}
+                    inputProps={{ value: field.value || '' }}
                   >
                     {Object.values(FunderTypes).map((value) => (
                       <MenuItem key={value} value={value}>

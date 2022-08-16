@@ -16,7 +16,7 @@ const schema = z
     url: z.string().url({ message: 'not a valid URL' }).nullable(),
     startDate: z.date(),
     endDate: z.date().nullable(),
-    type: z.union([z.string().min(1), z.nativeEnum(EventType)])
+    type: z.nativeEnum(EventType).nullable()
   })
   .superRefine((data, ctx) => {
     if (!data.startDate || !data.endDate) {
@@ -66,7 +66,7 @@ export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
       url: '',
       startDate: initialDate,
       endDate: null,
-      type: ''
+      type: null
     }
   });
 
@@ -179,7 +179,17 @@ export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
               control={control}
               name="type"
               render={({ field }) => (
-                <TextField {...field} select label="Event type" variant="standard" fullWidth margin="dense">
+                <TextField
+                  {...field}
+                  select
+                  label="Event type"
+                  variant="standard"
+                  fullWidth
+                  margin="dense"
+                  error={!!errors.type}
+                  helperText={errors.type ? errors.type?.message : ''}
+                  inputProps={{ value: field.value || '' }}
+                >
                   {Object.values(EventType).map((value) => (
                     <MenuItem key={value} value={value}>
                       {eventTypeToLabel(value)}

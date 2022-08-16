@@ -38,7 +38,7 @@ export class FundersService {
     return paginatedResponseSchema(funderSchema).parse(pagination);
   }
 
-  static async add(funder: FunderAdd): Promise<boolean> {
+  static async add(funder: FunderAdd) {
     const data = { data: funder };
     const response = await fetch(this.apiBaseUrl, {
       headers: {
@@ -53,7 +53,7 @@ export class FundersService {
       console.error(result);
       throw new Error('HTTP error: status: ' + response.status);
     }
-    return true;
+    return funderSchema.parse(result);
   }
 
   static async update(funder: FunderUpdate): Promise<Funder> {
