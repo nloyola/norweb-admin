@@ -1,11 +1,16 @@
 import { DateSelectForm } from '@app/components/DateSelectForm';
-import { EventType, eventTypeToLabel } from '@app/models/events';
+import { Event, EventAdd as EventAddType, EventType, eventTypeToLabel } from '@app/models/events';
+import { EventsService } from '@app/services/events/EventsService';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Grid, MenuItem, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { useSnackbar } from 'notistack';
 import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
+import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
 
 const schema = z
   .object({
@@ -40,12 +45,23 @@ const schema = z
 
 export type EventFormInputs = z.infer<typeof schema>;
 
-type EventAddFormProps = {
-  onSubmit: (values: EventFormInputs) => void;
-  onCancel: () => void;
-};
+export function EventAddForm() {
+  const navigate = useNavigate();
+  const params = useParams();
+  const projectId = Number(params.projectId);
 
-export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
+  const { enqueueSnackbar } = useSnackbar();
+
+  const queryClient = useQueryClient();
+  const addEvent = useMutation((event: EventAddType) => EventsService.add(projectId, event), {
+    onSuccess: (newEvent: Event) => {
+      queryClient.setQueryData(['projects', projectId, 'events'], newEvent);
+      queryClient.invalidateQueries(['events']);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The event was saved');
+      navigate('..');
+    }
+  });
+
   const initialDate = new Date();
   initialDate.setHours(0, 0, 0, 0);
 
@@ -72,6 +88,27 @@ export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
 
   const watchStartDate = watch('startDate');
   const watchEndDate = watch('endDate');
+
+  const onSubmit = (data: EventFormInputs) => {
+    if (!data.startDate) {
+      throw Error('start date is null');
+    }
+
+    if (!data.endDate) {
+      throw Error('end date is null');
+    }
+
+    if (!data.type) {
+      throw Error('event type is null');
+    }
+
+    const newEvent: EventAddType = { ...data, startDate: data.startDate, type: data.type };
+    addEvent.mutate(newEvent);
+  };
+
+  const handleCancel = () => {
+    navigate('../');
+  };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -204,7 +241,7 @@ export function EventAddForm({ onSubmit, onCancel }: EventAddFormProps) {
           <Button type="submit" variant="contained" disabled={!isDirty || !isValid}>
             Submit
           </Button>
-          <Button variant="outlined" onClick={onCancel}>
+          <Button variant="outlined" onClick={handleCancel}>
             Cancel
           </Button>
         </Stack>
