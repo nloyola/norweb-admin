@@ -76,6 +76,12 @@ export function EventDetails() {
     return <CircularProgress />;
   }
 
+  const Website = event.url ? (
+    <a href={event.url} target="_blank">
+      {event.url}
+    </a>
+  ) : null;
+
   const schemas = eventPropertiesSchema(event);
 
   return (
@@ -96,7 +102,7 @@ export function EventDetails() {
         />
         <EntityProperty propName="venue" label="Venue" value={event.venue} handleChange={onPropChange} />
         <EntityProperty propName="organizer" label="Organizer" value={event.organizer} handleChange={onPropChange} />
-        <EntityProperty propName="url" label="Website" value={event.url} handleChange={onPropChange} />
+        <EntityProperty propName="url" label="Website" value={Website} handleChange={onPropChange} />
         <EntityProperty
           propName="type"
           label="Type"

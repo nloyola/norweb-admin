@@ -18,18 +18,7 @@ export const FundersTable: React.FC<{ funders: Funder[] }> = ({ funders }) => (
         {funders.map((funder) => {
           return (
             <TableRow key={funder.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-              <TableCell>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'flex-start',
-                    gap: 1
-                  }}
-                >
-                  {funder.name}
-                </Box>
-              </TableCell>
+              <TableCell>{funder.name}</TableCell>
               <TableCell>{CountryNames[funder.countryCode]}</TableCell>
               <TableCell>{funderTypeToLabel(funder.type)}</TableCell>
               <TableCell align="right">

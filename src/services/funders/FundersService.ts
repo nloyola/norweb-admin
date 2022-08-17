@@ -1,5 +1,6 @@
 import { paginatedResponseSchema } from '@app/models';
-import { Funder, FunderAdd, FunderUpdate, funderSchema } from '@app/models/funders';
+import { Funder, FunderAdd, FunderUpdate, funderSchema, funderNameSchema } from '@app/models/funders';
+import { z } from 'zod';
 
 export class FundersService {
   private static apiBaseUrl = '/api/funders/';
@@ -36,6 +37,17 @@ export class FundersService {
       throw new Error('HTTP error: status: ' + response.status);
     }
     return paginatedResponseSchema(funderSchema).parse(pagination);
+  }
+
+  static async listNames() {
+    let url = this.apiBaseUrl + `names/`;
+    const response = await fetch(url);
+    const json = await response.json();
+    if (!response.ok) {
+      console.error(json);
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+    return z.array(funderNameSchema).parse(json);
   }
 
   static async add(funder: FunderAdd) {

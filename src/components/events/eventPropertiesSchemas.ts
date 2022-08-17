@@ -46,7 +46,7 @@ export function eventPropertiesSchema(event: Event): PropertiesSchema {
     type: {
       propertyName: 'type',
       propertyType: PropertyTypes.RADIO,
-      label: 'Event Type',
+      label: 'Event type',
       value: event.type,
       propertyOptions: Object.values(EventType).map((value) => ({ id: value, label: eventTypeToLabel(value) }))
     }

@@ -1,27 +1,30 @@
 import { DateSelectForm } from '@app/components/DateSelectForm';
-import { Event, EventAdd, EventType, eventTypeToLabel } from '@app/models/events';
-import { EventsService } from '@app/services/events/EventsService';
+import { ProjectFunder, ProjectFunderAdd } from '@app/models/projects/ProjectFunder';
+import { FundersService } from '@app/services/funders/FundersService';
+import { ProjectsService } from '@app/services/projects/ProjectsService';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Grid, MenuItem, Stack, TextField } from '@mui/material';
+import { Autocomplete, Button, CircularProgress, Grid, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useSnackbar } from 'notistack';
 import { Controller, useForm } from 'react-hook-form';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
+import { ShowError } from '../ShowError';
 import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
 
 const schema = z
   .object({
-    title: z.string().min(1, { message: 'a title is required' }),
-    description: z.string().nullable(),
-    venue: z.string().nullable(),
-    organizer: z.string().nullable(),
-    url: z.string().url({ message: 'not a valid URL' }).nullable(),
+    title: z.string(),
+    grantId: z.string().nullable(),
+    grantType: z.string().nullable(),
+    amount: z.string().nullable(),
     startDate: z.date(),
     endDate: z.date().nullable(),
-    type: z.nativeEnum(EventType).nullable()
+    usage: z.string().nullable(),
+    comment: z.string().nullable(),
+    funderId: z.number().nullable()
   })
   .superRefine((data, ctx) => {
     if (!data.startDate || !data.endDate) {
@@ -43,24 +46,36 @@ const schema = z
     }
   });
 
-export type EventFormInputs = z.infer<typeof schema>;
+export type ProjectFunderFormInputs = z.infer<typeof schema>;
 
-export function EventAddForm() {
+export function ProjectFunderAddForm() {
   const navigate = useNavigate();
   const params = useParams();
   const projectId = Number(params.projectId);
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const queryClient = useQueryClient();
-  const addEvent = useMutation((event: EventAdd) => EventsService.add(projectId, event), {
-    onSuccess: (newEvent: Event) => {
-      queryClient.setQueryData(['projects', projectId, 'events'], newEvent);
-      queryClient.invalidateQueries(['events']);
-      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The event was saved');
-      navigate('..');
-    }
+  const {
+    error,
+    isError,
+    isLoading,
+    data: funderNames
+  } = useQuery(['funders', 'names'], () => FundersService.listNames(), {
+    keepPreviousData: true
   });
+
+  const queryClient = useQueryClient();
+  const addProjectFunder = useMutation(
+    (projectFunder: ProjectFunderAdd) => ProjectsService.addFunder(projectId, projectFunder),
+    {
+      onSuccess: (newProjectFunder: ProjectFunder) => {
+        queryClient.setQueryData(['projects', projectId, 'funders'], newProjectFunder);
+        queryClient.invalidateQueries(['project', projectId, 'funders']);
+        enqueueEntitySavedSnackbar(enqueueSnackbar, 'The Funder for this project was saved');
+        navigate('..');
+      }
+    }
+  );
 
   const initialDate = new Date();
   initialDate.setHours(0, 0, 0, 0);
@@ -70,26 +85,31 @@ export function EventAddForm() {
     handleSubmit,
     watch,
     formState: { isDirty, isValid, errors }
-  } = useForm<EventFormInputs>({
+  } = useForm<ProjectFunderFormInputs>({
     mode: 'all',
     resolver: zodResolver(schema),
     reValidateMode: 'onChange',
     defaultValues: {
       title: '',
-      description: '',
-      venue: '',
-      organizer: '',
-      url: '',
+      grantId: '',
+      grantType: '',
+      amount: '',
       startDate: initialDate,
       endDate: null,
-      type: null
+      usage: '',
+      comment: '',
+      funderId: null
     }
   });
 
   const watchStartDate = watch('startDate');
   const watchEndDate = watch('endDate');
 
-  const onSubmit = (data: EventFormInputs) => {
+  const onSubmit = (data: ProjectFunderFormInputs) => {
+    if (!data.funderId) {
+      throw Error('funder ID is null');
+    }
+
     if (!data.startDate) {
       throw Error('start date is null');
     }
@@ -98,17 +118,26 @@ export function EventAddForm() {
       throw Error('end date is null');
     }
 
-    if (!data.type) {
-      throw Error('event type is null');
-    }
-
-    const newEvent: EventAdd = { ...data, startDate: data.startDate, type: data.type };
-    addEvent.mutate(newEvent);
+    const newProjectFunder: ProjectFunderAdd = {
+      ...data,
+      projectId,
+      funderId: data.funderId,
+      startDate: data.startDate
+    };
+    addProjectFunder.mutate(newProjectFunder);
   };
 
   const handleCancel = () => {
     navigate('../');
   };
+
+  if (isError) {
+    return <ShowError error={error} />;
+  }
+
+  if (isLoading || !funderNames) {
+    return <CircularProgress />;
+  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -133,17 +162,41 @@ export function EventAddForm() {
           </Grid>
           <Grid item xs={12} md={12}>
             <Controller
-              name="description"
+              name="funderId"
+              control={control}
+              render={({ field: { onChange } }) => (
+                <Autocomplete
+                  onChange={(_, data) => onChange(data?.id)}
+                  options={funderNames.map((fn) => ({
+                    id: fn.id,
+                    label: `${fn.name} (${fn.acronym})`
+                  }))}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Funder"
+                      variant="standard"
+                      error={!!errors.funderId}
+                      helperText={errors.funderId ? errors.funderId?.message : ''}
+                    />
+                  )}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} md={12}>
+            <Controller
+              name="grantId"
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Description"
+                  label="Grant ID"
                   variant="standard"
-                  multiline
                   rows={6}
-                  error={!!errors.description}
-                  helperText={errors.description ? errors.description?.message : ''}
+                  error={!!errors.grantId}
+                  helperText={errors.grantId ? errors.grantId?.message : ''}
                   fullWidth
                   margin="dense"
                 />
@@ -152,15 +205,15 @@ export function EventAddForm() {
           </Grid>
           <Grid item xs={12} md={12}>
             <Controller
-              name="venue"
+              name="grantType"
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Venue"
+                  label="Grant type"
                   variant="standard"
-                  error={!!errors.venue}
-                  helperText={errors.venue ? errors.venue?.message : ''}
+                  error={!!errors.grantType}
+                  helperText={errors.grantType ? errors.grantType?.message : ''}
                   fullWidth
                   margin="dense"
                 />
@@ -169,33 +222,15 @@ export function EventAddForm() {
           </Grid>
           <Grid item xs={12} md={12}>
             <Controller
-              name="organizer"
+              name="amount"
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Organizer"
+                  label="Amount"
                   variant="standard"
-                  error={!!errors.organizer}
-                  helperText={errors.organizer ? errors.organizer?.message : ''}
-                  fullWidth
-                  margin="dense"
-                />
-              )}
-            />
-          </Grid>
-          <Grid item xs={12} md={12}>
-            <Controller
-              name="url"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  inputProps={{ type: 'url', id: 'website' }}
-                  label="Url"
-                  variant="standard"
-                  error={!!errors.url}
-                  helperText={errors.url ? errors.url?.message : ''}
+                  error={!!errors.amount}
+                  helperText={errors.amount ? errors.amount?.message : ''}
                   fullWidth
                   margin="dense"
                 />
@@ -213,26 +248,37 @@ export function EventAddForm() {
           </Grid>
           <Grid item xs={12} md={12}>
             <Controller
+              name="usage"
               control={control}
-              name="type"
               render={({ field }) => (
                 <TextField
                   {...field}
-                  select
-                  label="Event type"
+                  label="Usage"
                   variant="standard"
+                  error={!!errors.usage}
+                  helperText={errors.usage ? errors.usage?.message : ''}
                   fullWidth
                   margin="dense"
-                  error={!!errors.type}
-                  helperText={errors.type ? errors.type?.message : ''}
-                  inputProps={{ value: field.value || '' }}
-                >
-                  {Object.values(EventType).map((value) => (
-                    <MenuItem key={value} value={value}>
-                      {eventTypeToLabel(value)}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                />
+              )}
+            />
+          </Grid>
+          <Grid item xs={12} md={12}>
+            <Controller
+              name="comment"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Comment"
+                  variant="standard"
+                  multiline
+                  rows={3}
+                  error={!!errors.comment}
+                  helperText={errors.comment ? errors.comment?.message : ''}
+                  fullWidth
+                  margin="dense"
+                />
               )}
             />
           </Grid>

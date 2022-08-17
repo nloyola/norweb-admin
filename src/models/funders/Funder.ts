@@ -3,6 +3,14 @@ import { Status } from '../Status';
 import { FunderTypes } from './FunderTypes';
 import { CountryCodes } from '../CountryCodes';
 import { z } from 'zod';
+import { domainEntitySchema } from '../DomainEntity';
+
+export const funderNameSchema = domainEntitySchema.extend({
+  name: z.string(),
+  acronym: z.string()
+});
+
+export type FunderName = z.infer<typeof funderNameSchema>;
 
 export const funderSchema = concurrencySafeEntitySchema.extend({
   name: z.string(),

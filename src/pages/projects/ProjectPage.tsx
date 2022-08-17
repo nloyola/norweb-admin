@@ -17,7 +17,9 @@ export function ProjectPage() {
   const { isError, error, isLoading, data: project } = useProject(Number(params.projectId));
 
   let currentTab = 'settings';
-  if (location.pathname.includes('events')) {
+  if (location.pathname.includes('funders')) {
+    currentTab = 'funders';
+  } else if (location.pathname.includes('events')) {
     currentTab = 'events';
   }
 
@@ -53,6 +55,7 @@ export function ProjectPage() {
           <Box mb={3} sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={currentTab}>
               <Tab label="Settings" value="settings" component={Link} to="" />
+              <Tab label="Funders" value="funders" component={Link} to="funders" />
               <Tab label="Events" value="events" component={Link} to="events" />
             </Tabs>
           </Box>

@@ -46,7 +46,7 @@ export function PersonBio() {
   };
 
   const backClicked = () => {
-    navigate('../../');
+    navigate(-1);
   };
 
   if (isError) {
@@ -56,6 +56,16 @@ export function PersonBio() {
   if (isLoading || !person) {
     return <CircularProgress />;
   }
+
+  const Email = person.email ? <a href={`mailto:${person.email}`}>{person.email}</a> : null;
+
+  const Website = person.website ? (
+    <a href={person.website} target="_blank">
+      {person.website}
+    </a>
+  ) : null;
+
+  const Phone = person.phone ? <a href={`tel:${person.phone}`}>{person.phone}</a> : null;
 
   const schemas = personPropertiesSchema(person);
 
@@ -72,28 +82,9 @@ export function PersonBio() {
         <Grid container spacing={4}>
           <EntityProperty propName="name" label="Name" value={personName(person)} handleChange={onPropChange} />
           <EntityProperty propName="gender" label="Gender" value={person.gender} handleChange={onPropChange} />
-          <EntityProperty
-            propName="email"
-            label="Email"
-            value={
-              person.email && person.email !== '' ? <a href={`mailto:${person.email}`}>{person.email}</a> : undefined
-            }
-            handleChange={onPropChange}
-          />
-          <EntityProperty
-            propName="website"
-            label="Website"
-            value={person.website && person.website !== '' ? <a href={person.website}>{person.website}</a> : undefined}
-            handleChange={onPropChange}
-          />
-          <EntityProperty
-            propName="phone"
-            label="Telephone"
-            value={
-              person.phone && person.phone !== '' ? <a href={`tel://${person.phone}`}>{person.phone}</a> : undefined
-            }
-            handleChange={onPropChange}
-          />
+          <EntityProperty propName="email" label="Email" value={Email} handleChange={onPropChange} />
+          <EntityProperty propName="website" label="Website" value={Website} handleChange={onPropChange} />
+          <EntityProperty propName="phone" label="Telephone" value={Phone} handleChange={onPropChange} />
           <EntityProperty
             propName="cvBrief"
             label="Brief CV"

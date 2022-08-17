@@ -1,5 +1,6 @@
 import { paginatedResponseSchema } from '@app/models';
-import { Project, ProjectAdd, projectSchema, ProjectUpdate } from '@app/models/projects';
+import { Project, ProjectAdd, projectSchema } from '@app/models/projects';
+import { ProjectFunderAdd, projectFunderSchema, ProjectFunderUpdate } from '@app/models/projects/ProjectFunder';
 import { ProjectKeywordAdd, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import { dateToString } from '@app/utils/utils';
 
@@ -100,7 +101,7 @@ export class ProjectsService {
     return projectSchema.parse(json);
   }
 
-  static async addKeyword(projectId: number, keyword: ProjectKeywordAdd): Promise<Project> {
+  static async addKeyword(projectId: number, keyword: ProjectKeywordAdd) {
     const data = { data: keyword };
     const response = await fetch(this.apiBaseUrl + `${projectId}/keywords/`, {
       headers: {
@@ -110,16 +111,17 @@ export class ProjectsService {
       method: 'POST',
       body: JSON.stringify(data)
     });
-    const result = await response.json();
+    const json = await response.json();
 
     if (!response.ok) {
+      console.error(json);
       throw new Error('HTTP error: status: ' + response.status);
     }
 
-    return result;
+    return projectSchema.parse(json);
   }
 
-  static async updateKeyword(projectId: number, keyword: ProjectKeywordUpdate): Promise<Project> {
+  static async updateKeyword(projectId: number, keyword: ProjectKeywordUpdate) {
     const data = { data: keyword };
     const url = `${this.apiBaseUrl}${projectId}/keywords/${keyword.id}/`;
     const response = await fetch(url, {
@@ -141,7 +143,7 @@ export class ProjectsService {
       }
     }
 
-    return json;
+    return projectSchema.parse(json);
   }
 
   static async deleteKeyword(projectId: number, keywordId: number): Promise<Project> {
@@ -159,6 +161,93 @@ export class ProjectsService {
       throw new Error('HTTP error: status: ' + response.status);
     }
 
-    return json;
+    return projectSchema.parse(json);
+  }
+
+  static async paginateFunders(projectId: number, page: number, search: string) {
+    let url = `${this.apiBaseUrl}${projectId}/funders/`;
+
+    if (page > 0) {
+      url = `${url}?page=${page}`;
+    }
+
+    if (search !== '') {
+      url = `${url}&search=${search}`;
+    }
+
+    const response = await fetch(url);
+    const result = await response.json();
+    if (!response.ok) {
+      console.error(result);
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+    return paginatedResponseSchema(projectFunderSchema).parse(result);
+  }
+
+  static async addFunder(projectId: number, funder: ProjectFunderAdd) {
+    const data = {
+      data: {
+        ...funder,
+        hostOrganizationId: null // FIXME: assign this after Organizations are added to the REST API
+      }
+    };
+    const response = await fetch(this.apiBaseUrl + `${projectId}/funders/`, {
+      headers: {
+        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+
+    console.log(result);
+
+    return projectFunderSchema.parse(result);
+  }
+
+  static async updateFunder(projectId: number, funder: ProjectFunderUpdate) {
+    const data = { data: funder };
+    const url = `${this.apiBaseUrl}${projectId}/funders/${funder.id}/`;
+    const response = await fetch(url, {
+      headers: {
+        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
+        'Content-Type': 'application/json'
+      },
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('HTTP error: status: ' + response.status);
+      }
+
+      return projectFunderSchema.parse(json);
+    }
+  }
+
+  static async deleteFunder(projectId: number, funderId: number) {
+    const url = `${this.apiBaseUrl}${projectId}/funders/${funderId}/`;
+    const response = await fetch(url, {
+      headers: {
+        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
+        'Content-Type': 'application/json'
+      },
+      method: 'DELETE'
+    });
+
+    const json = await response.json();
+    if (!response.ok) {
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+
+    return projectSchema.parse(json);
   }
 }
