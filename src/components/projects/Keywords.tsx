@@ -1,16 +1,16 @@
+import { ProjectsApi } from '@app/api/ProjectsApi';
 import { ProjectKeyword, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
-import { Alert, Button, Chip, CircularProgress, Grid, Stack } from '@mui/material';
+import { Button, Chip, CircularProgress, Grid } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ProjectKeywordDeleteDialog } from './ProjectKeywordDeleteDialog';
-import { KeywordDialog, KeywordFormInput } from './KeywordDialog';
 import { ShowError } from '../ShowError';
+import { KeywordDialog, KeywordFormInput } from './KeywordDialog';
+import { ProjectKeywordDeleteDialog } from './ProjectKeywordDeleteDialog';
 
 type KeywordsProps = {
   initialKeywords: ProjectKeyword[];
-  disabled: boolean;
+  disabled?: boolean;
 };
 
 /**
@@ -41,7 +41,7 @@ export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
 
     const addKeyword = async () => {
       try {
-        const modifiedProject = await ProjectsService.addKeyword(projectId, newKeyword);
+        const modifiedProject = await ProjectsApi.addKeyword(projectId, newKeyword);
         setKeywords(modifiedProject.keywords);
       } catch (err) {
         console.error(err);
@@ -66,7 +66,7 @@ export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
       }
 
       try {
-        const modifiedProject = await ProjectsService.updateKeyword(projectId, {
+        const modifiedProject = await ProjectsApi.updateKeyword(projectId, {
           ...selected,
           ...updatedKeyword
         });
@@ -90,7 +90,7 @@ export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
 
     const deleteKeyword = async () => {
       try {
-        const modifiedProject = await ProjectsService.deleteKeyword(projectId, selected.id);
+        const modifiedProject = await ProjectsApi.deleteKeyword(projectId, selected.id);
         setKeywords(modifiedProject.keywords);
       } catch (err) {
         console.error(err);

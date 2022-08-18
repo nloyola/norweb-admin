@@ -2,7 +2,7 @@ import { PropertyChanger } from '@app/components/PropertyChanger/PropertyChanger
 import { useProject } from '@app/hooks/useProject';
 import { CountryNames, statusToLabel } from '@app/models';
 import { Project } from '@app/models/projects';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
+import { ProjectsApi } from '@app/api/ProjectsApi';
 import { nlToFragments } from '@app/utils/nltoFragments';
 import { datesRangeToString } from '@app/utils/utils';
 import { ArrowBack } from '@mui/icons-material';
@@ -31,7 +31,7 @@ export function ProjectDetails() {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
 
-  const updateProject = useMutation((project: Project) => ProjectsService.update(project), {
+  const updateProject = useMutation((project: Project) => ProjectsApi.update(project), {
     onSuccess: (newProject: Project) => {
       queryClient.setQueryData(['projects', projectId], newProject);
       queryClient.invalidateQueries(['projects']);
@@ -115,11 +115,7 @@ export function ProjectDetails() {
           value={project.vision ? nlToFragments(project.vision) : null}
           handleChange={onPropChange}
         />
-        <EntityProperty
-          propName="keywords"
-          label="Keywords"
-          value={<Keywords initialKeywords={project.keywords} disabled={isFetching} />}
-        />
+        <EntityProperty propName="keywords" label="Keywords" value={<Keywords initialKeywords={project.keywords} />} />
         <EntityProperty
           propName="countryCode"
           label="Country"

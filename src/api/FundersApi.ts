@@ -1,16 +1,15 @@
 import { paginatedResponseSchema } from '@app/models';
 import { Funder, FunderAdd, FunderUpdate, funderSchema, funderNameSchema } from '@app/models/funders';
 import { z } from 'zod';
+import { API_ROUTES, fetchApi, paginationToQueryParams } from './api';
 
-export class FundersService {
-  private static apiBaseUrl = '/api/funders/';
-
+export class FundersApi {
   /**
    * Retrieves a Funder using an ID.
    */
   static async get(id: number): Promise<Funder> {
-    const url = this.apiBaseUrl + `${id}/`;
-    const response = await fetch(url);
+    const route = API_ROUTES.funders.funder.replace(':funderId', `${id}`);
+    const response = await fetchApi(route);
     const result = await response.json();
 
     if (!response.ok) {
@@ -24,13 +23,9 @@ export class FundersService {
     return funderSchema.parse(result);
   }
 
-  static async paginate(page: number, search: string) {
-    let url = this.apiBaseUrl + `?page=${page}`;
-    if (search !== '') {
-      url = `${url}&search=${search}`;
-    }
-
-    const response = await fetch(url);
+  static async paginate(page: number, searchTerm: string) {
+    const route = API_ROUTES.funders.index + paginationToQueryParams(page, searchTerm);
+    const response = await fetchApi(route);
     const pagination = await response.json();
     if (!response.ok) {
       console.error(pagination);
@@ -40,8 +35,8 @@ export class FundersService {
   }
 
   static async listNames() {
-    let url = this.apiBaseUrl + `names/`;
-    const response = await fetch(url);
+    let route = API_ROUTES.funders.names;
+    const response = await fetchApi(route);
     const json = await response.json();
     if (!response.ok) {
       console.error(json);
@@ -52,7 +47,7 @@ export class FundersService {
 
   static async add(funder: FunderAdd) {
     const data = { data: funder };
-    const response = await fetch(this.apiBaseUrl, {
+    const response = await fetchApi(API_ROUTES.funders.index, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -68,10 +63,10 @@ export class FundersService {
     return funderSchema.parse(result);
   }
 
-  static async update(funder: FunderUpdate): Promise<Funder> {
+  static async update(funder: FunderUpdate) {
     const data = { data: funder };
-    const url = `${this.apiBaseUrl}${funder.id}/`;
-    const response = await fetch(url, {
+    const route = API_ROUTES.funders.funder.replace(':funderId', `${funder.id}`);
+    const response = await fetchApi(route, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -86,12 +81,12 @@ export class FundersService {
       throw new Error(JSON.stringify(json, null, 2));
     }
 
-    return json;
+    return funderSchema.parse(json);
   }
 
-  static async delete(funderId: number, keywordId: number): Promise<Funder> {
-    const url = `${this.apiBaseUrl}${funderId}`;
-    const response = await fetch(url, {
+  static async delete(funderId: number) {
+    const route = API_ROUTES.funders.funder.replace(':funderId', `${funderId}`);
+    const response = await fetchApi(route, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'

@@ -1,5 +1,4 @@
-import { FundersService } from '@app/services/funders/FundersService';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
+import { ProjectsApi } from '@app/api/ProjectsApi';
 import { ArrowBack } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Box, CircularProgress, Fab, Pagination, Stack, Typography } from '@mui/material';
@@ -29,7 +28,7 @@ export function ProjectFundersList() {
     data: pagination
   } = useQuery(
     ['projects', projectId, 'funders', page, searchTerm],
-    () => ProjectsService.paginateFunders(projectId, page, searchTerm || ''),
+    () => ProjectsApi.paginateFunders(projectId, page, searchTerm || ''),
     {
       keepPreviousData: true
     }

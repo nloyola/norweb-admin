@@ -2,7 +2,7 @@ import { PropertyChanger } from '@app/components/PropertyChanger/PropertyChanger
 import { useFunder } from '@app/hooks/useFunder';
 import { CountryNames, statusToLabel } from '@app/models';
 import { Funder, funderTypeToLabel } from '@app/models/funders';
-import { FundersService } from '@app/services/funders/FundersService';
+import { FundersApi } from '@app/api/FundersApi';
 import { ArrowBack } from '@mui/icons-material';
 import { CircularProgress, Fab, Grid, Stack } from '@mui/material';
 import { useSnackbar } from 'notistack';
@@ -27,7 +27,7 @@ export function FunderDetails() {
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
 
-  const updateFunder = useMutation((funder: Funder) => FundersService.update(funder), {
+  const updateFunder = useMutation((funder: Funder) => FundersApi.update(funder), {
     onSuccess: (newFunder: Funder) => {
       queryClient.setQueryData(['funders', funderId], newFunder);
       queryClient.invalidateQueries(['funders']);

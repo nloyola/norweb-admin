@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ProjectsTable } from './ProjectsTable';
 import { SearchTermInput } from '../SearchTermInput';
 import { useQuery } from 'react-query';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
+import { ProjectsApi } from '@app/api/ProjectsApi';
 import { ShowError } from '../ShowError';
 
 export function ProjectsSearchableTable() {
@@ -19,7 +19,7 @@ export function ProjectsSearchableTable() {
     isLoading,
     isFetching,
     data: pagination
-  } = useQuery(['projects', page, searchTerm], () => ProjectsService.paginate(page, searchTerm), {
+  } = useQuery(['projects', page, searchTerm], () => ProjectsApi.paginate(page, searchTerm), {
     keepPreviousData: true
   });
 

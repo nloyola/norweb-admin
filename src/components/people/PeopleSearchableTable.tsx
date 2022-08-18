@@ -1,5 +1,5 @@
-import { PeopleService } from '@app/services/people/PeopleService';
-import { Alert, Box, CircularProgress, Pagination, Stack } from '@mui/material';
+import { PeopleApi } from '@app/api/PeopleApi';
+import { Box, CircularProgress, Pagination, Stack } from '@mui/material';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -20,7 +20,7 @@ export function PeopleSearchableTable() {
     isLoading,
     isFetching,
     data: pagination
-  } = useQuery(['people', page, searchTerm], () => PeopleService.paginate(page, searchTerm || ''), {
+  } = useQuery(['people', page, searchTerm], () => PeopleApi.paginate(page, searchTerm || ''), {
     keepPreviousData: true
   });
 
@@ -68,13 +68,7 @@ export function PeopleSearchableTable() {
                   mt: 2
                 }}
               >
-                <Pagination
-                  count={pagination.pages}
-                  page={page}
-                  boundaryCount={2}
-                  onChange={handlePageChange}
-                  disabled={isFetching}
-                />
+                <Pagination count={pagination.pages} page={page} boundaryCount={2} onChange={handlePageChange} />
               </Box>
             )}
           </>

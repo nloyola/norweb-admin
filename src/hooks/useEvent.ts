@@ -1,6 +1,6 @@
-import { EventsService } from '@app/services/events/EventsService';
+import { ProjectEventsApi } from '@app/api/ProjectEventsApi';
 import { useQuery } from 'react-query';
 
 export function useEvent(projectId: number, eventId: number) {
-  return useQuery(['projects', projectId, 'events', eventId], async () => EventsService.get(projectId, eventId));
+  return useQuery(['projects', projectId, 'events', eventId], async () => ProjectEventsApi.get(projectId, eventId));
 }

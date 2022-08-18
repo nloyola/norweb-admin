@@ -1,12 +1,11 @@
 import { paginatedResponseSchema } from '@app/models';
 import { personBriefSchema, personSchema } from '@app/models/people';
+import { API_ROUTES, fetchApi, paginationToQueryParams } from './api';
 
-export class PeopleService {
-  private static apiBaseUrl = '/api/people/';
-
+export class PeopleApi {
   static async get(id: number) {
-    const url = this.apiBaseUrl + `${id}`;
-    const response = await fetch(url);
+    const route = API_ROUTES.people.person.replace(':personId', `${id}`);
+    const response = await fetchApi(route);
     const result = await response.json();
     if (!response.ok) {
       console.error(result);
@@ -16,13 +15,9 @@ export class PeopleService {
     return person;
   }
 
-  static async paginate(page: number, search: string) {
-    let url = this.apiBaseUrl + `?page=${page}`;
-    if (search !== '') {
-      url = `${url}&search=${search}`;
-    }
-
-    const response = await fetch(url);
+  static async paginate(page: number, searchTerm: string) {
+    const route = API_ROUTES.people.index + paginationToQueryParams(page, searchTerm);
+    const response = await fetchApi(route);
     const result = await response.json();
 
     if (!response.ok) {

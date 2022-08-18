@@ -1,7 +1,7 @@
 import { DateSelectForm } from '@app/components/DateSelectForm';
 import { ProjectFunder, ProjectFunderAdd } from '@app/models/projects/ProjectFunder';
-import { FundersService } from '@app/services/funders/FundersService';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
+import { FundersApi } from '@app/api/FundersApi';
+import { ProjectsApi } from '@app/api/ProjectsApi';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Autocomplete, Button, CircularProgress, Grid, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -60,13 +60,13 @@ export function ProjectFunderAddForm() {
     isError,
     isLoading,
     data: funderNames
-  } = useQuery(['funders', 'names'], () => FundersService.listNames(), {
+  } = useQuery(['funders', 'names'], () => FundersApi.listNames(), {
     keepPreviousData: true
   });
 
   const queryClient = useQueryClient();
   const addProjectFunder = useMutation(
-    (projectFunder: ProjectFunderAdd) => ProjectsService.addFunder(projectId, projectFunder),
+    (projectFunder: ProjectFunderAdd) => ProjectsApi.addFunder(projectId, projectFunder),
     {
       onSuccess: (newProjectFunder: ProjectFunder) => {
         queryClient.setQueryData(['projects', projectId, 'funders'], newProjectFunder);

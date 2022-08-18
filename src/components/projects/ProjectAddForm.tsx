@@ -1,7 +1,7 @@
 import { DateSelectForm } from '@app/components/DateSelectForm';
 import { CountryCodes, CountryNames } from '@app/models';
 import { Project, ProjectAdd } from '@app/models/projects';
-import { ProjectsService } from '@app/services/projects/ProjectsService';
+import { ProjectsApi } from '@app/api/ProjectsApi';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Autocomplete, Button, Grid, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -63,7 +63,7 @@ export const ProjectAddForm = () => {
   });
 
   const queryClient = useQueryClient();
-  const addProject = useMutation((project: ProjectAdd) => ProjectsService.add(project), {
+  const addProject = useMutation((project: ProjectAdd) => ProjectsApi.add(project), {
     onSuccess: (newProject: Project) => {
       queryClient.setQueryData(['projects', newProject.id], newProject);
       queryClient.invalidateQueries(['projects']);

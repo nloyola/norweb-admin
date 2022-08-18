@@ -1,6 +1,6 @@
-import { FundersService } from '@app/services/funders/FundersService';
+import { FundersApi } from '@app/api/FundersApi';
 import { useQuery } from 'react-query';
 
 export function useFunder(id: number) {
-  return useQuery(['funders', id], async () => FundersService.get(id));
+  return useQuery(['funders', id], async () => FundersApi.get(id));
 }

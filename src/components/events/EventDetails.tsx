@@ -1,6 +1,6 @@
+import { ProjectEventsApi } from '@app/api/ProjectEventsApi';
 import { useEvent } from '@app/hooks/useEvent';
 import { Event, eventTypeToLabel } from '@app/models/events';
-import { EventsService } from '@app/services/events/EventsService';
 import { nlToFragments } from '@app/utils/nltoFragments';
 import { datesRangeToString } from '@app/utils/utils';
 import { ArrowBack } from '@mui/icons-material';
@@ -25,7 +25,7 @@ export function EventDetails() {
   const { error, isError, isLoading, data: event } = useEvent(projectId, eventId);
   const queryClient = useQueryClient();
 
-  const updateEvent = useMutation((event: Event) => EventsService.update(projectId, event), {
+  const updateEvent = useMutation((event: Event) => ProjectEventsApi.update(projectId, event), {
     onSuccess: (newEvent: Event) => {
       queryClient.setQueryData(['projects', projectId, 'events', eventId], newEvent);
       queryClient.invalidateQueries(['projects', projectId]);

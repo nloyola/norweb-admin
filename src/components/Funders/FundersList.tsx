@@ -1,4 +1,4 @@
-import { FundersService } from '@app/services/funders/FundersService';
+import { FundersApi } from '@app/api/FundersApi';
 import { CircularProgress, Pagination, Stack } from '@mui/material';
 import { Box } from '@mui/system';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -21,7 +21,7 @@ export function FundersList() {
     isLoading,
     isFetching,
     data: pagination
-  } = useQuery(['funders', page, searchTerm], () => FundersService.paginate(page, searchTerm || ''), {
+  } = useQuery(['funders', page, searchTerm], () => FundersApi.paginate(page, searchTerm || ''), {
     keepPreviousData: true
   });
 

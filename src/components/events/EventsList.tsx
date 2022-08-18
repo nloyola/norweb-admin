@@ -1,7 +1,7 @@
-import { EventsService } from '@app/services/events/EventsService';
+import { ProjectEventsApi } from '@app/api/ProjectEventsApi';
 import { ArrowBack } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
-import { Alert, Box, CircularProgress, Fab, Pagination, Stack, Typography } from '@mui/material';
+import { Box, CircularProgress, Fab, Pagination, Stack, Typography } from '@mui/material';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -28,7 +28,7 @@ export function EventsList() {
     data: pagination
   } = useQuery(
     ['projects', projectId, 'events', page, searchTerm],
-    () => EventsService.paginate(projectId, page, searchTerm || ''),
+    () => ProjectEventsApi.paginate(projectId, page, searchTerm || ''),
     {
       keepPreviousData: true
     }

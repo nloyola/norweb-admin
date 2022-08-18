@@ -3,16 +3,29 @@ import { Project, ProjectAdd, projectSchema } from '@app/models/projects';
 import { ProjectFunderAdd, projectFunderSchema, ProjectFunderUpdate } from '@app/models/projects/ProjectFunder';
 import { ProjectKeywordAdd, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import { dateToString } from '@app/utils/utils';
+import { API_ROUTES, fetchApi, paginationToQueryParams, routeReplace } from './api';
 
-export class ProjectsService {
-  private static apiBaseUrl = '/api/projects/';
+function keywordRoute(projectId: number, keywordId: number): string {
+  return routeReplace(API_ROUTES.projects.keyword, {
+    ':projectId': `${projectId}`,
+    ':keywordId': `${keywordId}`
+  });
+}
 
+function funderRoute(projectId: number, funderId: number): string {
+  return routeReplace(API_ROUTES.projects.funder, {
+    ':projectId': `${projectId}`,
+    ':funderId': `${funderId}`
+  });
+}
+
+export class ProjectsApi {
   /**
    * Retrieves a Project using an ID.
    */
   static async get(id: number) {
-    const url = this.apiBaseUrl + `${id}/`;
-    const response = await fetch(url);
+    const route = API_ROUTES.projects.project.replace(':projectId', `${id}`);
+    const response = await fetchApi(route);
     const result = await response.json();
 
     if (!response.ok) {
@@ -22,13 +35,9 @@ export class ProjectsService {
     return projectSchema.parse(result);
   }
 
-  static async paginate(page: number, search: string) {
-    let url = this.apiBaseUrl + `?page=${page}`;
-    if (search !== '') {
-      url = `${url}&search=${search}`;
-    }
-
-    const response = await fetch(url);
+  static async paginate(page: number, searchTerm: string) {
+    const route = API_ROUTES.projects.index + paginationToQueryParams(page, searchTerm);
+    const response = await fetchApi(route);
     const result = await response.json();
     if (!response.ok) {
       console.error(result);
@@ -50,7 +59,7 @@ export class ProjectsService {
         countryCode: project.countryCode
       }
     };
-    const response = await fetch(this.apiBaseUrl, {
+    const response = await fetchApi(API_ROUTES.projects.index, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -82,8 +91,9 @@ export class ProjectsService {
         status: project.status
       }
     };
-    const url = `${this.apiBaseUrl}${project.id}/`;
-    const response = await fetch(url, {
+
+    const route = API_ROUTES.projects.project.replace(':projectId', `${project.id}`);
+    const response = await fetchApi(route, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -103,7 +113,8 @@ export class ProjectsService {
 
   static async addKeyword(projectId: number, keyword: ProjectKeywordAdd) {
     const data = { data: keyword };
-    const response = await fetch(this.apiBaseUrl + `${projectId}/keywords/`, {
+    const route = API_ROUTES.projects.keywords.replace(':projectId', `${projectId}`);
+    const response = await fetchApi(route, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -122,9 +133,8 @@ export class ProjectsService {
   }
 
   static async updateKeyword(projectId: number, keyword: ProjectKeywordUpdate) {
-    const data = { data: keyword };
-    const url = `${this.apiBaseUrl}${projectId}/keywords/${keyword.id}/`;
-    const response = await fetch(url, {
+    const data = { data: { ...keyword, projectId } };
+    const response = await fetchApi(keywordRoute(projectId, keyword.id), {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -147,8 +157,7 @@ export class ProjectsService {
   }
 
   static async deleteKeyword(projectId: number, keywordId: number): Promise<Project> {
-    const url = `${this.apiBaseUrl}${projectId}/keywords/${keywordId}/`;
-    const response = await fetch(url, {
+    const response = await fetchApi(keywordRoute(projectId, keywordId), {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -164,18 +173,10 @@ export class ProjectsService {
     return projectSchema.parse(json);
   }
 
-  static async paginateFunders(projectId: number, page: number, search: string) {
-    let url = `${this.apiBaseUrl}${projectId}/funders/`;
-
-    if (page > 0) {
-      url = `${url}?page=${page}`;
-    }
-
-    if (search !== '') {
-      url = `${url}&search=${search}`;
-    }
-
-    const response = await fetch(url);
+  static async paginateFunders(projectId: number, page: number, searchTerm: string) {
+    const route =
+      API_ROUTES.projects.funders.replace(':projectId', `${projectId}`) + paginationToQueryParams(page, searchTerm);
+    const response = await fetchApi(route);
     const result = await response.json();
     if (!response.ok) {
       console.error(result);
@@ -191,7 +192,8 @@ export class ProjectsService {
         hostOrganizationId: null // FIXME: assign this after Organizations are added to the REST API
       }
     };
-    const response = await fetch(this.apiBaseUrl + `${projectId}/funders/`, {
+    const route = API_ROUTES.projects.funders.replace(':projectId', `${projectId}`);
+    const response = await fetchApi(route, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -212,8 +214,7 @@ export class ProjectsService {
 
   static async updateFunder(projectId: number, funder: ProjectFunderUpdate) {
     const data = { data: funder };
-    const url = `${this.apiBaseUrl}${projectId}/funders/${funder.id}/`;
-    const response = await fetch(url, {
+    const response = await fetchApi(funderRoute(projectId, funder.id), {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -234,8 +235,7 @@ export class ProjectsService {
   }
 
   static async deleteFunder(projectId: number, funderId: number) {
-    const url = `${this.apiBaseUrl}${projectId}/funders/${funderId}/`;
-    const response = await fetch(url, {
+    const response = await fetchApi(funderRoute(projectId, funderId), {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'

@@ -1,6 +1,6 @@
 import { CountryCodes, CountryNames } from '@app/models';
 import { Funder, FunderAdd, FunderTypes, funderTypeToLabel } from '@app/models/funders';
-import { FundersService } from '@app/services/funders/FundersService';
+import { FundersApi } from '@app/api/FundersApi';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Autocomplete, Button, Grid, MenuItem, Stack, TextField } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -45,7 +45,7 @@ export const FunderAddForm = () => {
   });
 
   const queryClient = useQueryClient();
-  const addFunder = useMutation((funder: FunderAdd) => FundersService.add(funder), {
+  const addFunder = useMutation((funder: FunderAdd) => FundersApi.add(funder), {
     onSuccess: (newFunder: Funder) => {
       queryClient.setQueryData(['funders', newFunder.id], newFunder);
       queryClient.invalidateQueries(['funders']);

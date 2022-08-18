@@ -1,15 +1,19 @@
+import { API_ROUTES, fetchApi, paginationToQueryParams, routeReplace } from '@app/api/api';
 import { PaginatedResponse, paginatedResponseSchema } from '@app/models';
-import { Event, EventAdd, eventSchema, EventUpdate } from '@app/models/events';
+import { Event, EventAdd, eventSchema } from '@app/models/events';
 import { dateToString } from '@app/utils/utils';
 
-export class EventsService {
-  private static apiBaseUrl = '/api/projects/';
+function eventRoute(projectId: number, eventId: number): string {
+  return routeReplace(API_ROUTES.projects.event, {
+    ':projectId': `${projectId}`,
+    ':eventId': `${eventId}`
+  });
+}
 
+export class ProjectEventsApi {
   static async get(projectId: number, eventId: number): Promise<Event> {
-    const url = this.apiBaseUrl + `${projectId}/events/${eventId}`;
-    const response = await fetch(url);
+    const response = await fetchApi(eventRoute(projectId, eventId));
     const result = await response.json();
-
     if (!response.ok) {
       console.error(result);
       throw new Error('HTTP error: status: ' + response.status);
@@ -17,13 +21,10 @@ export class EventsService {
     return eventSchema.parse(result);
   }
 
-  static async paginate(projectId: number, page: number, search: string): Promise<PaginatedResponse<Event>> {
-    let url = this.apiBaseUrl + `${projectId}/events/?page=${page}`;
-    if (search !== '') {
-      url = `${url}&search=${search}`;
-    }
-
-    const response = await fetch(url);
+  static async paginate(projectId: number, page: number, searchTerm: string): Promise<PaginatedResponse<Event>> {
+    const route =
+      API_ROUTES.projects.events.replace(':projectId', `${projectId}`) + paginationToQueryParams(page, searchTerm);
+    const response = await fetchApi(route);
     const result = await response.json();
     if (!response.ok) {
       console.error(result);
@@ -40,7 +41,8 @@ export class EventsService {
         endDate: dateToString(event.endDate)
       }
     };
-    const response = await fetch(this.apiBaseUrl + `${projectId}/events/`, {
+    const route = API_ROUTES.projects.events.replace(':projectId', `${projectId}`);
+    const response = await fetchApi(route, {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
@@ -66,8 +68,7 @@ export class EventsService {
         endDate: dateToString(event.endDate)
       }
     };
-    const url = `${this.apiBaseUrl}${projectId}/events/${event.id}/`;
-    const response = await fetch(url, {
+    const response = await fetchApi(eventRoute(projectId, event.id), {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
         'Content-Type': 'application/json'
