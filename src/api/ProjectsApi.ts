@@ -207,8 +207,6 @@ export class ProjectsApi {
       throw new Error('HTTP error: status: ' + response.status);
     }
 
-    console.log(result);
-
     return projectFunderSchema.parse(result);
   }
 

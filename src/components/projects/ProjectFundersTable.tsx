@@ -22,9 +22,11 @@ export const ProjectFundersTable: React.FC<{ projectFunders: ProjectFunder[] }> 
             return (
               <TableRow key={projectFunder.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <TableCell>{projectFunder.title}</TableCell>
-                <TableCell>
-                  {projectFunder.funder.name} ({projectFunder.funder.acronym})
-                </TableCell>
+                {projectFunder.funder ? (
+                  <TableCell>
+                    {projectFunder.funder.name} ({projectFunder.funder.acronym})
+                  </TableCell>
+                ) : null}
                 <TableCell>{projectFunder.grantType}</TableCell>
                 <TableCell>{projectFunder.amount}</TableCell>
                 <TableCell align="right">

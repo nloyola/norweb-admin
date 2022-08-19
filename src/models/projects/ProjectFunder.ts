@@ -14,7 +14,7 @@ export const projectFunderSchema = domainEntitySchema.extend({
   endDate: z.nullable(z.preprocess((a) => new Date(z.string().parse(a)), z.date())),
   usage: z.string().nullable(),
   comment: z.string().nullable(),
-  funder: funderNameSchema
+  funder: funderNameSchema.optional()
 });
 
 export type ProjectFunder = z.infer<typeof projectFunderSchema>;
