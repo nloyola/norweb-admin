@@ -3,6 +3,7 @@ import { Project, ProjectAdd, projectSchema } from '@app/models/projects';
 import { ProjectFunderAdd, projectFunderSchema, ProjectFunderUpdate } from '@app/models/projects/ProjectFunder';
 import { ProjectKeywordAdd, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import { dateToString } from '@app/utils/utils';
+import { z } from 'zod';
 import { API_ROUTES, fetchApi, paginationToQueryParams, routeReplace } from './api';
 
 function keywordRoute(projectId: number, keywordId: number): string {
@@ -24,6 +25,10 @@ export class ProjectsApi {
    * Retrieves a Project using an ID.
    */
   static async get(id: number) {
+    if (id === undefined) {
+      debugger;
+    }
+
     const route = API_ROUTES.projects.project.replace(':projectId', `${id}`);
     const response = await fetchApi(route);
     const result = await response.json();
@@ -173,6 +178,18 @@ export class ProjectsApi {
     return projectSchema.parse(json);
   }
 
+  static async getFunder(projectId: number, funderId: number) {
+    const route = funderRoute(projectId, funderId);
+    const response = await fetchApi(route);
+    const result = await response.json();
+
+    if (!response.ok) {
+      console.error(result);
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+    return projectFunderSchema.parse(result);
+  }
+
   static async paginateFunders(projectId: number, page: number, searchTerm: string) {
     const route =
       API_ROUTES.projects.funders.replace(':projectId', `${projectId}`) + paginationToQueryParams(page, searchTerm);
@@ -211,7 +228,7 @@ export class ProjectsApi {
   }
 
   static async updateFunder(projectId: number, funder: ProjectFunderUpdate) {
-    const data = { data: funder };
+    const data = { data: { ...funder, funder: undefined } };
     const response = await fetchApi(funderRoute(projectId, funder.id), {
       headers: {
         //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
@@ -224,12 +241,11 @@ export class ProjectsApi {
     const json = await response.json();
 
     if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('HTTP error: status: ' + response.status);
-      }
-
-      return projectFunderSchema.parse(json);
+      console.error(json);
+      throw new Error('HTTP error: status: ' + response.status);
     }
+
+    return projectFunderSchema.parse(json);
   }
 
   static async deleteFunder(projectId: number, funderId: number) {
@@ -246,6 +262,6 @@ export class ProjectsApi {
       throw new Error('HTTP error: status: ' + response.status);
     }
 
-    return projectSchema.parse(json);
+    return z.number().parse(json);
   }
 }

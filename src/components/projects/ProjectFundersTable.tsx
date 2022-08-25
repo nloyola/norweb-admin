@@ -30,7 +30,7 @@ export const ProjectFundersTable: React.FC<{ projectFunders: ProjectFunder[] }> 
                 <TableCell>{projectFunder.grantType}</TableCell>
                 <TableCell>{projectFunder.amount}</TableCell>
                 <TableCell align="right">
-                  <Link to={`/project/${params.projectId}/funders/${projectFunder.id}`}>
+                  <Link to={`/projects/${params.projectId}/funders/${projectFunder.id}`}>
                     <Button size="small" variant="outlined">
                       View
                     </Button>

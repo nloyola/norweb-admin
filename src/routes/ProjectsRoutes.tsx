@@ -8,6 +8,7 @@ import { EventAddForm } from '@app/components/events/EventAddForm';
 import { EventDetails } from '@app/components/events/EventDetails';
 import { ProjectFundersList } from '@app/components/projects/ProjectFundersList';
 import { ProjectFunderAddForm } from '@app/components/projects/ProjectFunderAddForm';
+import { ProjectFunderDetails } from '@app/components/projects/ProjectFunderDetails';
 
 export default function ProjectsRoutes() {
   return (
@@ -19,6 +20,7 @@ export default function ProjectsRoutes() {
         <Route path="funders">
           <Route index element={<ProjectFundersList />} />
           <Route path="add" element={<ProjectFunderAddForm />} />
+          <Route path=":funderId" element={<ProjectFunderDetails />} />
         </Route>
         <Route path="events">
           <Route index element={<EventsList />} />

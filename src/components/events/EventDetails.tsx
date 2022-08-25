@@ -106,7 +106,7 @@ export function EventDetails() {
     return <ShowError error={deleteEvent.error} />;
   }
 
-  if (isLoading || !event || updateEvent.isLoading || deleteEvent.isLoading) {
+  if (isLoading || !event || deleteEvent.isLoading) {
     return <CircularProgress />;
   }
 

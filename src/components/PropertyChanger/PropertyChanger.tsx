@@ -2,6 +2,7 @@ import { ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import { PropertyChangerAutocomplete } from './PropertyChangerAutocomplete';
 import { PropertyChangerDate } from './PropertyChangerDate';
 import { PropertyChangerDateRange } from './PropertyChangerDateRange';
+import { PropertyChangerFunder } from './PropertyChangerFunder';
 import { PropertyChangerPersonNames } from './PropertyChangerPersonNames';
 import { PropertyChangerRadio } from './PropertyChangerRadio';
 import { PropertyChangerText } from './PropertyChangerText';
@@ -13,7 +14,8 @@ export enum PropertyTypes {
   PERSON_NAMES = 'person-names,',
   PROJECT_KEYWORD = 'project-keyword,',
   RADIO = 'radio,',
-  TEXT = 'text'
+  TEXT = 'text',
+  FUNDER_ID = 'funder-id'
 }
 
 export interface PropertySchema<T> {
@@ -95,6 +97,10 @@ export function PropertyChanger<T extends PropertyChangerProps<unknown>>(props: 
 
     case PropertyTypes.RADIO:
       return <PropertyChangerRadio {...props} />;
+
+    case PropertyTypes.FUNDER_ID:
+      const numberProps = props as unknown as PropertyChangerProps<number>;
+      return <PropertyChangerFunder {...numberProps} />;
   }
 
   throw new Error('invalid property type: ' + props.propertyType);
