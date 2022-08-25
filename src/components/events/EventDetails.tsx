@@ -40,8 +40,9 @@ export function EventDetails() {
 
   const deleteEvent = useMutation((eventId: number) => ProjectEventsApi.delete(projectId, eventId), {
     onSuccess: () => {
-      queryClient.invalidateQueries(['project', projectId, 'events']);
+      queryClient.removeQueries(['projects', projectId, 'events', eventId]);
       enqueueEntitySavedSnackbar(enqueueSnackbar, 'The event was deleted');
+      navigate('../');
     }
   });
 
@@ -73,21 +74,20 @@ export function EventDetails() {
     updateEvent.mutate(newValues);
   };
 
+  const deleteClicked = () => {
+    setOpenDelete(true);
+  };
+
   const handleDeleteOk = () => {
     setOpenDelete(false);
     if (!event) {
       throw new Error('event is invalid');
     }
     deleteEvent.mutate(event.id);
-    navigate(-1);
   };
 
   const handleDeleteCancel = () => {
     setOpenDelete(false);
-  };
-
-  const deleteClicked = () => {
-    setOpenDelete(true);
   };
 
   const backClicked = () => {

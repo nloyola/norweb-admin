@@ -4,7 +4,7 @@ import { CountryNames, statusToLabel } from '@app/models';
 import { Funder, funderTypeToLabel } from '@app/models/funders';
 import { FundersApi } from '@app/api/FundersApi';
 import { ArrowBack } from '@mui/icons-material';
-import { CircularProgress, Fab, Grid, Stack } from '@mui/material';
+import { Box, CircularProgress, Fab, Grid, Stack } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
@@ -13,6 +13,8 @@ import { EntityProperty } from '../EntityProperty';
 import { ShowError } from '../ShowError';
 import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
 import { funderPropertiesSchemas } from './funderPropertiesSchemas';
+import { FunderDeleteDialog } from './FunderDeleteDialog';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 /**
  * A component that shows a funder's settings and allows the user to modify them.
@@ -22,8 +24,11 @@ export function FunderDetails() {
   const funderId = Number(params.funderId);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+
   const [propertyToUpdate, setPropertyToUpdate] = useState<string | null>(null);
-  const { error, isError, isLoading, isFetching, data: funder } = useFunder(funderId);
+  const { error, isError, isLoading, data: funder } = useFunder(funderId);
+
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -32,6 +37,14 @@ export function FunderDetails() {
       queryClient.setQueryData(['funders', funderId], newFunder);
       queryClient.invalidateQueries(['funders']);
       enqueueEntitySavedSnackbar(enqueueSnackbar, 'The funder was updated');
+    }
+  });
+
+  const deleteFunder = useMutation((funderId: number) => FundersApi.delete(funderId), {
+    onSuccess: () => {
+      queryClient.removeQueries(['funders', funderId]);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The funder was deleted');
+      navigate('../../');
     }
   });
 
@@ -58,11 +71,28 @@ export function FunderDetails() {
     updateFunder.mutate(newValues);
   };
 
+  const deleteClicked = () => {
+    setOpenDelete(true);
+  };
+
+  const handleDeleteOk = () => {
+    setOpenDelete(false);
+    if (!funder) {
+      throw new Error('funder is invalid');
+    }
+    deleteFunder.mutate(funder.id);
+  };
+
+  const handleDeleteCancel = () => {
+    setOpenDelete(false);
+  };
+
   const backClicked = () => {
     navigate(-1);
   };
 
   if (isError) {
+    console.log(error);
     return <ShowError error={error} />;
   }
 
@@ -108,12 +138,22 @@ export function FunderDetails() {
         />
       </Grid>
 
-      <Stack spacing={2} direction="row" mt={5}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between'
+        }}
+      >
+        {' '}
         <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
           <ArrowBack sx={{ mr: 1 }} />
           Back
         </Fab>
-      </Stack>
+        <Fab color="warning" size="small" aria-label="add" variant="extended" onClick={deleteClicked}>
+          <DeleteIcon sx={{ mr: 1 }} />
+          Delete
+        </Fab>
+      </Box>
       {open && propertyToUpdate && schemas[propertyToUpdate].propertyType && (
         <PropertyChanger
           title={'Funder: change settings'}
@@ -121,6 +161,9 @@ export function FunderDetails() {
           open={open}
           onClose={handleClose}
         />
+      )}
+      {openDelete && (
+        <FunderDeleteDialog funder={funder} open={openDelete} onOk={handleDeleteOk} onCancel={handleDeleteCancel} />
       )}
     </>
   );

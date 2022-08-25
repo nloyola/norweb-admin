@@ -17,8 +17,8 @@ const schema = z.object({
   name: z.string(),
   acronym: z.string(),
   web: z.string().url(),
-  type: z.nativeEnum(FunderTypes).nullable(),
-  countryCode: z.nativeEnum(CountryCodes).nullable()
+  type: z.nativeEnum(FunderTypes),
+  countryCode: z.nativeEnum(CountryCodes)
 });
 
 export type FormInputs = z.infer<typeof schema>;
@@ -39,8 +39,8 @@ export const FunderAddForm = () => {
       name: '',
       acronym: '',
       web: '',
-      type: null,
-      countryCode: null
+      type: undefined,
+      countryCode: undefined
     }
   });
 

@@ -23,7 +23,7 @@ export const API_ROUTES: Record<string, Route> = {
 };
 
 export function fetchApi(route: string, init?: RequestInit) {
-  return fetch(`${route}`, init);
+  return fetch(route, init);
 }
 
 export function paginationToQueryParams(page: number, searchTerm: string): string {
