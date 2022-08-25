@@ -2,9 +2,12 @@ import { ProjectsApi } from '@app/api/ProjectsApi';
 import { ProjectKeyword, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import { Button, Chip, CircularProgress, Grid } from '@mui/material';
 import { Box } from '@mui/system';
+import { useSnackbar } from 'notistack';
 import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import { ShowError } from '../ShowError';
+import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
 import { KeywordDialog, KeywordFormInput } from './KeywordDialog';
 import { ProjectKeywordDeleteDialog } from './ProjectKeywordDeleteDialog';
 
@@ -20,14 +23,43 @@ export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
   const params = useParams();
   const projectId = Number(params.projectId);
 
-  const [keywords, setKeywords] = useState<ProjectKeywordUpdate[]>(initialKeywords || []);
   const [selected, setSelected] = useState<ProjectKeywordUpdate | undefined>(undefined);
   const [openAdd, setOpenAdd] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
-  const [backendReqPending, setBackendReqPending] = useState(false);
-  const [backendError, setBackendError] = useState('');
+  const { enqueueSnackbar } = useSnackbar();
+  const queryClient = useQueryClient();
+
+  const {
+    error,
+    isError,
+    isLoading,
+    data: keywords
+  } = useQuery(['project', projectId], () => ProjectsApi.get(projectId).then((project) => project.keywords), {
+    keepPreviousData: true
+  });
+
+  const addKeyword = useMutation((keyword: KeywordFormInput) => ProjectsApi.addKeyword(projectId, keyword), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(['project', projectId]);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The keyword was addd');
+    }
+  });
+
+  const updateKeyword = useMutation((keyword: ProjectKeywordUpdate) => ProjectsApi.updateKeyword(projectId, keyword), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(['project', projectId]);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The keyword was updated');
+    }
+  });
+
+  const deleteKeyword = useMutation((keywordId: number) => ProjectsApi.deleteKeyword(projectId, keywordId), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(['project', projectId]);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The keyword was deleted');
+    }
+  });
 
   const handleAdd = () => {
     setOpenAdd(true);
@@ -38,20 +70,7 @@ export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
     if (!newKeyword) {
       return;
     }
-
-    const addKeyword = async () => {
-      try {
-        const modifiedProject = await ProjectsApi.addKeyword(projectId, newKeyword);
-        setKeywords(modifiedProject.keywords);
-      } catch (err) {
-        console.error(err);
-        setBackendError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setBackendReqPending(false);
-      }
-    };
-
-    addKeyword();
+    addKeyword.mutate(newKeyword);
   };
 
   const handleUpdateClosed = (updatedKeyword?: KeywordFormInput) => {
@@ -59,27 +78,10 @@ export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
     if (!updatedKeyword) {
       return;
     }
-
-    const updateKeyword = async () => {
-      if (!selected) {
-        throw new Error('selected is invalid');
-      }
-
-      try {
-        const modifiedProject = await ProjectsApi.updateKeyword(projectId, {
-          ...selected,
-          ...updatedKeyword
-        });
-        setKeywords(modifiedProject.keywords);
-      } catch (err) {
-        console.error(err);
-        setBackendError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setBackendReqPending(false);
-      }
-    };
-
-    updateKeyword();
+    if (!selected) {
+      throw new Error('selected is invalid');
+    }
+    updateKeyword.mutate({ ...selected, ...updatedKeyword });
   };
 
   const handleDeleteOk = () => {
@@ -88,60 +90,65 @@ export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
       return;
     }
 
-    const deleteKeyword = async () => {
-      try {
-        const modifiedProject = await ProjectsApi.deleteKeyword(projectId, selected.id);
-        setKeywords(modifiedProject.keywords);
-      } catch (err) {
-        console.error(err);
-        setBackendError(err instanceof Error ? err.message : JSON.stringify(err));
-      } finally {
-        setBackendReqPending(false);
-      }
-    };
-
-    deleteKeyword();
+    deleteKeyword.mutate(selected.id);
   };
 
   const handleDeleteCancel = () => {
     setOpenDelete(false);
   };
 
-  if (backendReqPending) {
-    return <CircularProgress />;
+  const isErrorAggregated = isError || addKeyword.isError || updateKeyword.isError || deleteKeyword.isError;
+  let errorAggregated: unknown = null;
+
+  if (isError) {
+    errorAggregated = error;
   }
 
-  if (backendError !== '') {
-    return <ShowError error={backendError} />;
+  if (addKeyword.isError) {
+    errorAggregated = addKeyword.error;
+  }
+
+  if (updateKeyword.isError) {
+    errorAggregated = updateKeyword.error;
+  }
+
+  if (deleteKeyword.isError) {
+    errorAggregated = deleteKeyword.error;
+  }
+
+  if (isErrorAggregated) {
+    enqueueEntitySavedSnackbar(enqueueSnackbar, `keyword backend error: ${errorAggregated}`);
   }
 
   return (
-    <Grid container direction="row" justifyContent="space-between" alignItems="flex-start">
-      <Grid item xs>
-        <Box>
-          {keywords.map((kw, index) => {
-            const handleClicked = () => {
-              setSelected(kw);
-              setOpenUpdate(true);
-            };
+    <>
+      <Grid container direction="row" justifyContent="space-between" alignItems="flex-start">
+        <Grid item xs>
+          <Box>
+            {(keywords || []).map((kw, index) => {
+              const handleClicked = () => {
+                setSelected(kw);
+                setOpenUpdate(true);
+              };
 
-            const handleDelete = () => {
-              setSelected(kw);
-              setOpenDelete(true);
-            };
+              const handleDelete = () => {
+                setSelected(kw);
+                setOpenDelete(true);
+              };
 
-            return (
-              <Chip
-                key={`${kw.name}-${index}`}
-                label={`${kw.name} | ${kw.weight}`}
-                color="primary"
-                sx={{ margin: '0.2rem' }}
-                onClick={handleClicked}
-                onDelete={handleDelete}
-              />
-            );
-          })}
-        </Box>
+              return (
+                <Chip
+                  key={`${kw.name}-${index}`}
+                  label={`${kw.name} | ${kw.weight}`}
+                  color="primary"
+                  sx={{ margin: '0.2rem' }}
+                  onClick={handleClicked}
+                  onDelete={handleDelete}
+                />
+              );
+            })}
+          </Box>
+        </Grid>
       </Grid>
       <Grid item>
         <Button size="small" variant="outlined" onClick={handleAdd} disabled={disabled}>
@@ -158,6 +165,6 @@ export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
           onCancel={handleDeleteCancel}
         />
       )}
-    </Grid>
+    </>
   );
 }
