@@ -1,17 +1,21 @@
 import { ProjectEventsApi } from '@app/api/ProjectEventsApi';
 import { useEvent } from '@app/hooks/useEvent';
-import { Event, eventTypeToLabel } from '@app/models/events';
+import { Event, eventTypeToLabel, EventUpdate } from '@app/models/events';
 import { nlToFragments } from '@app/utils/nltoFragments';
 import { datesRangeToString } from '@app/utils/utils';
 import { ArrowBack } from '@mui/icons-material';
-import { CircularProgress, Fab, Grid, Stack } from '@mui/material';
+import { Box, CircularProgress, Fab, Grid, Stack } from '@mui/material';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { EntityProperty } from '../EntityProperty';
 import { DateRange, PropertyChanger } from '../PropertyChanger';
 import { ShowError } from '../ShowError';
+import { EventDeleteDialog } from './EventDeleteDialog';
 import { eventPropertiesSchema } from './eventPropertiesSchemas';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
+import { useSnackbar } from 'notistack';
 
 export function EventDetails() {
   const navigate = useNavigate();
@@ -21,14 +25,23 @@ export function EventDetails() {
 
   const [propertyToUpdate, setPropertyToUpdate] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
 
   const { error, isError, isLoading, data: event } = useEvent(projectId, eventId);
   const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
 
   const updateEvent = useMutation((event: Event) => ProjectEventsApi.update(projectId, event), {
     onSuccess: (newEvent: Event) => {
       queryClient.setQueryData(['projects', projectId, 'events', eventId], newEvent);
       queryClient.invalidateQueries(['projects', projectId]);
+    }
+  });
+
+  const deleteEvent = useMutation((eventId: number) => ProjectEventsApi.delete(projectId, eventId), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(['project', projectId, 'events']);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The event was deleted');
     }
   });
 
@@ -60,6 +73,23 @@ export function EventDetails() {
     updateEvent.mutate(newValues);
   };
 
+  const handleDeleteOk = () => {
+    setOpenDelete(false);
+    if (!event) {
+      throw new Error('event is invalid');
+    }
+    deleteEvent.mutate(event.id);
+    navigate(-1);
+  };
+
+  const handleDeleteCancel = () => {
+    setOpenDelete(false);
+  };
+
+  const deleteClicked = () => {
+    setOpenDelete(true);
+  };
+
   const backClicked = () => {
     navigate(-1);
   };
@@ -72,7 +102,11 @@ export function EventDetails() {
     return <ShowError error={updateEvent.error} />;
   }
 
-  if (isLoading || !event) {
+  if (deleteEvent.isError) {
+    return <ShowError error={deleteEvent.error} />;
+  }
+
+  if (isLoading || !event || updateEvent.isLoading || deleteEvent.isLoading) {
     return <CircularProgress />;
   }
 
@@ -110,12 +144,21 @@ export function EventDetails() {
           handleChange={onPropChange}
         />
       </Grid>
-      <Stack spacing={2} direction="row" mt={2}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between'
+        }}
+      >
         <Fab color="primary" size="small" aria-label="add" variant="extended" onClick={backClicked}>
           <ArrowBack sx={{ mr: 1 }} />
           Back
         </Fab>
-      </Stack>
+        <Fab color="warning" size="small" aria-label="add" variant="extended" onClick={deleteClicked}>
+          <DeleteIcon sx={{ mr: 1 }} />
+          Delete
+        </Fab>
+      </Box>
       {open && propertyToUpdate && schemas[propertyToUpdate].propertyType && (
         <PropertyChanger
           title={'Event: change settings'}
@@ -123,6 +166,9 @@ export function EventDetails() {
           open={open}
           onClose={handleClose}
         />
+      )}
+      {openDelete && (
+        <EventDeleteDialog event={event} open={openDelete} onOk={handleDeleteOk} onCancel={handleDeleteCancel} />
       )}
     </>
   );

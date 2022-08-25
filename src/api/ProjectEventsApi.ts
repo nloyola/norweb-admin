@@ -86,4 +86,27 @@ export class ProjectEventsApi {
 
     return eventSchema.parse(json);
   }
+
+  static async delete(projectId: number, eventId: number) {
+    const route = eventRoute(projectId, eventId);
+    const response = await fetchApi(route, {
+      headers: {
+        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
+        'Content-Type': 'application/json'
+      },
+      method: 'DELETE'
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Not found');
+      } else {
+        throw new Error('HTTP error: status: ' + response.status);
+      }
+    }
+
+    return json;
+  }
 }
