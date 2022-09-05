@@ -17,6 +17,8 @@ import { ShowError } from '../ShowError';
 import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
 import { Keywords } from './Keywords';
 import { projectPropertiesSchemas } from './projectPropertiesSchema';
+import { KeyResearchArea } from './KeyResearchArea';
+import { ProjectResearchAreas } from './ProjectResearchAreas';
 
 /**
  * A component that shows a project's settings and allows the user to modify them.
@@ -97,6 +99,8 @@ export function ProjectDetails() {
           value={nlToFragments(project.description)}
           handleChange={onPropChange}
         />
+        <EntityProperty propName="keyResearchArea" label="Key Research Area" value={<KeyResearchArea />} />
+        <EntityProperty propName="researchAreas" label="Other Research Areas" value={<ProjectResearchAreas />} />
         <EntityProperty
           propName="duration"
           label="Duration"

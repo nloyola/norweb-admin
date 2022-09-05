@@ -8,22 +8,34 @@ export const API_ROUTES: Record<string, Route> = {
   projects: {
     index: '/api/projects/',
     project: '/api/projects/:projectId/',
+    events: '/api/projects/:projectId/events/',
+    event: '/api/projects/:projectId/events/:eventId/',
     keywords: '/api/projects/:projectId/keywords/',
     keyword: '/api/projects/:projectId/keywords/:keywordId/',
     funders: '/api/projects/:projectId/funders/',
     funder: '/api/projects/:projectId/funders/:funderId/',
-    events: '/api/projects/:projectId/events/',
-    event: '/api/projects/:projectId/events/:eventId/'
+    researchAreas: '/api/projects/:projectId/research-areas/',
+    researchArea: '/api/projects/:projectId/research-areas/:researchAreaId/'
   },
   funders: {
     index: '/api/funders/',
     names: '/api/funders/names/',
     funder: '/api/funders/:funderId/'
+  },
+  researchAreas: {
+    index: '/api/research-areas/',
+    researchArea: '/api/research-areas/:researchAreaId/'
   }
 };
 
 export function fetchApi(route: string, init?: RequestInit) {
-  return fetch(route, init);
+  return fetch(route, {
+    ...init,
+    headers: {
+      //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
+      'Content-Type': 'application/json'
+    }
+  });
 }
 
 export function paginationToQueryParams(page: number, searchTerm: string): string {

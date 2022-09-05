@@ -1,5 +1,12 @@
-import { DomainEntity } from '../DomainEntity';
+import { z } from 'zod';
+import { domainEntitySchema } from '../DomainEntity';
 
-export interface IResearchArea extends DomainEntity {
-    readonly name: string;
-}
+export const researchAreaSchema = domainEntitySchema.extend({
+  name: z.string()
+});
+
+export type ResearchArea = z.infer<typeof researchAreaSchema>;
+
+export type ResearchAreaAdd = Pick<ResearchArea, 'name'>;
+
+export type ResearchAreaUpdate = ResearchAreaAdd & Pick<ResearchArea, 'id'>;

@@ -2,6 +2,11 @@ import { paginatedResponseSchema } from '@app/models';
 import { Project, ProjectAdd, projectSchema } from '@app/models/projects';
 import { ProjectFunderAdd, projectFunderSchema, ProjectFunderUpdate } from '@app/models/projects/ProjectFunder';
 import { ProjectKeywordAdd, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
+import {
+  ProjectResearchAreaAdd,
+  projectResearchAreaSchema,
+  ProjectResearchAreaUpdate
+} from '@app/models/projects/ProjectResearchArea';
 import { dateToString } from '@app/utils/utils';
 import { z } from 'zod';
 import { API_ROUTES, fetchApi, paginationToQueryParams, routeReplace } from './api';
@@ -17,6 +22,13 @@ function funderRoute(projectId: number, funderId: number): string {
   return routeReplace(API_ROUTES.projects.funder, {
     ':projectId': `${projectId}`,
     ':funderId': `${funderId}`
+  });
+}
+
+function researchAreaRoute(projectId: number, researchAreaId: number): string {
+  return routeReplace(API_ROUTES.projects.researchArea, {
+    ':projectId': `${projectId}`,
+    ':researchAreaId': `${researchAreaId}`
   });
 }
 
@@ -65,10 +77,6 @@ export class ProjectsApi {
       }
     };
     const response = await fetchApi(API_ROUTES.projects.index, {
-      headers: {
-        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
-        'Content-Type': 'application/json'
-      },
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -99,10 +107,6 @@ export class ProjectsApi {
 
     const route = API_ROUTES.projects.project.replace(':projectId', `${project.id}`);
     const response = await fetchApi(route, {
-      headers: {
-        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
-        'Content-Type': 'application/json'
-      },
       method: 'PUT',
       body: JSON.stringify(data)
     });
@@ -120,10 +124,6 @@ export class ProjectsApi {
     const data = { data: keyword };
     const route = API_ROUTES.projects.keywords.replace(':projectId', `${projectId}`);
     const response = await fetchApi(route, {
-      headers: {
-        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
-        'Content-Type': 'application/json'
-      },
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -140,10 +140,6 @@ export class ProjectsApi {
   static async updateKeyword(projectId: number, keyword: ProjectKeywordUpdate) {
     const data = { data: { ...keyword, projectId } };
     const response = await fetchApi(keywordRoute(projectId, keyword.id), {
-      headers: {
-        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
-        'Content-Type': 'application/json'
-      },
       method: 'PUT',
       body: JSON.stringify(data)
     });
@@ -163,10 +159,6 @@ export class ProjectsApi {
 
   static async deleteKeyword(projectId: number, keywordId: number): Promise<Project> {
     const response = await fetchApi(keywordRoute(projectId, keywordId), {
-      headers: {
-        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
-        'Content-Type': 'application/json'
-      },
       method: 'DELETE'
     });
 
@@ -211,10 +203,6 @@ export class ProjectsApi {
     };
     const route = API_ROUTES.projects.funders.replace(':projectId', `${projectId}`);
     const response = await fetchApi(route, {
-      headers: {
-        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
-        'Content-Type': 'application/json'
-      },
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -230,10 +218,6 @@ export class ProjectsApi {
   static async updateFunder(projectId: number, funder: ProjectFunderUpdate) {
     const data = { data: { ...funder, funder: undefined } };
     const response = await fetchApi(funderRoute(projectId, funder.id), {
-      headers: {
-        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
-        'Content-Type': 'application/json'
-      },
       method: 'PUT',
       body: JSON.stringify(data)
     });
@@ -250,10 +234,52 @@ export class ProjectsApi {
 
   static async deleteFunder(projectId: number, funderId: number) {
     const response = await fetchApi(funderRoute(projectId, funderId), {
-      headers: {
-        //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
-        'Content-Type': 'application/json'
-      },
+      method: 'DELETE'
+    });
+
+    const json = await response.json();
+    if (!response.ok) {
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+
+    return z.number().parse(json);
+  }
+
+  static async addResearchArea(projectId: number, researchArea: ProjectResearchAreaAdd) {
+    const data = { data: researchArea };
+    const route = API_ROUTES.projects.researchAreas.replace(':projectId', `${projectId}`);
+    const response = await fetchApi(route, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+
+    return projectResearchAreaSchema.parse(result);
+  }
+
+  static async updateResearchArea(projectId: number, researchArea: ProjectResearchAreaUpdate) {
+    const data = { data: { ...researchArea, researchArea: undefined } };
+    const response = await fetchApi(researchAreaRoute(projectId, researchArea.id), {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      console.error(json);
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+
+    return projectResearchAreaSchema.parse(json);
+  }
+
+  static async deleteResearchArea(projectId: number, researchAreaId: number) {
+    const response = await fetchApi(researchAreaRoute(projectId, researchAreaId), {
       method: 'DELETE'
     });
 

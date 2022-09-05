@@ -1,25 +1,23 @@
 import { ProjectsApi } from '@app/api/ProjectsApi';
-import { ProjectKeyword, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
-import { Button, Chip, CircularProgress, Grid } from '@mui/material';
+import { ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
+import { Button, Chip, Grid } from '@mui/material';
 import { Box } from '@mui/system';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
-import { ShowError } from '../ShowError';
 import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
 import { KeywordDialog, KeywordFormInput } from './KeywordDialog';
 import { ProjectKeywordDeleteDialog } from './ProjectKeywordDeleteDialog';
 
 type KeywordsProps = {
-  initialKeywords: ProjectKeyword[];
   disabled?: boolean;
 };
 
 /**
  * A component that allows the user to add, update and delete keywords from a Project.
  */
-export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
+export function Keywords({ disabled }: KeywordsProps) {
   const params = useParams();
   const projectId = Number(params.projectId);
 
@@ -36,9 +34,13 @@ export function Keywords({ initialKeywords, disabled }: KeywordsProps) {
     isError,
     isLoading,
     data: keywords
-  } = useQuery(['project', projectId], () => ProjectsApi.get(projectId).then((project) => project.keywords), {
-    keepPreviousData: true
-  });
+  } = useQuery(
+    ['project', projectId, 'keywords'],
+    () => ProjectsApi.get(projectId).then((project) => project.keywords),
+    {
+      keepPreviousData: true
+    }
+  );
 
   const addKeyword = useMutation((keyword: KeywordFormInput) => ProjectsApi.addKeyword(projectId, keyword), {
     onSuccess: () => {

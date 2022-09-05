@@ -4,6 +4,7 @@ import { CountryCodes } from '../CountryCodes';
 import { eventBriefSchema } from '../events';
 import { Status } from '../Status';
 import { projectKeywordSchema } from './ProjectKeyword';
+import { projectResearchAreaSchema } from './ProjectResearchArea';
 
 export const projectSchema = concurrencySafeEntitySchema.extend({
   name: z.string(),
@@ -18,6 +19,7 @@ export const projectSchema = concurrencySafeEntitySchema.extend({
   countryCode: z.nativeEnum(CountryCodes).nullable(),
   cntr: z.nullable(z.string()),
   status: z.nativeEnum(Status),
+  researchAreas: z.array(projectResearchAreaSchema),
   events: z.array(eventBriefSchema),
   keywords: z.array(projectKeywordSchema)
 });
