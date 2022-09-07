@@ -28,6 +28,11 @@ export const API_ROUTES: Record<string, Route> = {
   }
 };
 
+export type ApiError = {
+  status: number;
+  error: any;
+};
+
 export function fetchApi(route: string, init?: RequestInit) {
   return fetch(route, {
     ...init,

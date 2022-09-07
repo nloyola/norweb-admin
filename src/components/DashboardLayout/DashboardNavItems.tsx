@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import { useState } from 'react';
+import ScienceIcon from '@mui/icons-material/Science';
 
 export function DashboardLinkItems() {
   const [openProjects, setOpenProjects] = useState(true);
@@ -51,6 +52,14 @@ export function DashboardLinkItems() {
               </ListItemIcon>
             </Tooltip>
             <ListItemText primary="Funders" />
+          </ListItemButton>
+          <ListItemButton component={Link} to="/research-areas" sx={{ pl: 4 }}>
+            <Tooltip title="Research areas" arrow placement="right">
+              <ListItemIcon>
+                <ScienceIcon />
+              </ListItemIcon>
+            </Tooltip>
+            <ListItemText primary="Research areas" />
           </ListItemButton>
         </List>
       </Collapse>

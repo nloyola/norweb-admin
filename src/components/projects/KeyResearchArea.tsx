@@ -31,7 +31,6 @@ export const KeyResearchArea: React.FC = () => {
   const {
     error,
     isError,
-    isLoading,
     data: keyArea
   } = useQuery(
     ['project', projectId, 'keyResearchArea'],

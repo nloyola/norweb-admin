@@ -1,36 +1,45 @@
-import { FunderBreadcrumbs } from '@app/components/Breadcrumbs/FunderBreadcrumbs';
+import { ResearchAreasApi } from '@app/api/ResearchAreasApi';
+import { ResearchAreaBreadcrumbs } from '@app/components/Breadcrumbs/ResearchAreaBreadcrumbs';
 import { ShowError } from '@app/components/ShowError';
-import { useFunder } from '@app/hooks/useFunder';
 import { CircularProgress, Divider, Paper, Stack, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import { useQuery } from 'react-query';
 import { Outlet, useParams } from 'react-router-dom';
 
-export function FunderPage() {
+export function ResearchAreaPage() {
   const params = useParams();
-  const { isError, error, isLoading, data: funder } = useFunder(Number(params.funderId));
+  const areaId = Number(params.areaId);
+
+  const {
+    isError,
+    error,
+    isLoading,
+    data: area
+  } = useQuery(['research-areas', areaId], async () => ResearchAreasApi.get(areaId));
 
   if (isError) {
     return <ShowError error={error} />;
   }
 
-  if (isLoading || !funder) {
+  if (isLoading || !area) {
     return <CircularProgress />;
   }
 
   return (
     <Stack spacing={1}>
-      <FunderBreadcrumbs funderId={funder.id} />
+      <ResearchAreaBreadcrumbs areaId={area.id} />
       <Stack spacing={1} pt={5} direction="row">
         <Stack spacing={0}>
           <Typography component="h1" variant="h3">
-            {funder.name}
+            {area.name}
           </Typography>
         </Stack>
       </Stack>
       <Divider />
       <Paper
         sx={{
-          p: 3
+          py: 8,
+          px: 4
         }}
       >
         <Box mt={5} mx={3}>

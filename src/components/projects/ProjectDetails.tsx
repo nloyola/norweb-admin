@@ -119,7 +119,7 @@ export function ProjectDetails() {
           value={project.vision ? nlToFragments(project.vision) : null}
           handleChange={onPropChange}
         />
-        <EntityProperty propName="keywords" label="Keywords" value={<Keywords initialKeywords={project.keywords} />} />
+        <EntityProperty propName="keywords" label="Keywords" value={<Keywords />} />
         <EntityProperty
           propName="countryCode"
           label="Country"

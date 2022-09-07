@@ -48,6 +48,7 @@ export const ProjectsTable: React.FC<{ projects: Project[] }> = ({ projects }) =
                 </TableCell>
                 <TableCell>
                   <Chip
+                    size="small"
                     color={project.status === Status.ACTIVE ? 'primary' : 'default'}
                     label={statusToLabel(project.status)}
                   />

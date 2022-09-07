@@ -1,6 +1,6 @@
 import { ResearchArea, ResearchAreaAdd, ResearchAreaUpdate, researchAreaSchema } from '@app/models/projects';
 import { z } from 'zod';
-import { API_ROUTES, fetchApi } from './api';
+import { ApiError, API_ROUTES, fetchApi } from './api';
 
 export class ResearchAreasApi {
   /**
@@ -70,16 +70,11 @@ export class ResearchAreasApi {
       method: 'DELETE'
     });
 
-    const json = await response.json();
-
     if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Not found');
-      } else {
-        throw new Error('HTTP error: status: ' + response.status);
-      }
+      const json = await response.json();
+      throw { status: response.status, error: json } as ApiError;
     }
 
-    return json;
+    return await response.json();
   }
 }
