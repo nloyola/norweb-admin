@@ -1,16 +1,13 @@
-import { ResearchAreasApi } from '@app/api/ResearchAreasApi';
+import { ResearchArea } from '@app/models/projects';
 import { capitalizeWord } from '@app/utils/utils';
-import { useQuery } from 'react-query';
+import { useQueryClient } from 'react-query';
 import { matchPath, useLocation } from 'react-router-dom';
 import { Breadcrumbs } from './Breadcrumbs';
 
 export const ResearchAreaBreadcrumbs: React.FC<{ areaId: number }> = ({ areaId }) => {
   const { pathname } = useLocation();
-  const {
-    isError,
-    isLoading,
-    data: area
-  } = useQuery(['research-areas', areaId], async () => ResearchAreasApi.get(areaId));
+  const queryClient = useQueryClient();
+  const area = queryClient.getQueryData(['research-areas', areaId]) as ResearchArea;
 
   const pathnames = pathname.split('/').filter(Boolean);
   const breadcrumbs = pathnames.map((name, index) => {
@@ -27,7 +24,7 @@ export const ResearchAreaBreadcrumbs: React.FC<{ areaId: number }> = ({ areaId }
     return { label, route, isLast };
   });
 
-  if (isError || isLoading || !area) {
+  if (!area) {
     return null;
   }
 

@@ -1,11 +1,13 @@
-import { useFunder } from '@app/hooks/useFunder';
+import { Funder } from '@app/models/funders';
 import { capitalizeWord } from '@app/utils/utils';
+import { useQueryClient } from 'react-query';
 import { matchPath, useLocation } from 'react-router-dom';
 import { Breadcrumbs } from './Breadcrumbs';
 
 export const FunderBreadcrumbs: React.FC<{ funderId: number }> = ({ funderId }) => {
   const { pathname } = useLocation();
-  const { isError, isLoading, data: funder } = useFunder(funderId);
+  const queryClient = useQueryClient();
+  const funder = queryClient.getQueryData(['funders', funderId]) as Funder;
 
   const pathnames = pathname.split('/').filter(Boolean);
   const breadcrumbs = pathnames.map((name, index) => {
@@ -21,7 +23,7 @@ export const FunderBreadcrumbs: React.FC<{ funderId: number }> = ({ funderId }) 
     return { label, route, isLast };
   });
 
-  if (isError || isLoading || !funder) {
+  if (!funder) {
     return null;
   }
 

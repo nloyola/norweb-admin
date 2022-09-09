@@ -1,5 +1,8 @@
 import { useProject } from '@app/hooks/useProject';
+import { Project } from '@app/models/projects';
+import { ProjectFunder } from '@app/models/projects/ProjectFunder';
 import { capitalizeWord } from '@app/utils/utils';
+import { useQueryClient } from 'react-query';
 import { matchPath, useLocation } from 'react-router-dom';
 import { Breadcrumbs } from './Breadcrumbs';
 
@@ -9,7 +12,8 @@ import { Breadcrumbs } from './Breadcrumbs';
 
 export const ProjectBreadcrumbs: React.FC<{ projectId: number }> = ({ projectId }) => {
   const { pathname } = useLocation();
-  const projectQuery = useProject(projectId);
+  const queryClient = useQueryClient();
+  const project = queryClient.getQueryData(['projects', projectId]) as Project;
 
   const pathnames = pathname.split('/').filter(Boolean);
   const breadcrumbs = pathnames.map((name, index) => {
@@ -18,26 +22,37 @@ export const ProjectBreadcrumbs: React.FC<{ projectId: number }> = ({ projectId 
     let label = capitalizeWord(name);
 
     const projectMatch = matchPath({ path: '/projects/:id', end: true }, route);
-    if (projectQuery.data) {
+    if (project) {
       if (projectMatch && route === projectMatch.pathname) {
-        label = projectQuery.data.name;
+        label = project.name;
       }
     }
 
     const eventMatch = matchPath({ path: '/projects/:projectId/events/:eventId', end: true }, route);
-    if (projectQuery.data && eventMatch && route === eventMatch.pathname) {
+    if (project && eventMatch && route === eventMatch.pathname) {
       const eventId = Number(eventMatch.params.eventId);
-      const event = projectQuery.data.events.find((ev) => ev.id === eventId);
+      const event = project.events.find((ev) => ev.id === eventId);
 
       if (event) {
         label = event.title;
       }
     }
 
+    const funderMatch = matchPath({ path: '/projects/:projectId/funders/:funderId', end: true }, route);
+    if (project && funderMatch && route === funderMatch.pathname) {
+      const funderId = Number(funderMatch.params.funderId);
+      const projectFunder = queryClient.getQueryData(['projects', projectId, 'funders', funderId]) as ProjectFunder;
+      console.log(funderId, projectFunder);
+
+      if (projectFunder) {
+        label = projectFunder.title;
+      }
+    }
+
     return { label, route, isLast };
   });
 
-  if (projectQuery.isError || projectQuery.isLoading) {
+  if (!project) {
     return null;
   }
 

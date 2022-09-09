@@ -1,12 +1,13 @@
-import { usePerson } from '@app/hooks/usePerson';
-import { personName } from '@app/models/people';
+import { Person, personName } from '@app/models/people';
 import { capitalizeWord } from '@app/utils/utils';
+import { useQueryClient } from 'react-query';
 import { matchPath, useLocation } from 'react-router-dom';
 import { Breadcrumbs } from './Breadcrumbs';
 
 export const PersonBreadcrumbs: React.FC<{ personId: number }> = ({ personId }) => {
   const { pathname } = useLocation();
-  const { isError, isLoading, data: person } = usePerson(personId);
+  const queryClient = useQueryClient();
+  const person = queryClient.getQueryData(['people', personId]) as Person;
 
   const pathnames = pathname.split('/').filter(Boolean);
   const breadcrumbs = pathnames.map((name, index) => {
@@ -22,7 +23,7 @@ export const PersonBreadcrumbs: React.FC<{ personId: number }> = ({ personId }) 
     return { label, route, isLast };
   });
 
-  if (isError || isLoading || !person) {
+  if (!person) {
     return null;
   }
 
