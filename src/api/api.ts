@@ -33,14 +33,23 @@ export type ApiError = {
   error: any;
 };
 
-export function fetchApi(route: string, init?: RequestInit) {
-  return fetch(route, {
+export async function fetchApi(route: string, init?: RequestInit) {
+  const response = await fetch(route, {
     ...init,
     headers: {
       //Authorization: 'Basic ' + base64.encode('APIKEY:X'),
       'Content-Type': 'application/json'
     }
   });
+
+  if (!response.ok) {
+    const json = await response.json();
+    const err = { status: response.status, error: json } as ApiError;
+    console.error(err);
+    throw err;
+  }
+
+  return response;
 }
 
 export function paginationToQueryParams(page: number, searchTerm: string): string {

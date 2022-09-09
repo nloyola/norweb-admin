@@ -9,7 +9,7 @@ import {
 } from '@app/models/projects/ProjectResearchArea';
 import { dateToString } from '@app/utils/utils';
 import { z } from 'zod';
-import { API_ROUTES, fetchApi, paginationToQueryParams, routeReplace } from './api';
+import { ApiError, API_ROUTES, fetchApi, paginationToQueryParams, routeReplace } from './api';
 
 function keywordRoute(projectId: number, keywordId: number): string {
   return routeReplace(API_ROUTES.projects.keyword, {
@@ -252,12 +252,8 @@ export class ProjectsApi {
       method: 'POST',
       body: JSON.stringify(data)
     });
+
     const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error('HTTP error: status: ' + response.status);
-    }
-
     return projectResearchAreaSchema.parse(result);
   }
 

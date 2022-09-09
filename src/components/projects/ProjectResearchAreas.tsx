@@ -1,9 +1,5 @@
 import { ProjectsApi } from '@app/api/ProjectsApi';
-import {
-  ProjectResearchArea,
-  ProjectResearchAreaAdd,
-  ProjectResearchAreaUpdate
-} from '@app/models/projects/ProjectResearchArea';
+import { ProjectResearchAreaAdd, ProjectResearchAreaUpdate } from '@app/models/projects/ProjectResearchArea';
 import { Button, Chip, Grid } from '@mui/material';
 import { Box } from '@mui/system';
 import { useSnackbar } from 'notistack';
@@ -36,10 +32,9 @@ export function ProjectResearchAreas({ disabled }: ResearchAreasProps) {
   const {
     error,
     isError,
-    isLoading,
     data: areas
   } = useQuery(
-    ['project', projectId, 'researchAreas'],
+    ['project', projectId, 'research-areas'],
     () => ProjectsApi.get(projectId).then((project) => project.researchAreas.filter((ra) => !ra.isKeyArea)),
     {
       keepPreviousData: true
@@ -48,7 +43,7 @@ export function ProjectResearchAreas({ disabled }: ResearchAreasProps) {
 
   const addResearchArea = useMutation((area: ProjectResearchAreaAdd) => ProjectsApi.addResearchArea(projectId, area), {
     onSuccess: () => {
-      queryClient.invalidateQueries(['project', projectId, 'researchAreas']);
+      queryClient.invalidateQueries(['project', projectId, 'research-areas']);
       enqueueEntitySavedSnackbar(enqueueSnackbar, 'The research area was added');
     }
   });
@@ -57,7 +52,7 @@ export function ProjectResearchAreas({ disabled }: ResearchAreasProps) {
     (researchArea: ProjectResearchAreaUpdate) => ProjectsApi.updateResearchArea(projectId, researchArea),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['project', projectId, 'researchAreas']);
+        queryClient.invalidateQueries(['project', projectId, 'research-areas']);
         enqueueEntitySavedSnackbar(enqueueSnackbar, 'The research area was updated');
       }
     }

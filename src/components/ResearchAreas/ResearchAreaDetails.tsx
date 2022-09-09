@@ -39,17 +39,16 @@ export function ResearchAreaDetails() {
   const { enqueueSnackbar } = useSnackbar();
 
   const updateResearchArea = useMutation((researchArea: ResearchArea) => ResearchAreasApi.update(researchArea), {
-    onSuccess: (newResearchArea: ResearchArea) => {
-      queryClient.setQueryData(['researchAreas', areaId], newResearchArea);
-      queryClient.invalidateQueries(['researchAreas']);
-      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The researchArea was updated');
+    onSuccess: (newArea: ResearchArea) => {
+      queryClient.setQueryData(['research-areas', areaId], newArea);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The research area was updated');
     }
   });
 
   const deleteResearchArea = useMutation((researchAreaId: number) => ResearchAreasApi.delete(researchAreaId), {
     onSuccess: () => {
-      queryClient.removeQueries(['researchAreas', areaId]);
-      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The researchArea was deleted');
+      queryClient.removeQueries(['research-areas', areaId]);
+      enqueueEntitySavedSnackbar(enqueueSnackbar, 'The research area was deleted');
       navigate('../../');
     },
     onError: async (err: ApiError) => {

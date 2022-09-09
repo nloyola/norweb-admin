@@ -1,5 +1,6 @@
 import { ProjectsApi } from '@app/api/ProjectsApi';
 import { ResearchAreasApi } from '@app/api/ResearchAreasApi';
+import { Status } from '@app/models';
 import { ResearchArea } from '@app/models/projects';
 import {
   ProjectResearchArea,
@@ -34,7 +35,7 @@ type Option = {
 };
 
 /**
- * A component that allows the user to update a project researchArea.
+ * A component that allows the user to update add a research area to a project.
  *
  * Opens a dialog box that allows the user to modify the researchArea settings.
  */
@@ -58,7 +59,7 @@ export const ProjectResearchAreaDialog: React.FC<{
     defaultValues: { areaId: area?.researchAreaId }
   });
 
-  const researchAreasQuery = useQuery(['researchAreas'], async () => ResearchAreasApi.list(), {
+  const researchAreasQuery = useQuery(['researchAreas', 'active'], async () => ResearchAreasApi.list(Status.ACTIVE), {
     keepPreviousData: true
   });
 
@@ -84,8 +85,6 @@ export const ProjectResearchAreaDialog: React.FC<{
 
   let selectedArea: ResearchArea | undefined;
   let selectedOption: Option | undefined;
-
-  console.log(researchAreasQuery.data, projectResearchAreasQuery.data);
 
   let validResearchAreas: ResearchArea[] = [];
   if (researchAreasQuery.data && projectResearchAreasQuery.data) {

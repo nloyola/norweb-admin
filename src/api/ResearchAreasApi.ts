@@ -1,3 +1,4 @@
+import { Status } from '@app/models';
 import { ResearchArea, ResearchAreaAdd, ResearchAreaUpdate, researchAreaSchema } from '@app/models/projects';
 import { z } from 'zod';
 import { ApiError, API_ROUTES, fetchApi } from './api';
@@ -22,8 +23,13 @@ export class ResearchAreasApi {
     return researchAreaSchema.parse(result);
   }
 
-  static async list() {
+  static async list(statusFilter?: Status) {
     let route = API_ROUTES.researchAreas.index;
+
+    if (statusFilter) {
+      route = `${route}?status=${statusFilter}`;
+    }
+
     const response = await fetchApi(route);
     const json = await response.json();
     if (!response.ok) {
@@ -69,11 +75,6 @@ export class ResearchAreasApi {
     const response = await fetchApi(route, {
       method: 'DELETE'
     });
-
-    if (!response.ok) {
-      const json = await response.json();
-      throw { status: response.status, error: json } as ApiError;
-    }
 
     return await response.json();
   }

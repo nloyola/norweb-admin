@@ -12,7 +12,7 @@ export const ProjectFundersTable: React.FC<{ projectFunders: ProjectFunder[] }> 
           <TableRow>
             <TableCell>Name</TableCell>
             <TableCell>Funder</TableCell>
-            <TableCell>Grant type</TableCell>
+            <TableCell>Grant ID</TableCell>
             <TableCell>Amount</TableCell>
             <TableCell align="right"></TableCell>
           </TableRow>
@@ -27,7 +27,7 @@ export const ProjectFundersTable: React.FC<{ projectFunders: ProjectFunder[] }> 
                     {projectFunder.funder.name} ({projectFunder.funder.acronym})
                   </TableCell>
                 ) : null}
-                <TableCell>{projectFunder.grantType}</TableCell>
+                <TableCell>{projectFunder.grantId}</TableCell>
                 <TableCell>{projectFunder.amount}</TableCell>
                 <TableCell align="right">
                   <Link to={`/projects/${params.projectId}/funders/${projectFunder.id}`}>
