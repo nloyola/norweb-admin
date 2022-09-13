@@ -1,4 +1,4 @@
-import { paginatedResponseSchema } from '@app/models';
+import { paginatedResponseSchema, Status } from '@app/models';
 import { Funder, FunderAdd, FunderUpdate, funderSchema, funderNameSchema } from '@app/models/funders';
 import { z } from 'zod';
 import { API_ROUTES, fetchApi, paginationToQueryParams } from './api';
@@ -34,8 +34,12 @@ export class FundersApi {
     return paginatedResponseSchema(funderSchema).parse(pagination);
   }
 
-  static async listNames() {
+  static async listNames(statusFilter?: Status) {
     let route = API_ROUTES.funders.names;
+    if (statusFilter) {
+      route = `${route}?status=${statusFilter}`;
+    }
+
     const response = await fetchApi(route);
     const json = await response.json();
     if (!response.ok) {

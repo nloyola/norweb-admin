@@ -13,6 +13,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
 import { ShowError } from '../ShowError';
 import { enqueueEntitySavedSnackbar } from '../SnackbarCloseButton';
+import { Status } from '@app/models';
 
 const schema = z
   .object({
@@ -60,7 +61,7 @@ export function ProjectFunderAddForm() {
     isError,
     isLoading,
     data: funderNames
-  } = useQuery(['funders', 'names'], () => FundersApi.listNames(), {
+  } = useQuery(['funders', 'names'], () => FundersApi.listNames(Status.ACTIVE), {
     keepPreviousData: true
   });
 
