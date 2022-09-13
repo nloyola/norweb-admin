@@ -42,7 +42,6 @@ export const ProjectBreadcrumbs: React.FC<{ projectId: number }> = ({ projectId 
     if (project && funderMatch && route === funderMatch.pathname) {
       const funderId = Number(funderMatch.params.funderId);
       const projectFunder = queryClient.getQueryData(['projects', projectId, 'funders', funderId]) as ProjectFunder;
-      console.log(funderId, projectFunder);
 
       if (projectFunder) {
         label = projectFunder.title;
