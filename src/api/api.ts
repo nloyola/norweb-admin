@@ -15,7 +15,9 @@ export const API_ROUTES: Record<string, Route> = {
     funders: '/api/projects/:projectId/funders/',
     funder: '/api/projects/:projectId/funders/:funderId/',
     researchAreas: '/api/projects/:projectId/research-areas/',
-    researchArea: '/api/projects/:projectId/research-areas/:researchAreaId/'
+    researchArea: '/api/projects/:projectId/research-areas/:researchAreaId/',
+    milestones: '/api/projects/:projectId/milestones/',
+    milestone: '/api/projects/:projectId/milestones/:milestoneId/'
   },
   funders: {
     index: '/api/funders/',

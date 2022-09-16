@@ -3,13 +3,13 @@ import { Project, ProjectAdd, projectSchema } from '@app/models/projects';
 import { ProjectFunderAdd, projectFunderSchema, ProjectFunderUpdate } from '@app/models/projects/ProjectFunder';
 import { ProjectKeywordAdd, ProjectKeywordUpdate } from '@app/models/projects/ProjectKeyword';
 import {
-  ProjectResearchAreaAdd,
-  projectResearchAreaSchema,
-  ProjectResearchAreaUpdate
-} from '@app/models/projects/ProjectResearchArea';
+  ProjectMilestoneAdd,
+  projectMilestoneSchema,
+  ProjectMilestoneUpdate
+} from '@app/models/projects/ProjectMilestone';
 import { dateToString } from '@app/utils/utils';
 import { z } from 'zod';
-import { ApiError, API_ROUTES, fetchApi, paginationToQueryParams, routeReplace } from './api';
+import { API_ROUTES, fetchApi, paginationToQueryParams, routeReplace } from './api';
 
 function keywordRoute(projectId: number, keywordId: number): string {
   return routeReplace(API_ROUTES.projects.keyword, {
@@ -25,10 +25,10 @@ function funderRoute(projectId: number, funderId: number): string {
   });
 }
 
-function researchAreaRoute(projectId: number, researchAreaId: number): string {
-  return routeReplace(API_ROUTES.projects.researchArea, {
+function milestoneRoute(projectId: number, milestoneId: number): string {
+  return routeReplace(API_ROUTES.projects.milestone, {
     ':projectId': `${projectId}`,
-    ':researchAreaId': `${researchAreaId}`
+    ':milestoneId': `${milestoneId}`
   });
 }
 
@@ -245,21 +245,21 @@ export class ProjectsApi {
     return z.number().parse(json);
   }
 
-  static async addResearchArea(projectId: number, researchArea: ProjectResearchAreaAdd) {
-    const data = { data: researchArea };
-    const route = API_ROUTES.projects.researchAreas.replace(':projectId', `${projectId}`);
+  static async addMilestone(projectId: number, milestone: ProjectMilestoneAdd) {
+    const data = { data: milestone };
+    const route = API_ROUTES.projects.milestones.replace(':projectId', `${projectId}`);
     const response = await fetchApi(route, {
       method: 'POST',
       body: JSON.stringify(data)
     });
 
     const result = await response.json();
-    return projectResearchAreaSchema.parse(result);
+    return projectMilestoneSchema.parse(result);
   }
 
-  static async updateResearchArea(projectId: number, researchArea: ProjectResearchAreaUpdate) {
-    const data = { data: { ...researchArea, researchArea: undefined } };
-    const response = await fetchApi(researchAreaRoute(projectId, researchArea.id), {
+  static async updateMilestone(projectId: number, milestone: ProjectMilestoneUpdate) {
+    const data = { data: { ...milestone, milestone: undefined } };
+    const response = await fetchApi(milestoneRoute(projectId, milestone.id), {
       method: 'PUT',
       body: JSON.stringify(data)
     });
@@ -271,11 +271,74 @@ export class ProjectsApi {
       throw new Error('HTTP error: status: ' + response.status);
     }
 
-    return projectResearchAreaSchema.parse(json);
+    return projectMilestoneSchema.parse(json);
   }
 
-  static async deleteResearchArea(projectId: number, researchAreaId: number) {
-    const response = await fetchApi(researchAreaRoute(projectId, researchAreaId), {
+  static async deleteMilestone(projectId: number, milestoneId: number) {
+    const response = await fetchApi(milestoneRoute(projectId, milestoneId), {
+      method: 'DELETE'
+    });
+
+    const json = await response.json();
+    if (!response.ok) {
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+
+    return z.number().parse(json);
+  }
+
+  static async paginateMilestones(projectId: number, page: number, searchTerm: string) {
+    const route =
+      API_ROUTES.projects.milestones.replace(':projectId', `${projectId}`) + paginationToQueryParams(page, searchTerm);
+    const response = await fetchApi(route);
+    const result = await response.json();
+    if (!response.ok) {
+      console.error(result);
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+    return paginatedResponseSchema(projectMilestoneSchema).parse(result);
+  }
+
+  static async addMilestone(projectId: number, milestone: ProjectMilestoneAdd) {
+    const data = {
+      data: {
+        ...milestone,
+        hostOrganizationId: null // FIXME: assign this after Organizations are added to the REST API
+      }
+    };
+    const route = API_ROUTES.projects.milestones.replace(':projectId', `${projectId}`);
+    const response = await fetchApi(route, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+
+    return projectMilestoneSchema.parse(result);
+  }
+
+  static async updateMilestone(projectId: number, milestone: ProjectMilestoneUpdate) {
+    const data = { data: { ...milestone, milestone: undefined } };
+    const response = await fetchApi(milestoneRoute(projectId, milestone.id), {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+
+    const json = await response.json();
+
+    if (!response.ok) {
+      console.error(json);
+      throw new Error('HTTP error: status: ' + response.status);
+    }
+
+    return projectMilestoneSchema.parse(json);
+  }
+
+  static async deleteMilestone(projectId: number, milestoneId: number) {
+    const response = await fetchApi(milestoneRoute(projectId, milestoneId), {
       method: 'DELETE'
     });
 

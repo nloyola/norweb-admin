@@ -57,6 +57,7 @@ export function ProjectPage() {
               <Tab label="Settings" value="settings" component={Link} to="" />
               <Tab label="Funders" value="funders" component={Link} to="funders" />
               <Tab label="Events" value="events" component={Link} to="events" />
+              <Tab label="Milestones" value="milestones" component={Link} to="milestones" />
             </Tabs>
           </Box>
           <Outlet />
